@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mind‑Map • Standalone (Embed‑ready, Horizontal)</title>
+<!-- Alef font -->
+<link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f8fc; --ink:#0f172a;
+    --chip-h:44px; --col-step:340px; /* רוחב עמודה (אופקי) */
+    --gap-x:28px;  /* מרווח אופקי פנימי בין עמודות */
+    --gap-y:12px;  /* מרווח אנכי בין אחים */
+    --r:9999px; --shadow:0 8px 22px rgba(0,0,0,.10);
+    /* אפור לחיבורים */
+    --edge:#C5CBD8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif}
+  .wrap{padding:16px; height:100dvh; overflow:auto}
+  .viewport{position:relative; height:100%;}
+  .stage{position:relative; min-height:380px; min-width:560px; transform-origin: top right;} /* יתעדכן ל‑top left ב‑LTR */
+  .chips{position:absolute; inset:0; z-index:1}
+  svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
+
+  /* === Zoom controls === */
+  .zoombar{position:absolute; top:12px; inset-inline-end:12px; display:flex; gap:8px; z-index:2}
+  .zoombar button{border:0; border-radius:10px; padding:8px 10px; font-family:inherit; font-weight:800; cursor:pointer;
+                  box-shadow:0 6px 14px rgba(0,0,0,.12); background:#fff}
+  .zoombar .pct{min-width:68px; text-align:center}
+
+  /* === Capsules (solid colors per branch) === */
+  .chip{position:absolute; display:inline-flex; align-items:center; height:var(--chip-h); padding:0 16px; border-radius:var(--r);
+        line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
+        direction: rtl; text-align:right; font-weight:700; gap:10px;
+        transition:left .35s ease, top .35s ease, opacity .25s ease;
+        flex-direction: row-reverse; justify-content:flex-start; /* יישור תוכן לימין בתוך הקפסולה */
+        background: var(--chip-bg, #ffffff); color:#0f172a;}
+  .chip[data-kind="root"]{font-weight:800}
+  .label{pointer-events:none}
+
+  .toggle{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+          background: var(--toggle-bg, #e6e7ec); box-shadow:inset 0 1px 0 rgba(255,255,255,.6); cursor:pointer}
+  .toggle::before{content:"+"; font-weight:900; font-size:14px; line-height:1; color:#0b0b0b}
+  .chip[aria-expanded="true"] .toggle::before{content:"-"} /* minus ASCII when open */ /* מינוס יוניקוד תקין */
+
+  .edge{fill:none; stroke:var(--edge); stroke-width:2}
+
+  @media (max-width:900px){:root{--chip-h:40px; --col-step:300px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="viewport" class="viewport">
+    <div class="zoombar" aria-label="Zoom controls">
+      <button id="zoomOut" title="Zoom out">−</button>
+      <button id="zoomPct" class="pct" title="100%">100%</button>
+      <button id="zoomIn" title="Zoom in">+</button>
+    </div>
+    <div id="app" class="stage">
+      <svg id="edges" aria-hidden="true"></svg>
+      <div id="chips" class="chips"></div>
+    </div>
+  </div>
+</div>
+
+<!-- === DATA: ערכי כאן או החליפי JSON מבחוץ === -->
+<script id="mindmap-data" type="application/json">
+{
+  "dir": "rtl",
+  "flow": "rtl",
+  "root": {
+    "label": "הרב יונתן זקס: חיים והגות",
+    "children": [
+      {
+        "label": "חיים וביוגרפיה",
+        "children": [
+          { "label": "פתח דבר", "children": [
+            {"label": "הוגה בולט"},
+            {"label": "הרב הראשי של בריטניה (22 שנה)"},
+            {"label": "מנהיג רוחני ואינטלקטואל ציבורי"},
+            {"label": "מחבר ~30 ספרים (רבי־מכר)"},
+            {"label": "מרצה ברחבי העולם"}
+          ]},
+          { "label": "חיים מוקדמים והשכלה", "children": [
+            {"label": "נולד 1948, לונדון"},
+            {"label": "משפחה יהודית מסורתית"},
+            {"label": "סביבה חמה ותומכת"},
+            {"label": "חשיפה למחשבה מוסרית/רוחנית"},
+            {"label": "תנועות נוער יהודיות"},
+            {"label": "לימודים: פילוסופיה, אונ׳ קמברידג׳"},
+            {"label": "זיהה פער: מופשט מול מציאות חברתית"}
+          ]},
+          { "label": "השפעות מרכזיות ונקודות מפנה", "children": [
+            { "label": "פגישות בניו יורק", "children": [
+              {"label": "הרבי מלובביץ׳"},
+              {"label": "הרב יוסף דב סולובייצ׳יק"}
+            ]},
+            {"label": "אתגר להנהיג ולעשות"},
+            {"label": "השפעה עמוקה על מחשבתו ועל ראיית הקהילה"}
+          ]},
+          { "label": "קריירה וחזון", "children": [
+            {"label": "לימודי פילוסופיה מתקדמים (BA, PhD)"},
+            {"label": "רב בקהילות באנגליה"},
+            {"label": "מונה לרב הראשי של בריטניה"},
+            {"label": "מסר מרכזי: אחדות הקהילות היהודיות"},
+            {"label": "כוח הקהילה: שייכות וזהות"}
+          ]},
+          { "label": "השפעה רחבה והכרה", "children": [
+            {"label": "הציג את היהדות כמקור השראה מוסרי/חברתי"},
+            {"label": "דמות משמעותית לפוליטיקאים, אינטלקטואלים ומלוכה"},
+            {"label": "מפגשים בולטים: המלכה אליזבת, המלך צ׳ארלס, הדלאי למה"}
+          ]}
+        ]
+      },
+      {
+        "label": "רעיונות יסוד ופופולריות",
+        "children": [
+          { "label": "מורשת אינטלקטואלית והשפעות", "children": [
+            {"label": "מחשבה יהודית אורתודוקסית (מנדלסון, הרש\"ר הירש, ר׳ סולובייצ׳יק, הראי\"ה קוק)"},
+            {"label": "השפעות נוספות (הרבי מלובביץ׳, ויקטור פרנקל)"},
+            {"label": "ממשיך מסורת – מותאם למאה ה‑20/21"}
+          ]},
+          { "label": "מחבר מודרנה ויהדות", "children": [
+            {"label": "דיאלוג עם התרבות העכשווית"},
+            {"label": "אמונה ותבונה במרחב הציבורי"}
+          ]},
+          { "label": "פופולריות וגישת כתיבה", "children": [
+            {"label": "שפה בהירה ונגישה"},
+            {"label": "ראיית עולם אופטימית וקול קהילתי"}
+          ]},
+          { "label": "מחשבה דתית אלטרנטיבית", "children": [
+            {"label": "מחויבות בריתית (Covenantal Responsibility)"},
+            {"label": "כבוד השוני (Dignity of Difference)"}
+          ]}
+        ]
+      }
+    ]
+  }
+}
+</script>
+
+<script>
+(function(){
+  const data = JSON.parse(document.getElementById('mindmap-data').textContent);
+  const DIR = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
+  const FLOW = (data.flow||'rtl'); // 'rtl' = מתפרס שמאלה מהשורש, 'ltr' = ימינה
+
+  const viewport = document.getElementById('viewport');
+  const stage = document.getElementById('app');
+  const chipLayer = document.getElementById('chips');
+  const edgeLayer = document.getElementById('edges');
+
+  if(DIR==='ltr'){ stage.style.transformOrigin = 'top left'; } else { stage.style.transformOrigin = 'top right'; }
+
+  const CHIP_H = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chip-h')) || 44;
+  const COL_STEP = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--col-step')) || 340;
+  const GAP_X = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap-x')) || 28;
+  const GAP_Y = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap-y')) || 12;
+
+  const PALETTE6 = ['#F8E8FF','#EBDCF8','#D4D2E6','#B1D0D1','#D7F6E4','#69DA98'];
+const PALETTE4 = ['#F8E8FF','#D4D2E6','#D7F6E4','#69DA98']; // צבע לפי רמה: level1..level6 // צבע לכל ענף
+
+  function mix(c1, c2, p){ // #rrggbb blend
+    const a=parseInt(c1.slice(1),16), b=parseInt(c2.slice(1),16);
+    const r1=(a>>16)&255, g1=(a>>8)&255, bl1=a&255;
+    const r2=(b>>16)&255, g2=(b>>8)&255, bl2=b&255;
+    const r=Math.round(r1*(1-p)+r2*p), g=Math.round(g1*(1-p)+g2*p), bl=Math.round(bl1*(1-p)+bl2*p);
+    return '#'+[r,g,bl].map(x=>x.toString(16).padStart(2,'0')).join('');
+  }
+
+  // build tree with branch color index per top-level child
+  const root = { label: data.root.label, children: [], depth:0, collapsed:false, x:0,y:0,width:0,height:CHIP_H, el:null, id:'root', _subH:0, branch:-1 };
+  data.root.children.forEach((cat, idx)=>{
+    function walk(raw, depth=1){
+      const node = { label: raw.label, depth, collapsed: !!raw.collapsed, x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0, branch: idx, children: [] };
+      (raw.children||[]).forEach(ch=> node.children.push(walk(ch, depth+1)));
+      return node;
+    }
+    root.children.push(walk(cat,1));
+  });
+
+  function ensureChip(node){
+    if(node.el) return;
+    const el = document.createElement('div'); el.className = 'chip';
+    el.dataset.kind = node.depth===0 ? 'root' : (node.children.length? 'cat':'leaf');
+    const label = document.createElement('span'); label.className='label'; label.textContent=node.label; el.appendChild(label);
+    if(node.children.length){
+      const t = document.createElement('span'); t.className='toggle'; el.appendChild(t);
+      el.setAttribute('aria-expanded', String(!node.collapsed));
+      el.addEventListener('click', ev => { if(ev.target.closest('.toggle')){ node.collapsed=!node.collapsed; layout(true);} });
+      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); node.collapsed=!node.collapsed; layout(true);} });
+      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
+    }
+    // Level-based solid color (root = level 1)
+    const base = PALETTE[node.depth % PALETTE.length] || '#E6E7EC';
+    el.style.setProperty('--chip-bg', base);
+    el.style.setProperty('--toggle-bg', mix(base,'#ffffff',0.35));
+
+    chipLayer.appendChild(el); node.el=el;
+  }
+  // Decide palette by number of levels (INCLUDING root)
+  function maxDepth(n){ let max=0; (function rec(node){ if(node.depth>max) max=node.depth; node.children.forEach(rec); })(n); return max; }
+  const levels = maxDepth(root) + 1; // add root level
+  const PALETTE = (levels <= 4 ? PALETTE4 : PALETTE6);
+
+  (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
+
+  function measure(node){
+    node.el.style.left = '-10000px'; node.el.style.top = '-10000px';
+    node.width = Math.max(140, node.el.offsetWidth);
+    node.children.forEach(measure);
+  }
+
+  function subHeight(node){
+    if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
+    let total = 0; node.children.forEach((c,i)=>{ subHeight(c); total += c._subH; if(i>0) total += GAP_Y; });
+    node._subH = Math.max(node.height, total); return node._subH;
+  }
+
+  function position(node, depth, top){
+    node.x = depth * (COL_STEP + GAP_X) * (FLOW==='rtl' ? -1 : 1); // ציר עמודה
+    node.y = top + node._subH/2;
+    if(!(node.collapsed) && node.children.length){
+      let cursor = top;
+      node.children.forEach((c,i)=>{ position(c, depth+1, cursor); cursor += c._subH + GAP_Y; });
+    }
+  }
+
+  function hPath(p1x,p1y,p2x,p2y){
+    const dx = Math.abs(p2x - p1x) * .45;
+    const c1x = (FLOW==='rtl') ? (p1x - dx) : (p1x + dx);
+    const c2x = (FLOW==='rtl') ? (p2x + dx) : (p2x - dx);
+    return `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`;
+  }
+
+  // Zoom state
+  let mode = 'fit';      // 'fit' = התאמה אוטומטית למסך; 'free' = ידני
+  let userScale = 1;     // סקלת משתמש במצב 'free'
+  let fitScale = 1;      // סקלת התאמה
+
+  function applyZoom(){
+    const s = (mode==='fit') ? fitScale : userScale;
+    stage.style.transform = `scale(${s})`;
+    document.getElementById('zoomPct').textContent = Math.round(s*100) + '%';
+  }
+
+  function calcFit(){
+    const vpW = viewport.clientWidth, vpH = viewport.clientHeight;
+    const stW = stage.scrollWidth, stH = stage.scrollHeight;
+    fitScale = Math.min(1, Math.min(vpW / (stW+40), vpH / (stH+40)));
+  }
+
+  function layout(animate=false){
+    measure(root); subHeight(root); position(root, 0, 0);
+
+    let nodes=[]; (function collect(n){nodes.push(n); if(!n.collapsed) n.children.forEach(collect);})(root);
+    let minX=Infinity,maxX=-Infinity,maxY=0; nodes.forEach(n=>{ minX=Math.min(minX,n.x - n.width); maxX=Math.max(maxX,n.x); maxY=Math.max(maxY,n.y + n.height/2); });
+    const offsetX = -minX + 60; // עוגן לימין: ב‑RTL x מייצג את שפת הקפסולה הימנית
+
+    stage.style.width = Math.max(700, Math.ceil((maxX - minX) + 120)) + 'px';
+    stage.style.height = Math.max(420, Math.ceil(maxY + 120)) + 'px';
+
+    nodes.forEach(n=>{
+      const left = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
+      const top  = n.y - n.height/2;
+      n.el.style.left = left + 'px';
+      n.el.style.top  = top + 'px';
+      if(n.children.length) n.el.setAttribute('aria-expanded', String(!n.collapsed));
+      if(animate){ n.el.style.opacity='0'; requestAnimationFrame(()=>{ n.el.style.opacity='1'; }); }
+    });
+
+    edgeLayer.innerHTML='';
+    function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
+      const p1x = offsetX + (FLOW==='rtl' ? n.x : n.x);   // עמודת ההורה
+      const p2x = offsetX + (FLOW==='rtl' ? ch.x : ch.x); // עמודת הבן
+      const p1y = n.y; const p2y = ch.y;
+      const d = hPath(p1x,p1y,p2x,p2y);
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('class','edge'); path.setAttribute('d', d); edgeLayer.appendChild(path);
+      drawEdges(ch);
+    }); }
+    drawEdges(root);
+
+    calcFit();
+    applyZoom();
+  }
+
+  // Zoom controls events
+  document.getElementById('zoomIn').addEventListener('click', ()=>{ mode='free'; userScale=Math.min(3, userScale*1.1); applyZoom(); });
+  document.getElementById('zoomOut').addEventListener('click', ()=>{ mode='free'; userScale=Math.max(0.2, userScale/1.1); applyZoom(); });
+  document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
+
+  layout(false);
+  window.addEventListener('resize', ()=>{ layout(false); });
+})();
+</script>
+
+</body>
+</html>
