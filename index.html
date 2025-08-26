@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Mind‑Map • Standalone (Embed‑ready) — ZoomFit</title>
+<title>Mind‑Map • Standalone (Embed‑ready) — ZoomFit v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -14,14 +14,14 @@
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif}
-  .wrap{padding:16px; height:100dvh; overflow:auto}
+  .wrap{padding:16px; height:100dvh; overflow:auto; max-width:1400px; margin:0 auto}
   .viewport{position:relative; height:100%;}
-  .stage{position:relative; min-height:380px; min-width:560px; transform-origin: top right; transition: transform .38s cubic-bezier(.22,1,.36,1);} /* RTL origin */
+  .stage{position:relative; min-height:380px; min-width:560px; transform-origin: top right; transition: transform .28s cubic-bezier(.22,1,.36,1); opacity:0}
   .chips{position:absolute; inset:0; z-index:1}
   svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
 
   /* Zoom controls */
-  .zoombar{position:absolute; top:12px; inset-inline-end:12px; display:flex; gap:8px; z-index:3}
+  .zoombar{position:absolute; top:12px; inset-inline-start:12px; display:flex; gap:8px; z-index:3}
   .zoombar button{border:0; border-radius:10px; padding:8px 10px; font-family:inherit; font-weight:800; cursor:pointer;
                   box-shadow:0 6px 14px rgba(0,0,0,.12); background:#fff}
   .zoombar .pct{min-width:68px; text-align:center}
@@ -30,21 +30,22 @@
   .chip{position:absolute; display:inline-flex; align-items:center; height:var(--chip-h); padding:0 16px; border-radius:var(--r);
         line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
         direction: rtl; text-align:right; font-weight:700; gap:10px;
-        transition:left .45s cubic-bezier(.22,1,.36,1), top .45s cubic-bezier(.22,1,.36,1), opacity .32s ease;
+        transition:left .32s cubic-bezier(.22,1,.36,1), top .32s cubic-bezier(.22,1,.36,1), opacity .22s ease;
         flex-direction: row-reverse; justify-content:flex-start; background: var(--chip-bg, #ffffff); color:#0f172a;}
   .chip[data-kind="root"]{font-weight:800}
   .label{pointer-events:none}
   .toggle{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;background:var(--toggle); color:#fff; cursor:pointer}
   .toggle::before{content:"+"; font-weight:900; font-size:14px; line-height:1}
   .chip[aria-expanded="true"] .toggle::before{content:"-"}
-  .edge{fill:none; stroke:var(--edge); stroke-width:2; transition:opacity .28s ease}
-  .appear{animation: chipIn .28s cubic-bezier(.22,1,.36,1) both}
-  @keyframes chipIn{ from{opacity:0; transform:translateY(-4px)} to{opacity:1; transform:translateY(0)} }
+  .edge{fill:none; stroke:var(--edge); stroke-width:2; transition:opacity .2s ease}
+  .appear{animation: chipIn .22s cubic-bezier(.22,1,.36,1) both}
+  @keyframes chipIn{ from{opacity:.001; transform:translateY(-3px)} to{opacity:1; transform:translateY(0)} }
 
   @media (prefers-reduced-motion: reduce){
     .stage{transition:none}
     .chip{transition:none}
     .edge{transition:none}
+    .appear{animation:none}
   }
 
   @media (max-width:900px){:root{--chip-h:40px; --col-step:300px}}
@@ -152,38 +153,40 @@
       node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + GAP_Y; });
     }
   }
-  function hPath(p1x,p1y,p2x,p2y){
-    const dx = Math.abs(p2x - p1x) * .45;
-    const c1x = (FLOW==='rtl') ? (p1x - dx) : (p1x + dx);
-    const c2x = (FLOW==='rtl') ? (p2x + dx) : (p2x - dx);
-    return `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`;
+
+  function computeBounds(nodes){
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+    nodes.forEach(n=>{
+      minX = Math.min(minX, (FLOW==='rtl'? n.x - n.width : n.x));
+      maxX = Math.max(maxX, (FLOW==='rtl'? n.x : n.x + n.width));
+      minY = Math.min(minY, n.y - n.height/2);
+      maxY = Math.max(maxY, n.y + n.height/2);
+    });
+    return { w: (maxX - minX) + 120, h: (maxY - minY) + 120, minX, maxX };
   }
 
-  /* Zoom state */
-  let mode = 'fitW';        // ברירת מחדל: התאמה לרוחב המכולה (לא לגובה)
-  let userScale = 1;        // כשעוברים לזום ידני
-  let fitScaleW = 1;        // scale לפי רוחב בלבד
+  // Zoom state
+  let mode = 'fitW';
+  let userScale = 1;
+  let fitScaleW = 1;
 
   function applyZoom(){
     const s = (mode==='fitW') ? fitScaleW : userScale;
     stage.style.transform = `scale(${s})`;
     document.getElementById('zoomPct').textContent = Math.round(s*100) + '%';
   }
-  function calcFitWidth(){
-    const vpW = viewport.clientWidth;
-    const stW = stage.scrollWidth;
-    fitScaleW = Math.min(1, vpW / (stW + 40));
-  }
 
   function layout(animate=false){
     measure(root); subHeight(root); position(root, 0, 0);
 
     let nodes=[]; (function collect(n){nodes.push(n); if(!n.collapsed) n.children.forEach(collect);})(root);
-    let minX=Infinity,maxX=-Infinity,maxY=0; nodes.forEach(n=>{ minX=Math.min(minX,n.x - n.width); maxX=Math.max(maxX,n.x); maxY=Math.max(maxY,n.y + n.height/2); });
-    const offsetX = -minX + 60; // anchor to right in RTL
+    const { w, h, minX } = computeBounds(nodes);
 
-    stage.style.width = Math.max(700, Math.ceil((maxX - minX) + 120)) + 'px';
-    stage.style.height = Math.max(420, Math.ceil(maxY + 120)) + 'px';
+    // size the canvas exactly to content bounds
+    stage.style.width = Math.max(700, Math.ceil(w)) + 'px';
+    stage.style.height = Math.max(420, Math.ceil(h)) + 'px';
+
+    const offsetX = -minX + 60; // pack against right edge (RTL)
 
     nodes.forEach(n=>{
       const left = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
@@ -191,18 +194,21 @@
       n.el.style.left = left + 'px';
       n.el.style.top  = top + 'px';
       if(n.children.length) n.el.setAttribute('aria-expanded', String(!n.collapsed));
-      if(animate){ n.el.classList.add('appear'); setTimeout(()=> n.el.classList.remove('appear'), 320); }
+      if(animate){ n.el.classList.add('appear'); setTimeout(()=> n.el.classList.remove('appear'), 240); }
     });
 
     edgeLayer.innerHTML='';
     (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const p1x = offsetX + n.x; const p2x = offsetX + ch.x; const p1y = n.y; const p2y = ch.y;
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-      path.setAttribute('class','edge'); path.setAttribute('d', hPath(p1x,p1y,p2x,p2y)); edgeLayer.appendChild(path);
+      path.setAttribute('class','edge'); path.setAttribute('d', `M ${p1x} ${p1y} C ${p1x + (FLOW==='rtl'?-1:1)*Math.abs(p2x-p1x)*.45} ${p1y}, ${p2x - (FLOW==='rtl'?-1:1)*Math.abs(p2x-p1x)*.45} ${p2y}, ${p2x} ${p2y}`);
+      edgeLayer.appendChild(path);
       drawEdges(ch);
     }); })(root);
 
-    calcFitWidth();
+    // Fit-to-width strictly by content bounds (no scrollWidth glitches)
+    const vpW = viewport.getBoundingClientRect().width;
+    fitScaleW = Math.min(1, vpW / (w + 4));
     if(mode==='fitW') applyZoom();
   }
 
@@ -210,14 +216,19 @@
   document.getElementById('zoomIn').addEventListener('click', ()=>{ mode='free'; userScale=Math.min(3, userScale*1.1); applyZoom(); });
   document.getElementById('zoomOut').addEventListener('click', ()=>{ mode='free'; userScale=Math.max(0.2, userScale/1.1); applyZoom(); });
   document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
-  document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; calcFitWidth(); applyZoom(); });
+  document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; layout(false); });
 
-  // Initial layout
+  // Initial layout — hide, layout, fit, then reveal (no 13% flicker)
+  function firstPaint(){ layout(false); stage.style.opacity=1; }
+  // Run ASAP, then after fonts, then after next frame (for Moodle/Campus containers)
   layout(false);
-  // Recalc when fonts finish loading (prevents 13% initial blip)
   if(document.fonts && document.fonts.ready){ document.fonts.ready.then(()=> layout(false)); }
-  // Recalc when viewport size changes (Moodle panels etc.)
-  if('ResizeObserver' in window){ new ResizeObserver(()=> layout(false)).observe(viewport); }
+  requestAnimationFrame(()=> layout(false));
+  setTimeout(firstPaint, 60);
+
+  // Re-fit when container resizes / collapses / sidebars move
+  const ro = new ResizeObserver(()=> layout(false));
+  ro.observe(viewport); ro.observe(document.body);
   window.addEventListener('resize', ()=> layout(false));
 })();
 </script>
