@@ -9,7 +9,7 @@
   :root{
     --bg:#ffffff; --ink:#0f172a;
     --chip-h:48px; 
-    --col-step:400px;       /* מרחק אופקי בין עמודות  */
+    --col-step:400px;       /* מרחק אופקי בין עמודות */
     --gap-x:36px;           /* מרווח אופקי נוסף */
     --gap-y:40px;           /* מרווח אנכי ברירת־מחדל (שורש) */
     --gap-cat:110px;        /* מרווח בין קבוצות/קטגוריות (עומק 2) */
@@ -323,7 +323,16 @@
     // ציור קשתות + מיפוי child->edge
     edgeOf.clear(); edgeLayer.innerHTML='';
     (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
-      const p1x = offsetX + n.x; const p2x = offsetX + ch.x; const p1y = n.y; const p2y = ch.y;
+      // חיבורי RTL/LTR מהצד הנכון של הקפסולה
+      const PAD = 8; // רווח קטן כדי לא לגעת בקפסולה עצמה
+      const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
+      const parentRight = offsetX + (FLOW==='rtl' ? n.x : (n.x + n.width));
+      const childEdge   = offsetX + ch.x; // ב‑RTL זה ימין של הילד; ב‑LTR זה שמאל של הילד
+
+      const p1x = (FLOW==='rtl' ? parentLeft  + PAD : parentRight - PAD);
+      const p2x = (FLOW==='rtl' ? childEdge   - PAD : childEdge   + PAD);
+      const p1y = n.y; const p2y = ch.y;
+
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
       const dx=Math.abs(p2x-p1x)*.45; const c1x=(FLOW==='rtl'? p1x-dx: p1x+dx); const c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
       path.setAttribute('class','edge'); path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
