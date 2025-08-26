@@ -30,22 +30,28 @@
                   box-shadow:0 6px 14px rgba(0,0,0,.12); background:#fff}
   .zoombar .pct{min-width:68px; text-align:center}
 
-  /* === Capsules (solid colors per branch) === */
+  /* === Capsules (solid colors per level) === */
   .chip{position:absolute; display:inline-flex; align-items:center; height:var(--chip-h); padding:0 16px; border-radius:var(--r);
         line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
         direction: rtl; text-align:right; font-weight:700; gap:10px;
-        transition:left .35s ease, top .35s ease, opacity .25s ease;
+        /* תנועה עדינה יותר */
+        transition:left .6s cubic-bezier(.22,1,.36,1), top .6s cubic-bezier(.22,1,.36,1), opacity .45s ease;
         flex-direction: row-reverse; justify-content:flex-start; /* יישור תוכן לימין בתוך הקפסולה */
         background: var(--chip-bg, #ffffff); color:#0f172a;}
   .chip[data-kind="root"]{font-weight:800}
   .label{pointer-events:none}
 
+  /* toggle button (+ / -) */
   .toggle{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
-          background: var(--toggle-bg, #e6e7ec); box-shadow:inset 0 1px 0 rgba(255,255,255,.6); cursor:pointer}
-  .toggle::before{content:"+"; font-weight:900; font-size:14px; line-height:1; color:#0b0b0b}
-  .chip[aria-expanded="true"] .toggle::before{content:"-"} /* minus ASCII when open */ /* מינוס יוניקוד תקין */
+          background:#fe0100; box-shadow:inset 0 1px 0 rgba(255,255,255,.6); cursor:pointer}
+  .toggle::before{content:"+"; font-weight:900; font-size:14px; line-height:1; color:#ffffff}
+  .chip[aria-expanded="true"] .toggle::before{content:"-"} /* מינוס ASCII תקין כשהענף פתוח */
 
-  .edge{fill:none; stroke:var(--edge); stroke-width:2}
+  .edge{fill:none; stroke:var(--edge); stroke-width:2; transition: opacity .45s ease}
+
+  /* אפקט כניסה עדין לצאצאי ענף שנפתח */
+  .appear{animation: chipIn .45s cubic-bezier(.22,1,.36,1) both}
+  @keyframes chipIn{ from{opacity:0; transform:translateY(-6px)} to{opacity:1; transform:translateY(0)} }
 
   @media (max-width:900px){:root{--chip-h:40px; --col-step:300px}}
 </style>
@@ -159,8 +165,7 @@
   const GAP_X = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap-x')) || 28;
   const GAP_Y = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap-y')) || 12;
 
-  const PALETTE6 = ['#F8E8FF','#EBDCF8','#D4D2E6','#B1D0D1','#D7F6E4','#69DA98'];
-const PALETTE4 = ['#F8E8FF','#D4D2E6','#D7F6E4','#69DA98']; // צבע לפי רמה: level1..level6 // צבע לכל ענף
+  const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
   function mix(c1, c2, p){ // #rrggbb blend
     const a=parseInt(c1.slice(1),16), b=parseInt(c2.slice(1),16);
@@ -170,16 +175,22 @@ const PALETTE4 = ['#F8E8FF','#D4D2E6','#D7F6E4','#69DA98']; // צבע לפי ר�
     return '#'+[r,g,bl].map(x=>x.toString(16).padStart(2,'0')).join('');
   }
 
-  // build tree with branch color index per top-level child
-  const root = { label: data.root.label, children: [], depth:0, collapsed:false, x:0,y:0,width:0,height:CHIP_H, el:null, id:'root', _subH:0, branch:-1 };
-  data.root.children.forEach((cat, idx)=>{
-    function walk(raw, depth=1){
-      const node = { label: raw.label, depth, collapsed: !!raw.collapsed, x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0, branch: idx, children: [] };
-      (raw.children||[]).forEach(ch=> node.children.push(walk(ch, depth+1)));
-      return node;
-    }
-    root.children.push(walk(cat,1));
-  });
+  // build tree with parent pointers
+  function build(raw, depth=0, parent=null){
+    const node = { label: raw.label, depth, parent, collapsed: !!raw.collapsed, x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0, children: [] };
+    (raw.children||[]).forEach(ch=> node.children.push(build(ch, depth+1, node)));
+    return node;
+  }
+  const root = build(data.root, 0, null);
+
+  // Fixed color scheme by tree depth (including root). No dynamic palette selection is needed.
+
+  // helpers
+  function isDescendant(a, b){ // is b descendant of a ?
+    for(let p=b.parent; p; p=p.parent){ if(p===a) return true; } return false;
+  }
+
+  let toggleNode = null; // for gentle appear animation
 
   function ensureChip(node){
     if(node.el) return;
@@ -189,21 +200,15 @@ const PALETTE4 = ['#F8E8FF','#D4D2E6','#D7F6E4','#69DA98']; // צבע לפי ר�
     if(node.children.length){
       const t = document.createElement('span'); t.className='toggle'; el.appendChild(t);
       el.setAttribute('aria-expanded', String(!node.collapsed));
-      el.addEventListener('click', ev => { if(ev.target.closest('.toggle')){ node.collapsed=!node.collapsed; layout(true);} });
-      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); node.collapsed=!node.collapsed; layout(true);} });
+      el.addEventListener('click', ev => { if(ev.target.closest('.toggle')){ toggleNode=node; node.collapsed=!node.collapsed; layout(true); toggleNode=null; } });
+      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); toggleNode=node; node.collapsed=!node.collapsed; layout(true); toggleNode=null; } });
       el.setAttribute('tabindex','0'); el.setAttribute('role','button');
     }
-    // Level-based solid color (root = level 1)
-    const base = PALETTE[node.depth % PALETTE.length] || '#E6E7EC';
+    // Depth-based fixed colors per spec
+    const base = DEPTH_COLORS[node.depth] || DEPTH_COLORS[4];
     el.style.setProperty('--chip-bg', base);
-    el.style.setProperty('--toggle-bg', mix(base,'#ffffff',0.35));
-
     chipLayer.appendChild(el); node.el=el;
   }
-  // Decide palette by number of levels (INCLUDING root)
-  function maxDepth(n){ let max=0; (function rec(node){ if(node.depth>max) max=node.depth; node.children.forEach(rec); })(n); return max; }
-  const levels = maxDepth(root) + 1; // add root level
-  const PALETTE = (levels <= 4 ? PALETTE4 : PALETTE6);
 
   (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
 
@@ -236,7 +241,7 @@ const PALETTE4 = ['#F8E8FF','#D4D2E6','#D7F6E4','#69DA98']; // צבע לפי ר�
   }
 
   // Zoom state
-  let mode = 'fit';      // 'fit' = התאמה אוטומטית למסך; 'free' = ידני
+  let mode = 'fit';      // ברירת‑מחדל: מראה את כל העץ (Auto‑fit)
   let userScale = 1;     // סקלת משתמש במצב 'free'
   let fitScale = 1;      // סקלת התאמה
 
@@ -268,7 +273,10 @@ const PALETTE4 = ['#F8E8FF','#D4D2E6','#D7F6E4','#69DA98']; // צבע לפי ר�
       n.el.style.left = left + 'px';
       n.el.style.top  = top + 'px';
       if(n.children.length) n.el.setAttribute('aria-expanded', String(!n.collapsed));
-      if(animate){ n.el.style.opacity='0'; requestAnimationFrame(()=>{ n.el.style.opacity='1'; }); }
+      if(animate && toggleNode && (isDescendant(toggleNode, n) && n!==toggleNode)){
+        n.el.classList.add('appear');
+        setTimeout(()=> n.el.classList.remove('appear'), 500);
+      }
     });
 
     edgeLayer.innerHTML='';
@@ -278,12 +286,18 @@ const PALETTE4 = ['#F8E8FF','#D4D2E6','#D7F6E4','#69DA98']; // צבע לפי ר�
       const p1y = n.y; const p2y = ch.y;
       const d = hPath(p1x,p1y,p2x,p2y);
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-      path.setAttribute('class','edge'); path.setAttribute('d', d); edgeLayer.appendChild(path);
+      path.setAttribute('class','edge');
+      path.setAttribute('d', d);
+      if(animate && toggleNode && isDescendant(toggleNode, ch)){
+        path.style.opacity = 0;
+        requestAnimationFrame(()=>{ path.style.opacity = 1; });
+      }
+      edgeLayer.appendChild(path);
       drawEdges(ch);
     }); }
     drawEdges(root);
 
-    calcFit();
+    calcFit();   // Always fit so שברירת המחדל מראה את כל העץ
     applyZoom();
   }
 
