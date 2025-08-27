@@ -429,8 +429,7 @@
 
   // Initial layout — נעשה fitW פעם אחת, ואז ננעל
   layout(false, false);
-  const ro = new ResizeObserver(()=> layout(false, false));
-  ro.observe(viewport);
+  /* ResizeObserver הוסר כדי למנוע שגיאת loop */
   window.addEventListener('resize', ()=> layout(false, false));
 })();
 </script>
