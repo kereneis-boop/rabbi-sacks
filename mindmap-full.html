@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Mind‑Map • Standalone (Embed‑ready) — ZoomFit v2.7.8</title>
+<title>Mind‑Map • Standalone (Embed‑ready) — ZoomFit v2.8.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -19,10 +19,11 @@
     --anim-dur:.60s; --anim-ease:ease-in-out; /* פתיחה וסגירה זהות */
   }
   *{box-sizing:border-box}
-  html,body{height:auto;min-height:100%}
+  html,body{height:auto;min-height:100%; overflow-x:hidden}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif}
   .wrap{padding:16px; max-width:1400px; margin:0 auto; overflow:visible}
-  .viewport{position:relative; width:100%; height:auto; overflow:visible}
+  /* תיקון הרווח הלבן: גוזרים את הגובה העודף של ה-stage שלא משתנה ע"י transform */
+  .viewport{position:relative; width:100%; height:auto; overflow:hidden}
   .stage{position:relative; min-height:380px; min-width:560px; transform-origin: top right; opacity:0}
   .chips{position:absolute; inset:0; z-index:1}
   svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
@@ -227,7 +228,7 @@
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
   const COL_STEP= parseFloat(CSS.getPropertyValue('--col-step')) || 400;
-  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36;
+  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36; 
   const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;  // root / כלליים
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 110; // בין קטגוריות (depth 2)
   const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 36;  // בין פריטים (depth 3)
@@ -252,6 +253,7 @@
   let openingNode = null; // מי נפתח כעת
   let edgeOf = new Map(); // childId -> path element
   let prevVisibleIds = new Set(); // זיכרון הנראים מהלייאאוט הקודם
+  let lastH = 0; // גובה לייאאוט האחרון (לגובה מתואם‑סקייל)
 
   function isDescendant(node, anc){ let p=node.parent; while(p){ if(p===anc) return true; p=p.parent; } return false; }
 
@@ -292,11 +294,17 @@
     if(!(node.collapsed) && node.children.length){ let cursor = top; node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + gapForDepth(c.depth); }); }
   }
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
-  function computeBounds(nodes){ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity; nodes.forEach(n=>{ minX = Math.min(minX, (FLOW==='rtl'? n.x - n.width : n.x)); maxX = Math.max(maxX, (FLOW==='rtl'? n.x : n.x + n.width)); minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2); }); return { w: (maxX - minX) + 160, h: (maxY - minY) + 160, minX }; }
+  function computeBounds(nodes){ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity; nodes.forEach(n=>{ minX = Math.min(minX, (FLOW==='rtl'? n.x - n.width : n.x)); maxX = Math.max(maxX, (FLOW==='rtl'? n.x : n.x + n.width)); minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2); }); return { w: (maxX - minX) + 80, h: (maxY - minY) + 80, minX }; }
 
   // Zoom state (למנוע קפיצות בזמן אינטראקציה)
   let mode = 'fitW'; let userScale = 1; let lockedFit = 1;
-  function applyZoom(){ const s = (mode==='fitW') ? lockedFit : userScale; stage.style.transform = `scale(${s})`; document.getElementById('zoomPct').textContent = Math.round(s*100) + '%'; }
+  function applyZoom(){
+    const s = (mode==='fitW') ? lockedFit : userScale;
+    stage.style.transform = `scale(${s})`;
+    const pct = document.getElementById('zoomPct');
+    if(pct) pct.textContent = Math.round(s*100) + '%';
+    if(lastH){ viewport.style.height = Math.ceil(lastH * s) + 'px'; }
+  }
 
   function layout(animate=false, fromInteraction=false){
     // לפני לייאאוט: מי נראה
@@ -305,10 +313,10 @@
     measure(root); subHeight(root); position(root, 0, 0);
 
     let nodes=[]; collectVisible(root, nodes);
-    const { w, h, minX } = computeBounds(nodes);
+    const { w, h, minX } = computeBounds(nodes); lastH = h;
 
     stage.style.width = Math.max(700, Math.ceil(w)) + 'px';
-    stage.style.height = Math.max(420, Math.ceil(h)) + 'px';
+    stage.style.height = Math.ceil(h) + 'px'; // אין מינימום גבוה — מקטין סיכוי לפערים
 
     const offsetX = -minX + 60;
 
@@ -342,8 +350,11 @@
     }); })(root);
 
     // Zoom: ננעל את ה-fit בפועל רק כשלא אינטראקציה
-    const vpW = viewport.getBoundingClientRect().width; const nextFit = Math.min(1, vpW / (w + 4));
-    if(!fromInteraction && mode==='fitW'){ lockedFit = nextFit; }
+    const vpW = viewport.getBoundingClientRect().width; const requiredFit = Math.min(1, vpW / (w + 4));
+    if(mode==='fitW'){
+      if(requiredFit < lockedFit - 0.0001){ lockedFit = requiredFit; }
+      else if(!fromInteraction && requiredFit > lockedFit){ lockedFit = requiredFit; }
+    }
     applyZoom();
 
     // Fades — פתיחה: כל מה שלא היה לפני (והוא צאצא של openingNode)
@@ -413,4 +424,3 @@
 </script>
 </body>
 </html>
-
