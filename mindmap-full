@@ -1,1 +1,416 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mind‑Map • Standalone (Embed‑ready) — ZoomFit v2.7.8</title>
+<link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ffffff; --ink:#0f172a;
+    --chip-h:48px; 
+    --col-step:400px;       /* מרחק אופקי בין עמודות */
+    --gap-x:36px;           /* מרווח אופקי נוסף */
+    --gap-y:40px;           /* מרווח אנכי ברירת־מחדל (שורש) */
+    --gap-cat:110px;        /* מרווח בין קבוצות/קטגוריות (עומק 2) */
+    --gap-item:36px;        /* מרווח בין פריטים באותה קטגוריה (עומק 3) */
+    --r:9999px; --shadow:0 8px 22px rgba(0,0,0,.10);
+    --edge:#C5CBD8; --toggle:#fe0100;
+    --anim-dur:.60s; --anim-ease:ease-in-out; /* פתיחה וסגירה זהות */
+  }
+  *{box-sizing:border-box}
+  html,body{height:auto;min-height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif}
+  .wrap{padding:16px; max-width:1400px; margin:0 auto; overflow:visible}
+  .viewport{position:relative; width:100%; height:auto; overflow:visible}
+  .stage{position:relative; min-height:380px; min-width:560px; transform-origin: top right; opacity:0}
+  .chips{position:absolute; inset:0; z-index:1}
+  svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
+
+  /* Zoom/Actions bar */
+  .zoombar{position:sticky; top:12px; inset-inline-start:12px; display:flex; gap:8px; z-index:3; align-items:center}
+  .zoombar button{border:0; border-radius:10px; padding:8px 10px; font-family:inherit; font-weight:800; cursor:pointer; box-shadow:0 6px 14px rgba(0,0,0,.12); background:#fff}
+  .zoombar .pct{min-width:68px; text-align:center}
+
+  /* Capsules */
+  .chip{position:absolute; display:inline-flex; align-items:center; height:var(--chip-h); padding:0 16px; border-radius:var(--r);
+        line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
+        direction: rtl; text-align:right; font-weight:700; gap:14px;
+        background: var(--chip-bg, #ffffff); color:#0f172a;}
+  .chip[data-kind="root"]{font-weight:800}
+  .label{pointer-events:none}
+
+  /* Toggle: פסים ממורכזים בתוך עיגול אדום */
+  .toggle{position:relative; width:28px;height:28px;border-radius:50%;flex:0 0 auto;background:var(--toggle); cursor:pointer; border:0}
+  .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition: opacity var(--anim-dur) var(--anim-ease)}
+  .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg); transition: opacity var(--anim-dur) var(--anim-ease)}
+  .chip[aria-expanded="true"] .toggle .bar.v{opacity:0} /* כשפתוח – נשאר מינוס */
+
+  .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
+
+  /* Fades (פשוטים ונעימים) — סימטריים לפתיחה/סגירה */
+  .fade-enter{ opacity:0.001 }
+  .fade-enter.fade-active{ opacity:1; transition: opacity var(--anim-dur) var(--anim-ease) }
+  .fade-exit{ opacity:1 }
+  .fade-exit.fade-active{ opacity:0; transition: opacity var(--anim-dur) var(--anim-ease) }
+
+  @media (prefers-reduced-motion: reduce){
+    .fade-enter.fade-active,.fade-exit.fade-active{transition:none}
+  }
+
+  @media (max-width:900px){:root{--chip-h:44px; --col-step:340px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="viewport" class="viewport">
+    <div class="zoombar" aria-label="Zoom controls">
+      <button id="fitW" title="התאם לרוחב">↔︎ התאמה</button>
+      <button id="zoomOut" title="Zoom out">−</button>
+      <button id="zoomPct" class="pct" title="100%">100%</button>
+      <button id="zoomIn" title="Zoom in">+</button>
+      <button id="expandAll" title="פתח הכל">פתח־הכל</button>
+      <button id="collapseAll" title="סגור הכל">סגור־הכל</button>
+    </div>
+    <div id="app" class="stage">
+      <svg id="edges" aria-hidden="true"></svg>
+      <div id="chips" class="chips"></div>
+    </div>
+  </div>
+</div>
+
+<!-- === DATA (תוכן אמיתי) === -->
+<script id="mindmap-data" type="application/json">
+{
+  "dir": "rtl",
+  "flow": "rtl",
+  "root": {
+    "label": "הרב יונתן זקס: חיים והגות",
+    "children": [
+      {"label": "מודולה 1 – פתיחה וביוגרפיה","children": [
+        {"label":"ערכים","children":[
+          {"label":"זהות ואחריות","children":[{"label":"הבנת הזהות היהודית האישית והקולקטיבית כבסיס למנהיגות"}]},
+          {"label":"שילוב מסורת–מודרניות","children":[{"label":"יכולת להישאר נאמן למסורת תוך פתיחות לעולם מודרני"}]}
+        ]},
+        {"label":"מושגים","children":[
+          {"label":"מנהיגות זהותית","children":[{"label":"מנהיגות הנשענת על זהות עמוקה וערכים מחייבים"}]},
+          {"label":"מסורת חיה","children":[{"label":"התחדשות מתמדת של המסורת כדי להישאר רלוונטית"}]}
+        ]},
+        {"label":"השפעות פילוסופיות ואינטלקטואליות","children":[
+          {"label":"חינוך באוקספורד וקיימברידג'","children":[{"label":"עיצוב חשיבתו במפגש עם עולם פילוסופי-מערבי"}]},
+          {"label":"השפעות תרבותיות מערביות","children":[{"label":"שילוב בין יהדות למסגרות אינטלקטואליות מערביות"}]}
+        ]},
+        {"label":"דוגמאות מקראיות","children":[
+          {"label":"משה כמנהיג","children":[{"label":"מודל למנהיגות זהותית השואבת ממסורת ומנהיגה עם אחריות"}]}
+        ]}
+      ]},
+      {"label": "מודולה 2 – יסודות פילוסופיים","children": [
+        {"label":"ערכים","children":[
+          {"label":"חיפוש האמת","children":[{"label":"הפילוסופיה ככלי להבנת משמעות הקיום"}]},
+          {"label":"אחריות מוסרית","children":[{"label":"העמדת המוסריות כיסוד המחשבה והמעשה"}]}
+        ]},
+        {"label":"מושגים","children":[
+          {"label":"כישלון הנאורות","children":[{"label":"ביקורת על חוסר מענה ליהדות במחשבה נאורה"}]},
+          {"label":"אפיסטמולוגיה יהודית","children":[{"label":"תפיסת ידע המשלבת אמונה, מסורת ומוסר"}]}
+        ]},
+        {"label":"השפעות פילוסופיות ואינטלקטואליות","children":[
+          {"label":"קאנט ודקארט","children":[{"label":"השפעה של ההגות הרציונליסטית המודרנית"}]},
+          {"label":"לוינס","children":[{"label":"השפעה על תפיסת הפרשנות כאירוע מוסרי"}]}
+        ]},
+        {"label":"דוגמאות מקראיות","children":[
+          {"label":"ספר איוב","children":[{"label":"שאלות הצדק והאמונה מול סבל וחוסר צדק"}]}
+        ]}
+      ]},
+      {"label": "מודולה 3 – דיאלוג","children": [
+        {"label":"ערכים","children":[
+          {"label":"כבוד והקשבה","children":[{"label":"הבסיס ליחסים בין־אנושיים מתוקנים"}]},
+          {"label":"רב־תרבותיות","children":[{"label":"יכולת לשיח עם תרבויות ודתות שונות"}]}
+        ]},
+        {"label":"מושגים","children":[
+          {"label":"אני–אתה–הוא","children":[{"label":"מודל של רוזנצוויג למבנה קיום דיאלוגי"}]},
+          {"label":"אמנות השיחה","children":[{"label":"היכולת להקשיב באמת וליצור קשר עם האחר"}]}
+        ]},
+        {"label":"השפעות פילוסופיות ואינטלקטואליות","children":[
+          {"label":"רוזנצוויג ובובר","children":[{"label":"הגות הדיאלוג כיסוד מוסרי"}]},
+          {"label":"השפעות סוציולוגיות","children":[{"label":"הבנת החברה כמרחב דיאלוגי"}]}
+        ]},
+        {"label":"דוגמאות מקראיות","children":[
+          {"label":"אברהם מול סדום","children":[{"label":"ויכוח מוסרי עם האל על צדק ומשפט"}]}
+        ]}
+      ]},
+      {"label": "מודולה 4 – פרשנות","children": [
+        {"label":"ערכים","children":[
+          {"label":"קריאה רב־ממדית","children":[{"label":"כל טקסט מזמין שכבות שונות של משמעות"}]},
+          {"label":"תיקון עולם","children":[{"label":"הפרשנות כמנוף לשינוי חברתי ומוסרי"}]}
+        ]},
+        {"label":"מושגים","children":[
+          {"label":"פרשנות כמעשה מוסרי","children":[{"label":"קריאה בטקסטים מחייבת עמדה מוסרית"}]},
+          {"label":"אות בתורה","children":[{"label":"לכל יחיד יש מקום ייחודי בסיפור היהודי"}]}
+        ]},
+        {"label":"השפעות פילוסופיות ואינטלקטואליות","children":[
+          {"label":"לוינס","children":[{"label":"אתיקה כבסיס לפילוסופיה, השפעה ישירה על הרב זקס"}]},
+          {"label":"הרמנויטיקה מודרנית","children":[{"label":"קריאה בטקסטים כפרויקט מתמשך"}]}
+        ]},
+        {"label":"דוגמאות מקראיות","children":[
+          {"label":"עקדת יצחק","children":[{"label":"שאלות מוסריות של אמונה וצייתנות"}]},
+          {"label":"עמלק","children":[{"label":"התמודדות עם רע מוחלט והפיכתו למטאפורה"}]}
+        ]}
+      ]},
+      {"label": "מודולה 5 – מדע, מודרניות ומנהיגות","children": [
+        {"label":"ערכים","children":[
+          {"label":"מנהיגות מוסרית","children":[{"label":"מנהיגות יהודית המשלבת מסורת ואתיקה עכשווית"}]},
+          {"label":"משמעות מול עובדות","children":[{"label":"הבחנה בין שאלת הלמה לשאלת המה"}]}
+        ]},
+        {"label":"מושגים","children":[
+          {"label":"ברית אחריות","children":[{"label":"תפיסה מנהיגותית של מחויבות הדדית"}]},
+          {"label":"דת ומדע","children":[{"label":"שני כלים משלימים להבנת העולם"}]}
+        ]},
+        {"label":"השפעות פילוסופיות ואינטלקטואליות","children":[
+          {"label":"אתיקה של מדע וטכנולוגיה","children":[{"label":"מענה לשאלות מוסריות חדשות"}]},
+          {"label":"ביקורת על חילון","children":[{"label":"התמודדות עם ערכי מודרנה ופלורליזם"}]}
+        ]},
+        {"label":"דוגמאות מקראיות","children":[
+          {"label":"בריאת העולם","children":[{"label":"משמעות ותכלית לצד הסברים מדעיים"}]}
+        ]}
+      ]},
+      {"label": "מודולה 6 – מורשת","children": [
+        {"label":"ערכים","children":[
+          {"label":"חינוך כמעצב זהות","children":[{"label":"המורשת ממשיכה דרך מוסדות חינוך"}]},
+          {"label":"מסורת חיה","children":[{"label":"העברת מסרים מדור לדור באופן מתחדש"}]}
+        ]},
+        {"label":"מושגים","children":[
+          {"label":"חינוך כמעשה מוסרי","children":[{"label":"החינוך הוא אחריות מוסרית לאומית"}]},
+          {"label":"שמירת מורשת","children":[{"label":"שימור כתבים ורעיונות למען העתיד"}]}
+        ]},
+        {"label":"השפעות פילוסופיות ואינטלקטואליות","children":[
+          {"label":"יצירת מוסדות","children":[{"label":"ביסוס מוסדות יהודיים ברוח ההגות של זקס"}]},
+          {"label":"שילוב אקדמיה ומסורת","children":[{"label":"הפריה הדדית בין מחקר למסורת"}]}
+        ]},
+        {"label":"דוגמאות מקראיות","children":[
+          {"label":"והגדת לבנך","children":[{"label":"המסורת כחובה לדורות הבאים"}]}
+        ]}
+      ]},
+      {"label": "מודולה 7 – סיכום","children": [
+        {"label":"ערכים","children":[
+          {"label":"אחריות משותפת","children":[{"label":"האדם מחויב לעצמו, לקהילה ולעולם"}]},
+          {"label":"אוניברסליזם יהודי","children":[{"label":"היהדות כמעיין של ערכים אוניברסליים"}]}
+        ]},
+        {"label":"מושגים","children":[
+          {"label":"פילוסופיה של אחריות","children":[{"label":"העמדת האחריות כיסוד קיומי"}]},
+          {"label":"מסורת ומודרניות","children":[{"label":"היכולת לשלב ישן וחדש"}]}
+        ]},
+        {"label":"השפעות פילוסופיות ואינטלקטואליות","children":[
+          {"label":"מחשבה מוסרית גלובלית","children":[{"label":"הגות המשפיעה על שיח עולמי"}]},
+          {"label":"ביקורת האינדיבידואליזם","children":[{"label":"עידוד לחשיבה קהילתית"}]}
+        ]},
+        {"label":"דוגמאות מקראיות","children":[
+          {"label":"ואהבת לרעך כמוך","children":[{"label":"יסוד לאתיקה אוניברסלית"}]}
+        ]}
+      ]}
+    ]
+  }
+}
+</script>
+
+<script>
+(function(){
+  let data; try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים – נא לבדוק JSON","children":[]}}; }
+
+  const DIR = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
+  const FLOW = (data.flow||'rtl');
+  const viewport = document.getElementById('viewport');
+  const stage = document.getElementById('app');
+  const chipLayer = document.getElementById('chips');
+  const edgeLayer = document.getElementById('edges');
+  if(DIR==='ltr'){ stage.style.transformOrigin = 'top left'; }
+
+  const CSS = getComputedStyle(document.documentElement);
+  const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
+  const COL_STEP= parseFloat(CSS.getPropertyValue('--col-step')) || 400;
+  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36;
+  const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;  // root / כלליים
+  const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 110; // בין קטגוריות (depth 2)
+  const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 36;  // בין פריטים (depth 3)
+
+  const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
+
+  function build(raw, depth=0, parent=null){
+    const node = { label: raw.label, depth, parent, collapsed: !!raw.collapsed, x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0, children: [] };
+    (raw.children||[]).forEach(ch=> node.children.push(build(ch, depth+1, node)));
+    return node;
+  }
+  const root = build(data.root, 0, null);
+
+  function gapForDepth(depth){
+    if(depth>=3) return GAP_ITEM; // פריטים
+    if(depth===2) return GAP_CAT; // קטגוריות
+    return GAP_Y;                 // ברירת מחדל
+  }
+
+  function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
+
+  let openingNode = null; // מי נפתח כעת
+  let edgeOf = new Map(); // childId -> path element
+  let prevVisibleIds = new Set(); // זיכרון הנראים מהלייאאוט הקודם
+
+  function isDescendant(node, anc){ let p=node.parent; while(p){ if(p===anc) return true; p=p.parent; } return false; }
+
+  function makeToggle(){
+    const btn = document.createElement('button');
+    btn.className = 'toggle'; btn.setAttribute('aria-label','פתח/סגור');
+    btn.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
+    return btn;
+  }
+
+  function ensureChip(node){
+    if(node.el) return;
+    const el = document.createElement('div'); el.className = 'chip';
+    el.dataset.kind = node.depth===0 ? 'root' : (node.children.length? 'cat':'leaf');
+    const label = document.createElement('span'); label.className='label'; label.textContent=node.label; el.appendChild(label);
+    if(node.children.length){
+      const t = makeToggle(); el.appendChild(t);
+      el.setAttribute('aria-expanded', String(!node.collapsed));
+      t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
+      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
+      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); handleToggle(node); } });
+    }
+    const base = DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4];
+    el.style.setProperty('--chip-bg', base);
+    chipLayer.appendChild(el); node.el=el;
+  }
+  (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
+
+  function measure(node){ node.el.style.left = '-10000px'; node.el.style.top = '-10000px'; node.width = Math.max(140, node.el.offsetWidth); node.children.forEach(measure); }
+  function subHeight(node){
+    if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
+    let total = 0; node.children.forEach((c,i)=>{ subHeight(c); total += c._subH; if(i>0) total += gapForDepth(c.depth); });
+    node._subH = Math.max(node.height, total); return node._subH;
+  }
+  function position(node, depth, top){
+    node.x = depth * (COL_STEP + GAP_X) * (FLOW==='rtl' ? -1 : 1);
+    node.y = top + node._subH/2;
+    if(!(node.collapsed) && node.children.length){ let cursor = top; node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + gapForDepth(c.depth); }); }
+  }
+  function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
+  function computeBounds(nodes){ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity; nodes.forEach(n=>{ minX = Math.min(minX, (FLOW==='rtl'? n.x - n.width : n.x)); maxX = Math.max(maxX, (FLOW==='rtl'? n.x : n.x + n.width)); minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2); }); return { w: (maxX - minX) + 160, h: (maxY - minY) + 160, minX }; }
+
+  // Zoom state (למנוע קפיצות בזמן אינטראקציה)
+  let mode = 'fitW'; let userScale = 1; let lockedFit = 1;
+  function applyZoom(){ const s = (mode==='fitW') ? lockedFit : userScale; stage.style.transform = `scale(${s})`; document.getElementById('zoomPct').textContent = Math.round(s*100) + '%'; }
+
+  function layout(animate=false, fromInteraction=false){
+    // לפני לייאאוט: מי נראה
+    const beforeIds = new Set(prevVisibleIds);
+
+    measure(root); subHeight(root); position(root, 0, 0);
+
+    let nodes=[]; collectVisible(root, nodes);
+    const { w, h, minX } = computeBounds(nodes);
+
+    stage.style.width = Math.max(700, Math.ceil(w)) + 'px';
+    stage.style.height = Math.max(420, Math.ceil(h)) + 'px';
+
+    const offsetX = -minX + 60;
+
+    nodes.forEach(n=>{
+      const left = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
+      const top  = n.y - n.height/2;
+      n.el.style.left = left + 'px';
+      n.el.style.top  = top + 'px';
+      if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
+    });
+
+    // ציור קשתות + מיפוי child->edge
+    edgeOf.clear(); edgeLayer.innerHTML='';
+    (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
+      // חיבורי RTL/LTR מהצד הנכון של הקפסולה
+      const PAD = 8; // רווח קטן כדי לא לגעת בקפסולה עצמה
+      const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
+      const parentRight = offsetX + (FLOW==='rtl' ? n.x : (n.x + n.width));
+      const childEdge   = offsetX + ch.x; // ב‑RTL זה ימין של הילד; ב‑LTR זה שמאל של הילד
+
+      const p1x = (FLOW==='rtl' ? parentLeft  + PAD : parentRight - PAD);
+      const p2x = (FLOW==='rtl' ? childEdge   - PAD : childEdge   + PAD);
+      const p1y = n.y; const p2y = ch.y;
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const dx=Math.abs(p2x-p1x)*.45; const c1x=(FLOW==='rtl'? p1x-dx: p1x+dx); const c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
+      path.setAttribute('class','edge'); path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
+      edgeOf.set(ch.id, path);
+      edgeLayer.appendChild(path);
+      drawEdges(ch);
+    }); })(root);
+
+    // Zoom: ננעל את ה-fit בפועל רק כשלא אינטראקציה
+    const vpW = viewport.getBoundingClientRect().width; const nextFit = Math.min(1, vpW / (w + 4));
+    if(!fromInteraction && mode==='fitW'){ lockedFit = nextFit; }
+    applyZoom();
+
+    // Fades — פתיחה: כל מה שלא היה לפני (והוא צאצא של openingNode)
+    if(animate && openingNode){
+      nodes.forEach(n=>{
+        if(!beforeIds.has(n.id) && isDescendant(n, openingNode)){
+          const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
+          n.el.classList.add('fade-enter');
+          requestAnimationFrame(()=>{ n.el.classList.add('fade-active'); });
+          setTimeout(()=>{ n.el.classList.remove('fade-enter','fade-active'); }, dur);
+          const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-enter');
+            requestAnimationFrame(()=>{ edge.classList.add('fade-active'); });
+            setTimeout(()=> edge.classList.remove('fade-enter','fade-active'), dur); }
+        }
+      });
+    }
+
+    // עדכון סט הזיהוי הנראה — ישמש לפתיחה הבאה
+    prevVisibleIds = new Set(nodes.map(n=>n.id));
+
+    stage.style.opacity='1';
+    openingNode = null; // איפוס
+  }
+
+  function animateClose(node, done){
+    // פייד אאוט רק לצאצאים (לא לצומת עצמו)
+    const list=[];
+    function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
+    node.children.forEach(collectDesc);
+
+    const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
+    list.forEach(n=>{
+      if(n.el){ n.el.classList.add('fade-exit'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur); }
+      const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-exit'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-exit','fade-active'), dur); }
+    });
+    setTimeout(done, dur);
+  }
+
+  function handleToggle(n){
+    if(n.collapsed){
+      if(n.el) n.el.setAttribute('aria-expanded','true'); // פלוס→מינוס (פייד)
+      openingNode = n; // פתיחה במקביל; לא סוגרים אחרים
+      n.collapsed = false;
+      layout(true, true);
+    } else {
+      if(n.el) n.el.setAttribute('aria-expanded','false'); // מינוס→פלוס (פייד)
+      // סגירה: פייד אאוט לילדים והקווים שלהם בלבד, אחר כך קריסה ולייאאוט
+      animateClose(n, ()=>{ collapseDeep(n); layout(false, true); });
+    }
+  }
+
+  // Zoom & actions
+  document.getElementById('zoomIn').addEventListener('click', ()=>{ mode='free'; userScale=Math.min(3, (mode==='free'?userScale:lockedFit)*1.1); applyZoom(); });
+  document.getElementById('zoomOut').addEventListener('click', ()=>{ mode='free'; userScale=Math.max(0.2, (mode==='free'?userScale:lockedFit)/1.1); applyZoom(); });
+  document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
+  document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; layout(false, false); });
+
+  document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(true, true); });
+  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); layout(true, true); });
+
+  // Initial layout — נעשה fitW פעם אחת, ואז ננעל
+  layout(false, false);
+  const ro = new ResizeObserver(()=> layout(false, false));
+  ro.observe(viewport);
+  window.addEventListener('resize', ()=> layout(false, false));
+})();
+</script>
+</body>
+</html>
 
