@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Mind‑Map • Standalone (Embed‑ready) — ZoomFit v2.7.7</title>
+<title>Mind‑Map • Standalone (Embed‑ready) — ZoomFit v2.7.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -251,6 +251,7 @@
 
   let openingNode = null; // מי נפתח כעת
   let edgeOf = new Map(); // childId -> path element
+  let prevVisibleIds = new Set(); // זיכרון הנראים מהלייאאוט הקודם
 
   function isDescendant(node, anc){ let p=node.parent; while(p){ if(p===anc) return true; p=p.parent; } return false; }
 
@@ -299,8 +300,7 @@
 
   function layout(animate=false, fromInteraction=false){
     // לפני לייאאוט: מי נראה
-    const beforeVisible = []; collectVisible(root, beforeVisible);
-    const beforeIds = new Set(beforeVisible.map(n=>n.id));
+    const beforeIds = new Set(prevVisibleIds);
 
     measure(root); subHeight(root); position(root, 0, 0);
 
@@ -352,12 +352,17 @@
         if(!beforeIds.has(n.id) && isDescendant(n, openingNode)){
           const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
           n.el.classList.add('fade-enter');
-          requestAnimationFrame(()=>{ n.el.classList.add('fade-active'); n.el.classList.remove('fade-enter'); });
-          setTimeout(()=>{ n.el.classList.remove('fade-active'); }, dur);
-          const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-enter'); requestAnimationFrame(()=>{ edge.classList.add('fade-active'); edge.classList.remove('fade-enter'); }); setTimeout(()=> edge.classList.remove('fade-active'), dur); }
+          requestAnimationFrame(()=>{ n.el.classList.add('fade-active'); });
+          setTimeout(()=>{ n.el.classList.remove('fade-enter','fade-active'); }, dur);
+          const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-enter');
+            requestAnimationFrame(()=>{ edge.classList.add('fade-active'); });
+            setTimeout(()=> edge.classList.remove('fade-enter','fade-active'), dur); }
         }
       });
     }
+
+    // עדכון סט הזיהוי הנראה — ישמש לפתיחה הבאה
+    prevVisibleIds = new Set(nodes.map(n=>n.id));
 
     stage.style.opacity='1';
     openingNode = null; // איפוס
