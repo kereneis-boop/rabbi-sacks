@@ -24,6 +24,7 @@
   .wrap{padding:16px; max-width:1400px; margin:0 auto; overflow:visible}
   /* תיקון הרווח הלבן: גוזרים את הגובה העודף של ה-stage שלא משתנה ע"י transform */
   .viewport{position:relative; width:100%; height:auto; overflow:hidden}
+  .scroller{position:relative;}
   .stage{position:relative; min-height:380px; min-width:560px; transform-origin: top right; opacity:0}
   .chips{position:absolute; inset:0; z-index:1}
   svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
@@ -73,12 +74,15 @@
       <button id="expandAll" title="פתח הכל">פתח־הכל</button>
       <button id="collapseAll" title="סגור הכל">סגור־הכל</button>
     </div>
-    <div id="app" class="stage">
-      <svg id="edges" aria-hidden="true"></svg>
-      <div id="chips" class="chips"></div>
+    <div id="scroller" class="scroller">
+      <div id="app" class="stage">
+        <svg id="edges" aria-hidden="true"></svg>
+        <div id="chips" class="chips"></div>
+      </div>
     </div>
-  </div>
-</div>
+  </div><!-- /viewport -->
+</div><!-- /wrap -->
+
 
 <!-- === DATA (תוכן אמיתי) === -->
 <script id="mindmap-data" type="application/json">
@@ -221,9 +225,13 @@
   const FLOW = (data.flow||'rtl');
   const viewport = document.getElementById('viewport');
   const stage = document.getElementById('app');
+  const scroller = document.getElementById('scroller');
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
-  if(DIR==='ltr'){ stage.style.transformOrigin = 'top left'; }
+
+  if(DIR==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; }
+  else { stage.style.transformOrigin = 'top right'; stage.style.right='0'; }
+  stage.style.top='0'; stage.style.position='absolute';
 
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
@@ -253,7 +261,7 @@
   let openingNode = null; // מי נפתח כעת
   let edgeOf = new Map(); // childId -> path element
   let prevVisibleIds = new Set(); // זיכרון הנראים מהלייאאוט הקודם
-  let lastH = 0; // גובה לייאאוט האחרון (לגובה מתואם‑סקייל)
+  let lastW = 0, lastH = 0; // ממדי לייאאוט אחרונים (לסקייל/גלילה)
 
   function isDescendant(node, anc){ let p=node.parent; while(p){ if(p===anc) return true; p=p.parent; } return false; }
 
@@ -303,20 +311,25 @@
     stage.style.transform = `scale(${s})`;
     const pct = document.getElementById('zoomPct');
     if(pct) pct.textContent = Math.round(s*100) + '%';
-    if(lastH){ viewport.style.height = Math.ceil(lastH * s) + 'px'; }
+    // ממדי מעטפת לגלילה בזום‑אין
+    if(lastW && lastH){
+      scroller.style.width = Math.ceil(lastW * s) + 'px';
+      scroller.style.height = Math.ceil(lastH * s) + 'px';
+    }
+    // גלילה זמינה רק בזום‑אין (מצב free + s>1)
+    viewport.style.overflow = (mode==='free' && s>1) ? 'auto' : 'hidden';
   }
 
   function layout(animate=false, fromInteraction=false){
-    // לפני לייאאוט: מי נראה
     const beforeIds = new Set(prevVisibleIds);
 
     measure(root); subHeight(root); position(root, 0, 0);
 
     let nodes=[]; collectVisible(root, nodes);
-    const { w, h, minX } = computeBounds(nodes); lastH = h;
+    const { w, h, minX } = computeBounds(nodes); lastW = w; lastH = h;
 
     stage.style.width = Math.max(700, Math.ceil(w)) + 'px';
-    stage.style.height = Math.ceil(h) + 'px'; // אין מינימום גבוה — מקטין סיכוי לפערים
+    stage.style.height = Math.ceil(h) + 'px';
 
     const offsetX = -minX + 60;
 
@@ -331,7 +344,6 @@
     // ציור קשתות + מיפוי child->edge
     edgeOf.clear(); edgeLayer.innerHTML='';
     (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
-      // חיבורי RTL/LTR מהצד הנכון של הקפסולה
       const PAD = 8; // רווח קטן כדי לא לגעת בקפסולה עצמה
       const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
       const parentRight = offsetX + (FLOW==='rtl' ? n.x : (n.x + n.width));
