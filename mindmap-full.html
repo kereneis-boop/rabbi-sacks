@@ -23,14 +23,14 @@
   body{margin:0;background:var(--bg);color:var(--ink);font-family:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif}
   .wrap{padding:16px; max-width:1400px; margin:0 auto; overflow:visible}
   /* תיקון הרווח הלבן: גוזרים את הגובה העודף של ה-stage שלא משתנה ע"י transform */
-  .viewport{position:relative; width:100%; height:auto; overflow:hidden}
+  .viewport{position:relative; width:100%; height:auto; overflow:hidden; touch-action:none; cursor:grab}
   .scroller{position:relative;}
   .stage{position:relative; min-height:380px; min-width:560px; transform-origin: top right; opacity:0}
   .chips{position:absolute; inset:0; z-index:1}
   svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
 
   /* Zoom/Actions bar */
-  .zoombar{position:sticky; top:12px; inset-inline-start:12px; display:flex; gap:8px; z-index:3; align-items:center}
+  .zoombar{position:sticky; top:12px; inset-inline-start:12px; display:flex; gap:8px; z-index:3; align-items:center; touch-action:auto; cursor:auto}
   .zoombar button{border:0; border-radius:10px; padding:8px 10px; font-family:inherit; font-weight:800; cursor:pointer; box-shadow:0 6px 14px rgba(0,0,0,.12); background:#fff}
   .zoombar .pct{min-width:68px; text-align:center}
 
@@ -229,6 +229,16 @@
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
 
+  const bar = document.querySelector('.zoombar');
+  let SAFE_TOP = 0;
+  function updateSafeTop(){
+    const h = bar ? bar.getBoundingClientRect().height : 0;
+    SAFE_TOP = Math.ceil(h + 20);
+    // מרחיקים את התוכן מהסרגל באמצעות padding על ה-viewport (נספר בגלילה)
+    viewport.style.paddingTop = SAFE_TOP + 'px';
+    if(scroller) scroller.style.marginTop = '0px';
+  }
+
   if(DIR==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; }
   else { stage.style.transformOrigin = 'top right'; stage.style.right='0'; }
   stage.style.top='0'; stage.style.position='absolute';
@@ -262,6 +272,14 @@
   let edgeOf = new Map(); // childId -> path element
   let prevVisibleIds = new Set(); // זיכרון הנראים מהלייאאוט הקודם
   let lastW = 0, lastH = 0; // ממדי לייאאוט אחרונים (לסקייל/גלילה)
+  // מצב פאנינג ומדידת גובה זמין
+  let isPanning=false, panPending=false, startX=0, startY=0, startScrollL=0, startScrollT=0; const DRAG_T=4;
+  let pinchStartDist=0, pinchStartScale=1;
+  function sizeViewport(){
+    const rect = viewport.getBoundingClientRect();
+    const avail = window.innerHeight - rect.top - 16; // שוליים תחתונים קטנים
+    viewport.style.height = Math.max(320, Math.floor(avail)) + 'px';
+  }
 
   function isDescendant(node, anc){ let p=node.parent; while(p){ if(p===anc) return true; p=p.parent; } return false; }
 
@@ -302,7 +320,7 @@
     if(!(node.collapsed) && node.children.length){ let cursor = top; node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + gapForDepth(c.depth); }); }
   }
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
-  function computeBounds(nodes){ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity; nodes.forEach(n=>{ minX = Math.min(minX, (FLOW==='rtl'? n.x - n.width : n.x)); maxX = Math.max(maxX, (FLOW==='rtl'? n.x : n.x + n.width)); minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2); }); return { w: (maxX - minX) + 80, h: (maxY - minY) + 80, minX }; }
+  function computeBounds(nodes){ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity; nodes.forEach(n=>{ minX = Math.min(minX, (FLOW==='rtl'? n.x - n.width : n.x)); maxX = Math.max(maxX, (FLOW==='rtl'? n.x : n.x + n.width)); minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2); }); const MARG = 24; return { w: (maxX - minX) + MARG, h: (maxY - minY) + MARG, minX }; }
 
   // Zoom state (למנוע קפיצות בזמן אינטראקציה)
   let mode = 'fitW'; let userScale = 1; let lockedFit = 1;
@@ -311,13 +329,18 @@
     stage.style.transform = `scale(${s})`;
     const pct = document.getElementById('zoomPct');
     if(pct) pct.textContent = Math.round(s*100) + '%';
-    // ממדי מעטפת לגלילה בזום‑אין
+    const vpW = viewport.getBoundingClientRect().width;
     if(lastW && lastH){
-      scroller.style.width = Math.ceil(lastW * s) + 'px';
+      const scaledW = Math.ceil(lastW * s);
+      scroller.style.width  = (mode==='fitW' ? Math.ceil(vpW) : scaledW) + 'px';
       scroller.style.height = Math.ceil(lastH * s) + 'px';
-    }
-    // גלילה זמינה רק בזום‑אין (מצב free + s>1)
-    viewport.style.overflow = (mode==='free' && s>1) ? 'auto' : 'hidden';
+    } const tol = 2;
+    let needX = (viewport.scrollWidth - viewport.clientWidth) > tol;
+    const needY = (viewport.scrollHeight - viewport.clientHeight) > tol;
+    if(mode==='fitW'){ needX = false; }
+    viewport.style.overflowX = needX ? 'auto' : 'hidden';
+    viewport.style.overflowY = needY ? 'auto' : 'hidden';
+    viewport.style.cursor   = (needX || needY) ? 'grab' : 'auto';
   }
 
   function layout(animate=false, fromInteraction=false){
@@ -331,7 +354,8 @@
     stage.style.width = Math.max(700, Math.ceil(w)) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    const offsetX = -minX + 60;
+    const padSide = (mode==='fitW' ? 8 : 60);
+    const offsetX = -minX + padSide;
 
     nodes.forEach(n=>{
       const left = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
@@ -419,18 +443,104 @@
   }
 
   // Zoom & actions
-  document.getElementById('zoomIn').addEventListener('click', ()=>{ mode='free'; userScale=Math.min(3, (mode==='free'?userScale:lockedFit)*1.1); applyZoom(); });
-  document.getElementById('zoomOut').addEventListener('click', ()=>{ mode='free'; userScale=Math.max(0.2, (mode==='free'?userScale:lockedFit)/1.1); applyZoom(); });
+  const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
+  const currentScale = ()=> (mode==='fitW' ? lockedFit : userScale);
+
+  // כפתורים
+  document.getElementById('zoomIn').addEventListener('click', ()=>{
+    const base = (mode==='fitW') ? lockedFit : userScale;
+    mode='free';
+    userScale = clamp(base + 0.10, 0.2, 3);
+    applyZoom();
+  });
+  document.getElementById('zoomOut').addEventListener('click', ()=>{
+    const base = (mode==='fitW') ? lockedFit : userScale;
+    mode='free';
+    userScale = clamp(base - 0.10, 0.2, 3);
+    applyZoom();
+  });
   document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
   document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; layout(false, false); });
+
+  // גרירה (פאנינג) עם עכבר/נגיעה אחת
+  function canPan(){
+    const tol = 2;
+    const needX = (viewport.scrollWidth - viewport.clientWidth) > tol;
+    const needY = (viewport.scrollHeight - viewport.clientHeight) > tol;
+    return needX || needY;
+  }
+  viewport.addEventListener('pointerdown', e=>{
+    // רק לחצן שמאלי, ולא מעל סרגל/כפתור הטוגל
+    if(e.button!==0) return;
+    if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
+    if(!canPan()) return;
+    panPending = true;
+    isPanning = false;
+    startX = e.clientX; startY = e.clientY;
+    startScrollL = viewport.scrollLeft; startScrollT = viewport.scrollTop;
+  });
+  viewport.addEventListener('pointermove', e=>{
+    if(!(panPending || isPanning)) return;
+    const dx = e.clientX - startX; const dy = e.clientY - startY;
+    if(!isPanning){
+      if(Math.abs(dx) + Math.abs(dy) < DRAG_T) return;
+      isPanning = true;
+      try{ viewport.setPointerCapture(e.pointerId);}catch(_){}
+      viewport.style.cursor = 'grabbing';
+    }
+    viewport.scrollLeft = startScrollL - dx;
+    viewport.scrollTop = startScrollT - dy;
+  });
+  function endPan(){ panPending=false; isPanning=false; viewport.style.cursor = (canPan()? 'grab':'auto'); }
+  viewport.addEventListener('pointerup', endPan);
+  viewport.addEventListener('pointercancel', endPan);
+  viewport.addEventListener('pointerleave', endPan);
+
+  // פינץ' במובייל + פינץ' בטראקפד (ctrl+wheel)
+  viewport.addEventListener('touchstart', e=>{
+    if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
+    if(e.touches.length===2){
+      pinchStartDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      pinchStartScale = currentScale();
+      mode='free';
+    }
+  }, {passive:true});
+  viewport.addEventListener('touchmove', e=>{
+    if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
+    if(e.touches.length===2 && pinchStartDist>0){
+      e.preventDefault();
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      userScale = clamp(pinchStartScale * (dist / pinchStartDist), 0.2, 3);
+      applyZoom();
+    }
+  }, {passive:false});
+  viewport.addEventListener('touchend', e=>{ if(e.touches.length<2){ pinchStartDist=0; } });
+
+  viewport.addEventListener('wheel', e=>{
+    if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
+    if(!e.ctrlKey) return; // Pinch on trackpad
+    e.preventDefault();
+    mode='free';
+    const s = currentScale();
+    userScale = clamp(s * Math.exp(-e.deltaY/500), 0.2, 3);
+    applyZoom();
+  }, {passive:false});
 
   document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(true, true); });
   document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); layout(true, true); });
 
   // Initial layout — נעשה fitW פעם אחת, ואז ננעל
+  updateSafeTop();
+  sizeViewport();
   layout(false, false);
   /* ResizeObserver הוסר כדי למנוע שגיאת loop */
-  window.addEventListener('resize', ()=> layout(false, false));
+  window.addEventListener('resize', ()=>{ updateSafeTop(); sizeViewport(); layout(false, false); });
 })();
 </script>
 </body>
