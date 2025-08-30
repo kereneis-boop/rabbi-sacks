@@ -21,11 +21,11 @@
   *{box-sizing:border-box}
   html,body{height:auto;min-height:100%; overflow-x:hidden}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif}
-  .wrap{padding:16px; max-width:1400px; margin:0 auto; overflow:visible}
+  .wrap{padding:0; width:100%; max-width:none; margin:0; overflow:visible}
   /* תיקון הרווח הלבן: גוזרים את הגובה העודף של ה-stage שלא משתנה ע"י transform */
   .viewport{position:relative; width:100%; height:auto; overflow:hidden; touch-action:none; cursor:grab}
   .scroller{position:relative;}
-  .stage{position:relative; min-height:380px; min-width:560px; transform-origin: top right; opacity:0}
+  .stage{position:relative; min-height:380px; min-width:0; transform-origin: top right; opacity:0}
   .chips{position:absolute; inset:0; z-index:1}
   svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
 
@@ -320,43 +320,76 @@
     if(!(node.collapsed) && node.children.length){ let cursor = top; node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + gapForDepth(c.depth); }); }
   }
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
-  function computeBounds(nodes){ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity; nodes.forEach(n=>{ minX = Math.min(minX, (FLOW==='rtl'? n.x - n.width : n.x)); maxX = Math.max(maxX, (FLOW==='rtl'? n.x : n.x + n.width)); minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2); }); const MARG = 24; return { w: (maxX - minX) + MARG, h: (maxY - minY) + MARG, minX }; }
+  function computeBounds(nodes){ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity; nodes.forEach(n=>{ minX = Math.min(minX, (FLOW==='rtl'? n.x - n.width : n.x)); maxX = Math.max(maxX, (FLOW==='rtl'? n.x : n.x + n.width)); minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2); }); const MARG = 0; return { w: (maxX - minX) + MARG, h: (maxY - minY) + MARG, minX }; }
 
   // Zoom state (למנוע קפיצות בזמן אינטראקציה)
   let mode = 'fitW'; let userScale = 1; let lockedFit = 1;
+  // Guard: למנוע ReferenceError במידה וקוד חיצוני מתייחס ל-requiredFit מחוץ ל-layout
+  // (בתוך layout יש const requiredFit מקומי שמצל על זה, כך שאין שינוי פונקציונלי)
+  var requiredFit;
   function applyZoom(){
     const s = (mode==='fitW') ? lockedFit : userScale;
     stage.style.transform = `scale(${s})`;
     const pct = document.getElementById('zoomPct');
     if(pct) pct.textContent = Math.round(s*100) + '%';
-    const vpW = viewport.getBoundingClientRect().width;
+
     if(lastW && lastH){
-      const scaledW = Math.ceil(lastW * s);
-      scroller.style.width  = (mode==='fitW' ? Math.ceil(vpW) : scaledW) + 'px';
+      // ברירת רוחב ה-scroller: ב-Fit שווה לרוחב ה-viewport; בזום חופשי = תוכן*סקייל
+      const wpx = (mode==='fitW') ? Math.floor(viewport.clientWidth) : Math.ceil(lastW * s);
+      scroller.style.width  = wpx + 'px';
       scroller.style.height = Math.ceil(lastH * s) + 'px';
-    } const tol = 2;
-    let needX = (viewport.scrollWidth - viewport.clientWidth) > tol;
-    const needY = (viewport.scrollHeight - viewport.clientHeight) > tol;
-    if(mode==='fitW'){ needX = false; }
+    }
+
+    // קובעים גלילות לפי הצורך בפועל
+    const tol = 2;
+    let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
+    let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
+    if(mode==='fitW'){
+      needX = false; // ב-Fit אין גלילה אופקית
+      if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)){
+        needY = false; // ואם נכנס גם לגובה – אין גם גלילה אנכית
+      }
+    }
     viewport.style.overflowX = needX ? 'auto' : 'hidden';
     viewport.style.overflowY = needY ? 'auto' : 'hidden';
-    viewport.style.cursor   = (needX || needY) ? 'grab' : 'auto';
+    viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
   }
 
   function layout(animate=false, fromInteraction=false){
+    // לפני לייאאוט: מי נראה
     const beforeIds = new Set(prevVisibleIds);
 
     measure(root); subHeight(root); position(root, 0, 0);
 
     let nodes=[]; collectVisible(root, nodes);
-    const { w, h, minX } = computeBounds(nodes); lastW = w; lastH = h;
+    const { w, h, minX } = computeBounds(nodes);
 
-    stage.style.width = Math.max(700, Math.ceil(w)) + 'px';
+    // Fit לרוחב בלבד (עד 100%), עם קומפקטציה כשהעץ סגור
+    const vpW = viewport.getBoundingClientRect().width;
+    const baseFit = Math.min(1.0, vpW / Math.max(1, w));
+    const maxDepthVis = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
+    let compactCap = 1.0;
+    if (maxDepthVis <= 1) compactCap = 0.75;       // שורש בלבד
+    else if (maxDepthVis === 2) compactCap = 0.88;  // שורש+קטגוריות
+    const requiredFit = Math.max(0.2, Math.min(baseFit, compactCap));
+    if(mode==='fitW'){
+      lockedFit = requiredFit;
+      // RTL: להצמיד לימין בלי כרית שמאלית; להשאיר רק שוליים עדינים מימין
+      const RIGHT_PAD_PX = 16;
+      const rightPadUnits = RIGHT_PAD_PX / Math.max(lockedFit, 0.0001);
+      offsetX = -minX;                 // השמאלי ביותר יושב בדיוק על 0px (אין רווח משמאל)
+      stageW  = w + rightPadUnits;     // רוחב במה = תוכן + 16px מימין
+    } else {
+      const padSide = 60;                                   // מרווח לגרירה במצב חופשי
+      offsetX = -minX + padSide;
+      stageW  = w + padSide*2;
+    }
+
+    lastW = stageW; lastH = h;
+    stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    const padSide = (mode==='fitW' ? 8 : 60);
-    const offsetX = -minX + padSide;
-
+    // מיקום קפסולות
     nodes.forEach(n=>{
       const left = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
       const top  = n.y - n.height/2;
@@ -366,7 +399,7 @@
     });
 
     // ציור קשתות + מיפוי child->edge
-    edgeOf.clear(); edgeLayer.innerHTML='';
+    edgeOf.clear(); edgeLayer.textContent='';
     (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const PAD = 8; // רווח קטן כדי לא לגעת בקפסולה עצמה
       const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
@@ -385,25 +418,19 @@
       drawEdges(ch);
     }); })(root);
 
-    // Zoom: ננעל את ה-fit בפועל רק כשלא אינטראקציה
-    const vpW = viewport.getBoundingClientRect().width; const requiredFit = Math.min(1, vpW / (w + 4));
-    if(mode==='fitW'){
-      if(requiredFit < lockedFit - 0.0001){ lockedFit = requiredFit; }
-      else if(!fromInteraction && requiredFit > lockedFit){ lockedFit = requiredFit; }
-    }
+    // החלת הסקייל + חישוב גלילה/סמן
     applyZoom();
 
     // Fades — פתיחה: כל מה שלא היה לפני (והוא צאצא של openingNode)
     if(animate && openingNode){
+      const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
       nodes.forEach(n=>{
         if(!beforeIds.has(n.id) && isDescendant(n, openingNode)){
-          const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
           n.el.classList.add('fade-enter');
-          requestAnimationFrame(()=>{ n.el.classList.add('fade-active'); });
-          setTimeout(()=>{ n.el.classList.remove('fade-enter','fade-active'); }, dur);
-          const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-enter');
-            requestAnimationFrame(()=>{ edge.classList.add('fade-active'); });
-            setTimeout(()=> edge.classList.remove('fade-enter','fade-active'), dur); }
+          requestAnimationFrame(()=> n.el.classList.add('fade-active'));
+          setTimeout(()=> n.el.classList.remove('fade-enter','fade-active'), dur);
+          const edge = edgeOf.get(n.id);
+          if(edge){ edge.classList.add('fade-enter'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-enter','fade-active'), dur); }
         }
       });
     }
@@ -465,8 +492,15 @@
   // גרירה (פאנינג) עם עכבר/נגיעה אחת
   function canPan(){
     const tol = 2;
-    const needX = (viewport.scrollWidth - viewport.clientWidth) > tol;
-    const needY = (viewport.scrollHeight - viewport.clientHeight) > tol;
+    let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
+    let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
+    if(mode==='fitW'){
+      // ב-Fit אין גלילה אופקית, ואנכית רק אם התוכן לא נכנס לגובה
+      needX = false;
+      if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)){
+        needY = false;
+      }
+    }
     return needX || needY;
   }
   viewport.addEventListener('pointerdown', e=>{
