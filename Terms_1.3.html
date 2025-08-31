@@ -45,22 +45,10 @@
   <div class="vbt-terms" dir="rtl" style="max-width:1120px;margin:0 auto;font-family: Alef,-apple-system,'Segoe UI',Arial,sans-serif;color:#0f172a;">
     <div class="vbt-grid">
 
-      <!-- ===== הרבי מלובביץ' ===== -->
+      <!-- ===== הרב סולובייצ'יק ===== -->
       <div class="vbt-acc">
         <input class="vbt-toggle" type="checkbox" id="vbt-t1" />
         <label class="vbt-summary" for="vbt-t1" role="button" tabindex="0">
-          <span class="vbt-icon">i</span>
-          <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">הרבי מלובביץ'</span>
-        </label>
-        <div class="vbt-panel">
-          המנהיג השביעי והאחרון של חסידות חב"ד, היה מגדולי ההוגים והמנהיגים היהודיים במאה העשרים, שהיה ידוע בהשכלתו הרחבה הן בתורה והן במדעים. הוא היווה השראה לרב זקס בראייתו את האפשרות לשלב בין יהדות מסורתית למעורבות מלאה בעולם המודרני, ובמנהיגותו ששילבה בין נאמנות עמוקה למסורת היהודית לבין פתיחות ואחריות כלפי כלל האנושות.
-        </div>
-      </div>
-
-      <!-- ===== הרב סולובייצ'יק ===== -->
-      <div class="vbt-acc">
-        <input class="vbt-toggle" type="checkbox" id="vbt-t2" />
-        <label class="vbt-summary" for="vbt-t2" role="button" tabindex="0">
           <span class="vbt-icon">i</span>
           <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">הרב סולובייצ'יק</span>
         </label>
@@ -69,10 +57,22 @@
         </div>
       </div>
 
+      <!-- ===== הרבי מלובביץ' ===== -->
+      <div class="vbt-acc">
+        <input class="vbt-toggle" type="checkbox" id="vbt-t2" />
+        <label class="vbt-summary" for="vbt-t2" role="button" tabindex="0">
+          <span class="vbt-icon">i</span>
+          <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">הרבי מלובביץ'</span>
+        </label>
+        <div class="vbt-panel">
+          המנהיג השביעי והאחרון של חסידות חב"ד, היה מגדולי ההוגים והמנהיגים היהודיים במאה העשרים, שהיה ידוע בהשכלתו הרחבה הן בתורה והן במדעים. הוא היווה השראה לרב זקס בראייתו את האפשרות לשלב בין יהדות מסורתית למעורבות מלאה בעולם המודרני, ובמנהיגותו ששילבה בין נאמנות עמוקה למסורת היהודית לבין פתיחות ואחריות כלפי כלל האנושות.
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- Robust Auto‑Resize: יבטיח שגם בסגירה הגובה יקטן -->
+  <!-- Robust Auto‑Resize: שולח גובה גם בפתיחה וגם בסגירה -->
   <script>
   (function () {
     function computeHeight(){
@@ -81,7 +81,6 @@
     }
     function sendHeight(){ parent.postMessage({ type: 'termsHeight', height: Math.ceil(computeHeight()) }, '*'); }
 
-    // ResizeObserver על שורש המסמך והרכיבים העיקריים
     if ('ResizeObserver' in window) {
       var ro = new ResizeObserver(function(){ requestAnimationFrame(sendHeight); });
       ro.observe(document.documentElement);
@@ -91,26 +90,22 @@
       document.querySelectorAll('.vbt-panel, .vbt-summary').forEach(function(el){ ro.observe(el); });
     }
 
-    // MutationObserver – לכיסוי שינויי מצב ה-checkbox וה-DOM
     if ('MutationObserver' in window) {
-      var mo = new MutationObserver(function(){ setTimeout(sendHeight, 60); });
+      var mo = new MutationObserver(function(){ setTimeout(sendHeight, 80); });
       mo.observe(document.documentElement, { attributes:true, childList:true, subtree:true });
     }
 
-    // אירועי עזר – לפני/אחרי טרנזישן והקלקות
     function tick(){ requestAnimationFrame(sendHeight); }
     window.addEventListener('DOMContentLoaded', tick);
     window.addEventListener('load', tick);
     window.addEventListener('transitionrun', function(){ setTimeout(sendHeight, 0); }, true);
-    window.addEventListener('transitionend', function(){ setTimeout(sendHeight, 80); }, true);
-    window.addEventListener('change', function(e){ if (e.target && e.target.classList && e.target.classList.contains('vbt-toggle')) setTimeout(sendHeight, 80); }, true);
-    window.addEventListener('click', function(){ setTimeout(sendHeight, 120); }, true);
+    window.addEventListener('transitionend', function(){ setTimeout(sendHeight, 100); }, true);
+    window.addEventListener('change', function(e){ if (e.target && e.target.classList && e.target.classList.contains('vbt-toggle')) setTimeout(sendHeight, 100); }, true);
+    window.addEventListener('click', function(){ setTimeout(sendHeight, 140); }, true);
 
-    // פולבק מחזורי עדין
     var hb = setInterval(sendHeight, 1500);
     window.addEventListener('pagehide', function(){ clearInterval(hb); });
 
-    // פתיחה
     sendHeight();
   })();
   </script>
