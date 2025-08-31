@@ -9,11 +9,12 @@
   :root{
     --bg:#ffffff; --ink:#0f172a;
     --chip-h:48px; 
-    --col-step:400px;       /* מרחק אופקי בין עמודות */
+    --col-step:400px;       /* מרחק אופקי בין עמודות כלליות */
+    --col-step-d23:280px;    /* מרחק בין עמודות 2↔3 (קטגוריה→פריט) */
     --gap-x:36px;           /* מרווח אופקי נוסף */
     --gap-y:40px;           /* מרווח אנכי ברירת־מחדל (שורש) */
     --gap-cat:110px;        /* מרווח בין קבוצות/קטגוריות (עומק 2) */
-    --gap-item:36px;        /* מרווח בין פריטים באותה קטגוריה (עומק 3) */
+    --gap-item:28px; /* היה 36px */        /* מרווח בין פריטים באותה קטגוריה (עומק 3) */
     --r:9999px; --shadow:0 8px 22px rgba(0,0,0,.10);
     --edge:#C5CBD8; --toggle:#fe0100;
     --anim-dur:.60s; --anim-ease:ease-in-out; /* פתיחה וסגירה זהות */
@@ -24,7 +25,7 @@
   .wrap{padding:12px; width:100%; max-width:none; margin:0 auto; overflow:visible}
 
   /* שורת כפתורים נפרדת מחוץ למפה */
-  .zoombar{position:sticky; top:0; display:flex; gap:8px; z-index:3; align-items:center; touch-action:auto; cursor:auto; background:#fff; padding:8px; margin:0 0 8px; border-radius:12px; box-shadow:0 6px 14px rgba(0,0,0,.08)}
+  .zoombar{position:sticky; top:0; display:flex; gap:8px; z-index:3; align-items:center; touch-action:auto; cursor:auto; background:#fff; padding:8px; margin:0 0 16px; border-radius:12px; box-shadow:0 6px 14px rgba(0,0,0,.08)}
   .zoombar button{border:0; border-radius:10px; padding:8px 10px; font-family:inherit; font-weight:800; cursor:pointer; box-shadow:0 6px 14px rgba(0,0,0,.12); background:#fff}
   .zoombar .pct{min-width:68px; text-align:center}
 
@@ -136,6 +137,7 @@
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
   const COL_STEP= parseFloat(CSS.getPropertyValue('--col-step')) || 400;
+  const COL_STEP_D23 = parseFloat(CSS.getPropertyValue('--col-step-d23')) || (COL_STEP*0.75);
   const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36; 
   const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;  // root / כלליים
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 110; // בין קטגוריות (depth 2)
@@ -153,7 +155,7 @@
   function gapForDepth(depth){ if(depth>=3) return GAP_ITEM; if(depth===2) return GAP_CAT; return GAP_Y; }
   function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
 
-  let openingNode = null; let edgeOf = new Map(); let prevVisibleIds = new Set(); let lastW = 0, lastH = 0;
+  let openingNode = null; let edgeOf = new Map(); let prevVisibleIds = new Set(); let lastW = 0, lastH = 0; let offsetX = 0, stageW = 0;
   let isPanning=false, panPending=false, startX=0, startY=0, startScrollL=0, startScrollT=0; const DRAG_T=4;
   let pinchStartDist=0, pinchStartScale=1;
   function sizeViewport(){ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; }
@@ -163,12 +165,21 @@
   (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
   function measure(node){ node.el.style.left = '-10000px'; node.el.style.top = '-10000px'; node.width = Math.max(140, node.el.offsetWidth); node.children.forEach(measure); }
   function subHeight(node){ if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; } let total = 0; node.children.forEach((c,i)=>{ subHeight(c); total += c._subH; if(i>0) total += gapForDepth(c.depth); }); node._subH = Math.max(node.height, total); return node._subH; }
-  function position(node, depth, top){ node.x = depth * (COL_STEP + GAP_X) * (FLOW==='rtl' ? -1 : 1); node.y = top + node._subH/2; if(!(node.collapsed) && node.children.length){ let cursor = top; node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + gapForDepth(c.depth); }); } }
+  function xForDepth(depth){
+    let acc = 0;
+    for(let i=0;i<depth;i++){
+      const step = (i===2 ? COL_STEP_D23 : COL_STEP);
+      acc += (step + GAP_X);
+    }
+    return acc * (FLOW==='rtl' ? -1 : 1);
+  }
+  function position(node, depth, top){ node.x = xForDepth(depth); node.y = top + node._subH/2; if(!(node.collapsed) && node.children.length){ let cursor = top; node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + gapForDepth(c.depth); }); } }
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
   function computeBounds(nodes){ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity; nodes.forEach(n=>{ minX = Math.min(minX, (FLOW==='rtl'? n.x - n.width : n.x)); maxX = Math.max(maxX, (FLOW==='rtl'? n.x : n.x + n.width)); minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2); }); const MARG = 0; return { w: (maxX - minX) + MARG, h: (maxY - minY) + MARG, minX }; }
   let mode = 'fitW'; let userScale = 1; let lockedFit = 1; var requiredFit;
   function applyZoom(){ const s = (mode==='fitW') ? lockedFit : userScale; stage.style.transform = `scale(${s})`; const pct = document.getElementById('zoomPct'); if(pct) pct.textContent = Math.round(s*100) + '%'; if(lastW && lastH){ const wpx = (mode==='fitW') ? Math.floor(viewport.clientWidth) : Math.ceil(lastW * s); scroller.style.width  = wpx + 'px'; scroller.style.height = Math.ceil(lastH * s) + 'px'; } const tol = 2; let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol); let needY = (scroller.offsetHeight - viewport.clientHeight) > tol; if(mode==='fitW'){ needX = false; if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)){ needY = false; } } viewport.style.overflowX = needX ? 'auto' : 'hidden'; viewport.style.overflowY = needY ? 'auto' : 'hidden'; viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto'; }
-  function layout(animate=false){ const beforeIds = new Set(prevVisibleIds); measure(root); subHeight(root); position(root, 0, 0); let nodes=[]; collectVisible(root, nodes); const { w, h, minX } = computeBounds(nodes); const vpW = viewport.getBoundingClientRect().width; const baseFit = Math.min(1.0, vpW / Math.max(1, w)); const maxDepthVis = nodes.reduce((m,n)=> Math.max(m, n.depth), 0); let compactCap = 1.0; if (maxDepthVis <= 1) compactCap = 0.75; else if (maxDepthVis === 2) compactCap = 0.88; const requiredFit = Math.max(0.2, Math.min(baseFit, compactCap)); if(mode==='fitW'){ lockedFit = requiredFit; const RIGHT_PAD_PX = 16; const rightPadUnits = RIGHT_PAD_PX / Math.max(lockedFit, 0.0001); offsetX = -minX; stageW  = w + rightPadUnits; } else { const padSide = 60; offsetX = -minX + padSide; stageW  = w + padSide*2; } lastW = stageW; lastH = h; stage.style.width  = Math.ceil(stageW) + 'px'; stage.style.height = Math.ceil(h) + 'px'; nodes.forEach(n=>{ const left = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x); const top  = n.y - n.height/2; n.el.style.left = left + 'px'; n.el.style.top  = top + 'px'; if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); } }); edgeOf.clear(); edgeLayer.textContent=''; (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{ const PAD = 8; const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x); const parentRight = offsetX + (FLOW==='rtl' ? n.x : (n.x + n.width)); const childEdge   = offsetX + ch.x; const p1x = (FLOW==='rtl' ? parentLeft  + PAD : parentRight - PAD); const p2x = (FLOW==='rtl' ? childEdge   - PAD : childEdge   + PAD); const p1y = n.y; const p2y = ch.y; const path = document.createElementNS('http://www.w3.org/2000/svg','path'); const dx=Math.abs(p2x-p1x)*.45; const c1x=(FLOW==='rtl'? p1x-dx: p1x+dx); const c2x=(FLOW==='rtl'? p2x+dx: p2x-dx); path.setAttribute('class','edge'); path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`); edgeOf.set(ch.id, path); edgeLayer.appendChild(path); drawEdges(ch); }); })(root); applyZoom(); if(animate && openingNode){ const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20; nodes.forEach(n=>{ if(!beforeIds.has(n.id) && isDescendant(n, openingNode)){ n.el.classList.add('fade-enter'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-enter','fade-active'), dur); const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-enter'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-enter','fade-active'), dur); } } }); } prevVisibleIds = new Set(nodes.map(n=>n.id)); stage.style.opacity='1'; openingNode = null; }
+  function layout(animate=false){ const beforeIds = new Set(prevVisibleIds); measure(root); subHeight(root); position(root, 0, 0); let nodes=[]; collectVisible(root, nodes); const { w, h, minX } = computeBounds(nodes); const vpW = viewport.getBoundingClientRect().width; const baseFit = Math.min(1.0, vpW / Math.max(1, w)); const maxDepthVis = nodes.reduce((m,n)=> Math.max(m, n.depth), 0); let compactCap = 1.0; if (maxDepthVis <= 1) compactCap = 0.75; else if (maxDepthVis === 2) compactCap = 0.88; const requiredFit = Math.max(0.2, Math.min(baseFit, compactCap)); if(mode==='fitW'){ lockedFit = requiredFit; const RIGHT_PAD_PX = 16; const LEFT_PAD_PX = 12; const rightPadUnits = RIGHT_PAD_PX / Math.max(lockedFit, 0.0001); const leftPadUnits = LEFT_PAD_PX / Math.max(lockedFit, 0.0001); offsetX = -minX + leftPadUnits; stageW  = w + leftPadUnits + rightPadUnits; } else { const padSide = 60; offsetX = -minX + padSide; stageW  = w + padSide*2; } lastW = stageW; lastH = h; stage.style.width  = Math.ceil(stageW) + 'px'; stage.style.height = Math.ceil(h) + 'px'; nodes.forEach(n=>{ const left = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x); const top  = n.y - n.height/2; n.el.style.left = left + 'px'; n.el.style.top  = top + 'px'; if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); } }); edgeOf.clear(); edgeLayer.textContent=''; (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{ const PAD = 14; // ריווח גדול יותר בין הקו לקפסולות (היה 8)
+      const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x); const parentRight = offsetX + (FLOW==='rtl' ? n.x : (n.x + n.width)); const childEdge   = offsetX + ch.x; const p1x = (FLOW==='rtl' ? parentLeft  + PAD : parentRight - PAD); const p2x = (FLOW==='rtl' ? childEdge   - PAD : childEdge   + PAD); const p1y = n.y; const p2y = ch.y; const path = document.createElementNS('http://www.w3.org/2000/svg','path'); const dx=Math.abs(p2x-p1x)*.45; const c1x=(FLOW==='rtl'? p1x-dx: p1x+dx); const c2x=(FLOW==='rtl'? p2x+dx: p2x-dx); path.setAttribute('class','edge'); path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`); edgeOf.set(ch.id, path); edgeLayer.appendChild(path); drawEdges(ch); }); })(root); applyZoom(); if(animate && openingNode){ const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20; nodes.forEach(n=>{ if(!beforeIds.has(n.id) && isDescendant(n, openingNode)){ n.el.classList.add('fade-enter'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-enter','fade-active'), dur); const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-enter'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-enter','fade-active'), dur); } } }); } prevVisibleIds = new Set(nodes.map(n=>n.id)); stage.style.opacity='1'; openingNode = null; }
   function animateClose(node, done){ const list=[]; function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); } node.children.forEach(collectDesc); const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20; list.forEach(n=>{ if(n.el){ n.el.classList.add('fade-exit'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur); } const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-exit'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-exit','fade-active'), dur); } }); setTimeout(done, dur); }
   function handleToggle(n){ if(n.collapsed){ if(n.el) n.el.setAttribute('aria-expanded','true'); openingNode = n; n.collapsed = false; layout(true); } else { if(n.el) n.el.setAttribute('aria-expanded','false'); animateClose(n, ()=>{ collapseDeep(n); layout(false); }); } }
 
