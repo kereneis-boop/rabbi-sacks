@@ -58,7 +58,58 @@
     }
   </style>
 </head>
-<body>
+<script>
+(function () {
+  function sendHeight() {
+    var h = Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight,
+      document.documentElement.offsetHeight,
+      document.body.offsetHeight
+    );
+    parent.postMessage({ type: 'termsHeight', height: h }, '*');
+  }
+  // לעדכן את ההורה בשינויים (פתיחה/סגירה, אנימציות, טעינה)
+  if ('ResizeObserver' in window) {
+    var ro = new ResizeObserver(sendHeight);
+    ro.observe(document.documentElement);
+    ro.observe(document.body);
+    var root = document.querySelector('.vbt-terms');
+    if (root) ro.observe(root);
+  }
+  var tick = function(){ requestAnimationFrame(sendHeight); };
+  window.addEventListener('DOMContentLoaded', tick);
+  window.addEventListener('load', tick);
+  window.addEventListener('transitionend', tick, true);
+  window.addEventListener('click', function(){ setTimeout(sendHeight, 200); }, true);
+  setInterval(sendHeight, 800);
+})();
+</script>
+
+<!-- טיפ קטן (לא חובה): אם יש גלילה פנימית בפנל -->
+<!-- אפשר להגדיל את max-height של .vbt-panel (למשל ל-4000px) כדי למנוע overflow פנימי בזמן האנימציה. -->
+
+
+<!-- ===== צד ההורה (Moodle) – הטמעת ה-iframe + מאזין ===== -->
+<iframe id="termsIframe" src="https://kereneis-boop.github.io/rabbi-sacks/Terms_1.3.html" style="width:100%;border:0;display:block;height:0;" loading="eager" title="מונחי הרב זקס"></iframe>
+<script>
+(function(){
+  var iframe = document.getElementById('termsIframe');
+  var allowedOrigin = 'https://kereneis-boop.github.io';
+  function onMessage(e){
+    if (e.origin !== allowedOrigin) return;                  // קבל הודעות רק מהמקור הנכון
+    if (!e.data || e.data.type !== 'termsHeight') return;     // ודא שזה המסר שלנו
+    if (e.source !== iframe.contentWindow) return;            // ודא שזה ה-iframe הספציפי
+    var newH = Math.max(0, Math.ceil(e.data.height));
+    iframe.style.height = newH + 'px';                        // עדכון גובה דינמי – בלי גלילה פנימית
+  }
+  window.addEventListener('message', onMessage, false);
+})();
+</script>
+
+<!-- זהו. התוכן שב-Terms_1.3.html נשאר ללא שינוי; רק מתרחש Auto-Resize מהילד להורה. -->
+
+  <body>
   <div class="vbt-terms" dir="rtl" style="max-width:1120px;margin:0 auto;font-family: Alef,-apple-system,'Segoe UI',Arial,sans-serif;color:#0f172a;">
     <div class="vbt-grid">
 
