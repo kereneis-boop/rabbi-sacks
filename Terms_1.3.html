@@ -23,8 +23,7 @@
     .vbt-terms .vbt-toggle:checked + .vbt-summary { box-shadow: 0 6px 16px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(0,0,0,.04); }
 
     .vbt-terms .vbt-icon {
-      width: 28px; height: 28px; border-radius: 50%; background: #fe0100; color: #fff; display: grid;
-      place-items: center; font-weight: 900; transition: transform .35s ease;
+      width: 28px; height: 28px; border-radius: 50%; background: #fe0100; color: #fff; display: grid; place-items: center; font-weight: 900; transition: transform .35s ease;
     }
     .vbt-terms .vbt-toggle:checked + .vbt-summary .vbt-icon { transform: rotate(180deg); }
 
@@ -72,7 +71,7 @@
     </div>
   </div>
 
-  <!-- Robust Auto‑Resize: שולח גובה גם בפתיחה וגם בסגירה -->
+  <!-- Auto‑Resize: פתיחה וסגירה (עם burst כדי לא לפספס כיווץ) -->
   <script>
   (function () {
     function computeHeight(){
@@ -80,6 +79,7 @@
       return Math.max(d.scrollHeight, b.scrollHeight, d.offsetHeight, b.offsetHeight, d.clientHeight, b.clientHeight);
     }
     function sendHeight(){ parent.postMessage({ type: 'termsHeight', height: Math.ceil(computeHeight()) }, '*'); }
+    function burst(ms){ var end=Date.now()+(ms||800); (function step(){ sendHeight(); if(Date.now()<end) requestAnimationFrame(step); })(); }
 
     if ('ResizeObserver' in window) {
       var ro = new ResizeObserver(function(){ requestAnimationFrame(sendHeight); });
@@ -98,12 +98,12 @@
     function tick(){ requestAnimationFrame(sendHeight); }
     window.addEventListener('DOMContentLoaded', tick);
     window.addEventListener('load', tick);
-    window.addEventListener('transitionrun', function(){ setTimeout(sendHeight, 0); }, true);
-    window.addEventListener('transitionend', function(){ setTimeout(sendHeight, 100); }, true);
-    window.addEventListener('change', function(e){ if (e.target && e.target.classList && e.target.classList.contains('vbt-toggle')) setTimeout(sendHeight, 100); }, true);
+    window.addEventListener('transitionrun', function(){ burst(700); }, true);
+    window.addEventListener('transitionend', function(){ setTimeout(sendHeight, 80); }, true);
+    window.addEventListener('change', function(e){ if (e.target && e.target.classList && e.target.classList.contains('vbt-toggle')) burst(800); }, true);
     window.addEventListener('click', function(){ setTimeout(sendHeight, 140); }, true);
 
-    var hb = setInterval(sendHeight, 1500);
+    var hb = setInterval(sendHeight, 1800);
     window.addEventListener('pagehide', function(){ clearInterval(hb); });
 
     sendHeight();
