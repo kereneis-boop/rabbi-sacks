@@ -1,0 +1,122 @@
+<!-- MOODLE SAFE (no <script>) -->
+<!-- הדביקי את כל הבלוק לדף "תוכן מעוצב". אין CSS/JS חיצוני; הכל בתוך הבלוק. -->
+
+<style>
+  /* הכל ממוסגר בתוך .vbt-terms כדי למנוע זליגה לשאר הדף */
+  .vbt-terms * { box-sizing: border-box; }
+
+  /* קופסאות אקורדיון – גרסת checkbox כדי לאפשר אנימציה גם בסגירה */
+  .vbt-terms .vbt-acc { position: relative; border-radius: 18px; padding: 0; background: transparent; }
+  .vbt-terms .vbt-toggle { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+
+  .vbt-terms .vbt-summary {
+    display: flex; align-items: center; gap: 12px; direction: rtl; cursor: pointer;
+    padding: 14px 18px; border-radius: 40px; background: #F8E8FF; font-weight: 800; font-size: 18px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(0,0,0,.04);
+    list-style: none; outline: none; transition: box-shadow .35s ease, transform .2s ease;
+  }
+  .vbt-terms .vbt-summary:hover { transform: translateY(-1px); }
+  .vbt-terms .vbt-summary:focus-visible { outline: 2px solid #fe0100; outline-offset: 2px; }
+
+  /* מצב פתוח – צל מעט חזק יותר */
+  .vbt-terms .vbt-toggle:checked + .vbt-summary {
+    box-shadow: 0 6px 16px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(0,0,0,.04);
+  }
+
+  /* אייקון שמסתובב בפתיחה/בסגירה */
+  .vbt-terms .vbt-icon {
+    width: 28px; height: 28px; border-radius: 50%; background: #fe0100; color: #fff; display: grid;
+    place-items: center; font-weight: 900; transition: transform .35s ease;
+  }
+  .vbt-terms .vbt-toggle:checked + .vbt-summary .vbt-icon { transform: rotate(180deg); }
+
+  /* פנל תוכן – פייד אין/אאוט מלא + גלישה חלקה בגובה */
+  .vbt-terms .vbt-panel {
+    margin-top: 10px; background: #D7F6E4; border-radius: 14px; padding: 0 16px; line-height: 1.55;
+    max-height: 0; overflow: hidden; opacity: 0; transform: translateY(-6px);
+    transition: max-height .5s ease, opacity .45s ease, transform .45s ease, padding .45s ease;
+  }
+  .vbt-terms .vbt-toggle:checked ~ .vbt-panel {
+    padding: 16px; opacity: 1; transform: translateY(0); max-height: 1200px; /* מספיק לרוב התכנים */
+  }
+
+  /* גריד רספונסיבי */
+  .vbt-terms .vbt-grid {
+    display: grid; grid-template-columns: 1fr; gap: 18px; max-width: 1000px; margin: 0 auto;
+  }
+
+  /* מסך רחב: תמיד שתי עמודות בדיוק */
+  @media (min-width: 700px) {
+    .vbt-terms .vbt-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    /* אם יש פריט אחד: הצגה כחצי רוחב ומרכוז בתוך שתי עמודות */
+    .vbt-terms .vbt-acc.vbt-center-two {
+      grid-column: 1 / -1;
+      justify-self: center;
+      width: calc(50% - 9px); /* חצי מהרוחב פחות חצי המרווח (gap/2) */
+      max-width: 520px;
+    }
+  }
+
+  /* העדפת נגישות – פחות תנועה */
+  @media (prefers-reduced-motion: reduce) {
+    .vbt-terms .vbt-panel, .vbt-terms .vbt-icon, .vbt-terms .vbt-summary { transition: none; }
+  }
+</style>
+
+<div class="vbt-terms" dir="rtl" style="max-width:1120px;margin:0 auto;font-family: Alef,-apple-system,'Segoe UI',Arial,sans-serif;color:#0f172a;">
+
+  <!-- גריד רספונסיבי -->
+  <div class="vbt-grid">
+
+    <!-- ===== ספריה לאומית ===== -->
+    <div class="vbt-acc">
+      <input class="vbt-toggle" type="checkbox" id="vbt-t1" />
+      <label class="vbt-summary" for="vbt-t1" role="button" tabindex="0">
+        <span class="vbt-icon">i</span>
+        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">ספריה לאומית</span>
+      </label>
+      <div class="vbt-panel">
+        ספריה לאומית:  אוצר הספרים המשמר את הידע והמורשת התרבותית של עם ישראל. הכולל כתבי קודש, ספרות עברית וכללית, כתבי יד וארכיונים היסטוריים. חלק מהארכיון של הרב זקס נמצא בספריה הלאומית.
+      </div>
+    </div>
+
+    <!-- ===== ניהול סכסוכים ===== -->
+    <div class="vbt-acc">
+      <input class="vbt-toggle" type="checkbox" id="vbt-t2" />
+      <label class="vbt-summary" for="vbt-t2" role="button" tabindex="0">
+        <span class="vbt-icon">i</span>
+        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">ניהול סכסוכים</span>
+      </label>
+      <div class="vbt-panel">
+        ניהול סכסוכים:  תחום החוקר ומיישם אסטרטגיות ליישוב מחלוקות בין יחידים, קבוצות או עמים.
+      </div>
+    </div>
+
+    <!-- ===== מחלוקות הלל ושמאי ===== -->
+    <div class="vbt-acc">
+      <input class="vbt-toggle" type="checkbox" id="vbt-t3" />
+      <label class="vbt-summary" for="vbt-t3" role="button" tabindex="0">
+        <span class="vbt-icon">i</span>
+        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">מחלוקות הלל ושמאי</span>
+      </label>
+      <div class="vbt-panel">
+        מחלוקות הלל ושמאי:  הלל ושמאי היו זוג חכמים מהם התפתחו שתי אסכולות בהגותם של חז"ל, שהתאפיינו בגישות שונות לפרשנות ההלכה. הרב זקס ראה במחלוקות אלו דוגמה לאופן שבו תרבות דיון מכבדת יכולה לחזק חברה, בתנאי שהמחלוקת היא "לשם שמים".
+      </div>
+    </div>
+
+    <!-- ===== אהרון הכהן משכין שלום ===== -->
+    <div class="vbt-acc">
+      <input class="vbt-toggle" type="checkbox" id="vbt-t4" />
+      <label class="vbt-summary" for="vbt-t4" role="button" tabindex="0">
+        <span class="vbt-icon">i</span>
+        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">אהרון הכהן משכין שלום</span>
+      </label>
+      <div class="vbt-panel">
+        אהרון הכהן משכין שלום:  אחיו של משה והכהן הגדול הראשון, שנודע כמגשר, ומתווך בין אנשים ומפשר סכסוכים. נתפס כמופת לאדם הפועל לאחדות ולריפוי מתחים חברתיים
+      </div>
+    </div>
+
+    </div>
+
+  </div>
+</div>
