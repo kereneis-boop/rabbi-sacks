@@ -11,20 +11,35 @@
 
   /* גריד קישורים כרטיסיים */
   .vbt-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap:16px; }
+
+  /* הכרטיס עצמו כ-Container (ללא <script>) */
   .vbt-card { position:relative; display:block; text-decoration:none; color:inherit; padding:18px; border-radius:18px; background:#fff;
               box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 12px 30px rgba(2,8,20,.04); transition: transform .15s ease, box-shadow .25s ease; }
   .vbt-card:hover { transform: translateY(-2px); box-shadow: 0 2px 0 rgba(0,0,0,.06), 0 18px 38px rgba(2,8,20,.08); }
-  .vbt-card:focus-visible { outline: 2px solid #fe0100; outline-offset: 3px; }
+
+  /* הקישור הראשי בתוך הכרטיס */
+  .vbt-main { display:block; text-decoration:none; color:inherit; }
+  .vbt-main:focus-visible { outline: 2px solid #fe0100; outline-offset: 3px; border-radius: 14px; }
 
   .vbt-card .row { display:flex; align-items:center; gap:12px; }
   .vbt-card .icon { width:36px; height:36px; border-radius:50%; background:#fe0100; color:#fff; display:grid; place-items:center; font-size:18px; font-weight:900; }
   .vbt-card .title { font-weight:800; font-size:18px; }
   .vbt-card .desc { margin-top:8px; line-height:1.5; opacity:.9; }
-  .vbt-card .chev { position:absolute; inset-inline-end:14px; inset-block-end:12px; font-size:18px; opacity:.5; }
+  .vbt-card .chev { position:absolute; inset-inline-end:14px; inset-block-start:16px; font-size:18px; opacity:.5; }
+
+  /* אזור פעולות (העתקה/קוד) */
+  .vbt-actions { margin-top:12px; display:flex; gap:12px; flex-wrap:wrap; }
+  .vbt-actions details { background:#f6f7fb; padding:10px; border-radius:12px; flex: 1 1 240px; }
+  .vbt-actions summary { cursor:pointer; font-weight:800; }
+  .vbt-actions small { opacity:.8; }
+  .copy-field, .codebox { width:100%; margin-top:8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:13px; }
+  .copy-field { direction:ltr; padding:8px; border-radius:10px; border:1px solid #e5e7eb; }
+  .codebox { direction:ltr; min-height:120px; padding:10px; border-radius:10px; border:1px solid #e5e7eb; white-space:pre; }
 
   /* צבעי אווירה שונים לכל כרטיס */
   .vbt-card.terms { background:#F8E8FF; }
   .vbt-card.mind  { background:#D7F6E4; }
+  .vbt-card.map   { background:#E8F2FF; }
 
   @media (prefers-reduced-motion: reduce) {
     .vbt-card { transition:none; }
@@ -40,154 +55,382 @@
 
   <nav class="vbt-grid">
     <!-- מפת הקורס -->
-    <a class="vbt-card mind" href="https://kereneis-boop.github.io/rabbi-sacks/mindmap-full.html" target="_blank" rel="noopener" aria-label="פתיחת מפת הקורס בטאב חדש">
-      <div class="row">
-        <span class="icon">🧠</span>
-        <span class="title">מפת הקורס</span>
+    <div class="vbt-card mind">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/mindmap-full.html" target="_blank" rel="noopener" aria-label="פתיחת מפת הקורס בטאב חדש">
+        <div class="row">
+          <span class="icon">🧠</span>
+          <span class="title">מפת הקורס</span>
+        </div>
+        <div class="desc">מפה אינטראקטיבית המציגה את מבנה הקורס. נפתח בטאב חדש.</div>
+        <span class="chev">›</span>
+      </a>
+      <div class="vbt-actions" aria-label="פעולות נוספות עבור מפת הקורס">
+        <details class="copy">
+          <summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/mindmap-full.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code">
+          <summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card mind" href="https://kereneis-boop.github.io/rabbi-sacks/mindmap-full.html" target="_blank" rel="noopener">מפת הקורס</a></textarea>
+        </details>
       </div>
-      <div class="desc">מפה אינטראקטיבית המציגה את מבנה הקורס. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
+
+    <!-- מפות מודולים 01–07 -->
+    <div class="vbt-card map">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module01.html" target="_blank" rel="noopener" aria-label="פתיחת מפת מודול 01 בטאב חדש">
+        <div class="row">
+          <span class="icon">🗺️</span>
+          <span class="title">מפת מודול 01</span>
+        </div>
+        <div class="desc">מפת מודול 01. נפתח בטאב חדש.</div>
+        <span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Map_Module01.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card map" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module01.html" target="_blank" rel="noopener">מפת מודול 01</a></textarea>
+        </details>
+      </div>
+    </div>
+
+    <div class="vbt-card map">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module02.html" target="_blank" rel="noopener" aria-label="פתיחת מפת מודול 02 בטאב חדש">
+        <div class="row"><span class="icon">🗺️</span><span class="title">מפת מודול 02</span></div>
+        <div class="desc">מפת מודול 02. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Map_Module02.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card map" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module02.html" target="_blank" rel="noopener">מפת מודול 02</a></textarea>
+        </details>
+      </div>
+    </div>
+
+    <div class="vbt-card map">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module03.html" target="_blank" rel="noopener" aria-label="פתיחת מפת מודול 03 בטאב חדש">
+        <div class="row"><span class="icon">🗺️</span><span class="title">מפת מודול 03</span></div>
+        <div class="desc">מפת מודול 03. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Map_Module03.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card map" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module03.html" target="_blank" rel="noopener">מפת מודול 03</a></textarea>
+        </details>
+      </div>
+    </div>
+
+    <div class="vbt-card map">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module04.html" target="_blank" rel="noopener" aria-label="פתיחת מפת מודול 04 בטאב חדש">
+        <div class="row"><span class="icon">🗺️</span><span class="title">מפת מודול 04</span></div>
+        <div class="desc">מפת מודול 04. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Map_Module04.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card map" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module04.html" target="_blank" rel="noopener">מפת מודול 04</a></textarea>
+        </details>
+      </div>
+    </div>
+
+    <div class="vbt-card map">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module05.html" target="_blank" rel="noopener" aria-label="פתיחת מפת מודול 05 בטאב חדש">
+        <div class="row"><span class="icon">🗺️</span><span class="title">מפת מודול 05</span></div>
+        <div class="desc">מפת מודול 05. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Map_Module05.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card map" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module05.html" target="_blank" rel="noopener">מפת מודול 05</a></textarea>
+        </details>
+      </div>
+    </div>
+
+    <div class="vbt-card map">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module06.html" target="_blank" rel="noopener" aria-label="פתיחת מפת מודול 06 בטאב חדש">
+        <div class="row"><span class="icon">🗺️</span><span class="title">מפת מודול 06</span></div>
+        <div class="desc">מפת מודול 06. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Map_Module06.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card map" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module06.html" target="_blank" rel="noopener">מפת מודול 06</a></textarea>
+        </details>
+      </div>
+    </div>
+
+    <div class="vbt-card map">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module07.html" target="_blank" rel="noopener" aria-label="פתיחת מפת מודול 07 בטאב חדש">
+        <div class="row"><span class="icon">🗺️</span><span class="title">מפת מודול 07</span></div>
+        <div class="desc">מפת מודול 07. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Map_Module07.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card map" href="https://kereneis-boop.github.io/rabbi-sacks/Map_Module07.html" target="_blank" rel="noopener">מפת מודול 07</a></textarea>
+        </details>
+      </div>
+    </div>
 
     <!-- רכיב 1.3 · גילה זקס -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_1.3.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 1.3: גילה זקס, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 1.3 · גילה זקס</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_1.3.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 1.3: גילה זקס, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 1.3 · גילה זקס</span></div>
+        <div class="desc">דף מונחים של רכיב 1.3 – גילה זקס. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_1.3.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_1.3.html" target="_blank" rel="noopener">רכיב 1.3 · גילה זקס</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 1.3 – גילה זקס. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 1.7 · דיין בינשטוק -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_1.7.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 1.7: דיין בינשטוק, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 1.7 · דיין בינשטוק</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_1.7.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 1.7: דיין בינשטוק, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 1.7 · דיין בינשטוק</span></div>
+        <div class="desc">דף מונחים של רכיב 1.7 – דיין בינשטוק. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_1.7.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_1.7.html" target="_blank" rel="noopener">רכיב 1.7 · דיין בינשטוק</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 1.7 – דיין בינשטוק. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 2.3 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_2.3.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 2.3: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 2.3 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_2.3.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 2.3: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 2.3 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 2.3 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_2.3.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_2.3.html" target="_blank" rel="noopener">רכיב 2.3 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 2.3 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 2.8 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_2.8.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 2.8: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 2.8 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_2.8.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 2.8: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 2.8 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 2.8 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_2.8.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_2.8.html" target="_blank" rel="noopener">רכיב 2.8 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 2.8 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 3.3 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_3.3.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 3.3: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 3.3 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_3.3.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 3.3: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 3.3 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 3.3 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_3.3.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_3.3.html" target="_blank" rel="noopener">רכיב 3.3 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 3.3 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 3.6 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_3.6.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 3.6: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 3.6 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_3.6.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 3.6: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 3.6 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 3.6 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_3.6.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_3.6.html" target="_blank" rel="noopener">רכיב 3.6 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 3.6 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 4.3 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.3.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 4.3: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 4.3 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.3.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 4.3: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 4.3 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 4.3 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.3.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.3.html" target="_blank" rel="noopener">רכיב 4.3 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 4.3 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 4.6 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.6.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 4.6: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 4.6 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.6.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 4.6: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 4.6 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 4.6 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.6.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.6.html" target="_blank" rel="noopener">רכיב 4.6 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 4.6 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 4.13 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.13.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 4.13: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 4.13 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.13.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 4.13: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 4.13 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 4.13 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.13.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_4.13.html" target="_blank" rel="noopener">רכיב 4.13 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 4.13 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 5.6 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_5.6.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 5.6: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 5.6 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_5.6.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 5.6: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 5.6 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 5.6 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_5.6.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_5.6.html" target="_blank" rel="noopener">רכיב 5.6 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 5.6 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 5.9 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_5.9.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 5.9: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 5.9 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_5.9.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 5.9: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 5.9 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 5.9 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_5.9.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_5.9.html" target="_blank" rel="noopener">רכיב 5.9 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 5.9 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 6.3 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.3.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 6.3: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 6.3 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.3.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 6.3: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 6.3 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 6.3 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.3.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.3.html" target="_blank" rel="noopener">רכיב 6.3 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 6.3 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 6.8 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.8.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 6.8: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 6.8 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.8.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 6.8: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 6.8 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 6.8 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.8.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.8.html" target="_blank" rel="noopener">רכיב 6.8 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 6.8 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
 
     <!-- רכיב 6.11 · חנוך בן פזי -->
-    <a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.11.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 6.11: חנוך בן פזי, בטאב חדש">
-      <div class="row">
-        <span class="icon">📚</span>
-        <span class="title">רכיב 6.11 · חנוך בן פזי</span>
+    <div class="vbt-card terms">
+      <a class="vbt-main" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.11.html" target="_blank" rel="noopener" aria-label="פתיחת דף המונחים – רכיב 6.11: חנוך בן פזי, בטאב חדש">
+        <div class="row"><span class="icon">📚</span><span class="title">רכיב 6.11 · חנוך בן פזי</span></div>
+        <div class="desc">דף מונחים של רכיב 6.11 – חנוך בן פזי. נפתח בטאב חדש.</div><span class="chev">›</span>
+      </a>
+      <div class="vbt-actions">
+        <details class="copy"><summary>העתקת קישור</summary>
+          <input class="copy-field" dir="ltr" value="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.11.html" readonly>
+          <small>סמני והעתיקי (Ctrl/Cmd+C).</small>
+        </details>
+        <details class="code"><summary>צפייה בקוד + העתקה</summary>
+<textarea class="codebox" dir="ltr" readonly><a class="vbt-card terms" href="https://kereneis-boop.github.io/rabbi-sacks/Terms_6.11.html" target="_blank" rel="noopener">רכיב 6.11 · חנוך בן פזי</a></textarea>
+        </details>
       </div>
-      <div class="desc">דף מונחים של רכיב 6.11 – חנוך בן פזי. נפתח בטאב חדש.</div>
-      <span class="chev">›</span>
-    </a>
+    </div>
   </nav>
 
   <!-- רוצה להוסיף עוד רכיב? שכפלי כרטיס והחליפי טקסט ו-href. -->
