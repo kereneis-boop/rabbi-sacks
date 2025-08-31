@@ -9,30 +9,33 @@
   :root{
     --bg:#ffffff; --ink:#0f172a;
     --chip-h:48px; 
-    --col-step:400px;       /* מרחק אופקי בין עמודות */
+    --col-step:400px;       /* מרחק אופקי בין עמודות כלליות */
+    --col-step-d23:280px;    /* מרחק בין עמודות 2↔3 (קטגוריה→פריט) */
     --gap-x:36px;           /* מרווח אופקי נוסף */
     --gap-y:40px;           /* מרווח אנכי ברירת־מחדל (שורש) */
     --gap-cat:110px;        /* מרווח בין קבוצות/קטגוריות (עומק 2) */
-    --gap-item:36px;        /* מרווח בין פריטים באותה קטגוריה (עומק 3) */
+    --gap-item:28px;        /* מרווח בין פריטים באותה קטגוריה (עומק 3) */
     --r:9999px; --shadow:0 8px 22px rgba(0,0,0,.10);
     --edge:#C5CBD8; --toggle:#fe0100;
     --anim-dur:.60s; --anim-ease:ease-in-out; /* פתיחה וסגירה זהות */
+    --fit-margin:32;        /* רווח ביטחון לרוחב ב-Fit (px) */
   }
   *{box-sizing:border-box}
   html,body{height:auto;min-height:100%; overflow-x:hidden}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif}
-  .wrap{padding:0; width:100%; max-width:none; margin:0; overflow:visible}
-  /* תיקון הרווח הלבן: גוזרים את הגובה העודף של ה-stage שלא משתנה ע"י transform */
+  .wrap{padding:12px; width:100%; max-width:none; margin:0 auto; overflow:visible}
+
+  /* שורת כפתורים מופרדת מעל המפה */
+  .zoombar{position:sticky; top:0; display:flex; gap:8px; z-index:3; align-items:center; touch-action:auto; cursor:auto; background:#fff; padding:8px; margin:0 0 16px; border-radius:12px; box-shadow:0 6px 14px rgba(0,0,0,.08)}
+  .zoombar button{border:0; border-radius:10px; padding:8px 10px; font-family:inherit; font-weight:800; cursor:pointer; box-shadow:0 6px 14px rgba(0,0,0,.12); background:#fff}
+  .zoombar .pct{min-width:68px; text-align:center}
+
+  /* במה */
   .viewport{position:relative; width:100%; height:auto; overflow:hidden; touch-action:none; cursor:grab}
   .scroller{position:relative;}
   .stage{position:relative; min-height:380px; min-width:0; transform-origin: top right; opacity:0}
   .chips{position:absolute; inset:0; z-index:1}
   svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
-
-  /* Zoom/Actions bar */
-  .zoombar{position:sticky; top:12px; inset-inline-start:12px; display:flex; gap:8px; z-index:3; align-items:center; touch-action:auto; cursor:auto}
-  .zoombar button{border:0; border-radius:10px; padding:8px 10px; font-family:inherit; font-weight:800; cursor:pointer; box-shadow:0 6px 14px rgba(0,0,0,.12); background:#fff}
-  .zoombar .pct{min-width:68px; text-align:center}
 
   /* Capsules */
   .chip{position:absolute; display:inline-flex; align-items:center; height:var(--chip-h); padding:0 16px; border-radius:var(--r);
@@ -42,15 +45,15 @@
   .chip[data-kind="root"]{font-weight:800}
   .label{pointer-events:none}
 
-  /* Toggle: פסים ממורכזים בתוך עיגול אדום */
+  /* Toggle */
   .toggle{position:relative; width:28px;height:28px;border-radius:50%;flex:0 0 auto;background:var(--toggle); cursor:pointer; border:0}
   .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition: opacity var(--anim-dur) var(--anim-ease)}
   .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg); transition: opacity var(--anim-dur) var(--anim-ease)}
-  .chip[aria-expanded="true"] .toggle .bar.v{opacity:0} /* כשפתוח – נשאר מינוס */
+  .chip[aria-expanded="true"] .toggle .bar.v{opacity:0}
 
   .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
 
-  /* Fades (פשוטים ונעימים) — סימטריים לפתיחה/סגירה */
+  /* Fades */
   .fade-enter{ opacity:0.001 }
   .fade-enter.fade-active{ opacity:1; transition: opacity var(--anim-dur) var(--anim-ease) }
   .fade-exit{ opacity:1 }
@@ -65,24 +68,25 @@
 </head>
 <body>
 <div class="wrap">
+  <!-- שורת הכפתורים נמצאת מחוץ ל-viewport כדי שלא תעלה על המפה -->
+  <div class="zoombar" aria-label="Zoom controls">
+    <button id="fitW" title="התאם לרוחב">↔︎ התאמה</button>
+    <button id="zoomOut" title="Zoom out">−</button>
+    <button id="zoomPct" class="pct" title="100%">100%</button>
+    <button id="zoomIn" title="Zoom in">+</button>
+    <button id="expandAll" title="פתח הכל">פתח־הכל</button>
+    <button id="collapseAll" title="סגור הכל">סגור־הכל</button>
+  </div>
+
   <div id="viewport" class="viewport">
-    <div class="zoombar" aria-label="Zoom controls">
-      <button id="fitW" title="התאם לרוחב">↔︎ התאמה</button>
-      <button id="zoomOut" title="Zoom out">−</button>
-      <button id="zoomPct" class="pct" title="100%">100%</button>
-      <button id="zoomIn" title="Zoom in">+</button>
-      <button id="expandAll" title="פתח הכל">פתח־הכל</button>
-      <button id="collapseAll" title="סגור הכל">סגור־הכל</button>
-    </div>
     <div id="scroller" class="scroller">
       <div id="app" class="stage">
         <svg id="edges" aria-hidden="true"></svg>
         <div id="chips" class="chips"></div>
       </div>
     </div>
-  </div><!-- /viewport -->
-</div><!-- /wrap -->
-
+  </div>
+</div>
 
 <!-- === DATA (מודולה 1) === -->
 <script id="mindmap-data" type="application/json">
@@ -124,15 +128,8 @@
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
 
-  const bar = document.querySelector('.zoombar');
-  let SAFE_TOP = 0;
-  function updateSafeTop(){
-    const h = bar ? bar.getBoundingClientRect().height : 0;
-    SAFE_TOP = Math.ceil(h + 20);
-    // מרחיקים את התוכן מהסרגל באמצעות padding על ה-viewport (נספר בגלילה)
-    viewport.style.paddingTop = SAFE_TOP + 'px';
-    if(scroller) scroller.style.marginTop = '0px';
-  }
+  // אין צורך ב-SAFE_TOP כי הסרגל מחוץ ל-viewport
+  function updateSafeTop(){ if(viewport) viewport.style.paddingTop = '0px'; if(scroller) scroller.style.marginTop = '0px'; }
 
   if(DIR==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; }
   else { stage.style.transformOrigin = 'top right'; stage.style.right='0'; }
@@ -141,6 +138,7 @@
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
   const COL_STEP= parseFloat(CSS.getPropertyValue('--col-step')) || 400;
+  const COL_STEP_D23 = parseFloat(CSS.getPropertyValue('--col-step-d23')) || (COL_STEP*0.75);
   const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36; 
   const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;  // root / כלליים
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 110; // בין קטגוריות (depth 2)
@@ -167,6 +165,7 @@
   let edgeOf = new Map(); // childId -> path element
   let prevVisibleIds = new Set(); // זיכרון הנראים מהלייאאוט הקודם
   let lastW = 0, lastH = 0; // ממדי לייאאוט אחרונים (לסקייל/גלילה)
+  let offsetX = 0, stageW = 0; // למניעת ReferenceError
   // מצב פאנינג ומדידת גובה זמין
   let isPanning=false, panPending=false, startX=0, startY=0, startScrollL=0, startScrollT=0; const DRAG_T=4;
   let pinchStartDist=0, pinchStartScale=1;
@@ -209,8 +208,18 @@
     let total = 0; node.children.forEach((c,i)=>{ subHeight(c); total += c._subH; if(i>0) total += gapForDepth(c.depth); });
     node._subH = Math.max(node.height, total); return node._subH;
   }
+
+  function xForDepth(depth){
+    let acc = 0;
+    for(let i=0;i<depth;i++){
+      const step = (i===2 ? COL_STEP_D23 : COL_STEP);
+      acc += (step + GAP_X);
+    }
+    return acc * (FLOW==='rtl' ? -1 : 1);
+  }
+
   function position(node, depth, top){
-    node.x = depth * (COL_STEP + GAP_X) * (FLOW==='rtl' ? -1 : 1);
+    node.x = xForDepth(depth);
     node.y = top + node._subH/2;
     if(!(node.collapsed) && node.children.length){ let cursor = top; node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + gapForDepth(c.depth); }); }
   }
@@ -219,9 +228,7 @@
 
   // Zoom state (למנוע קפיצות בזמן אינטראקציה)
   let mode = 'fitW'; let userScale = 1; let lockedFit = 1;
-  // Guard: למנוע ReferenceError במידה וקוד חיצוני מתייחס ל-requiredFit מחוץ ל-layout
-  // (בתוך layout יש const requiredFit מקומי שמצל על זה, כך שאין שינוי פונקציונלי)
-  var requiredFit;
+  var requiredFit; // guard
   function applyZoom(){
     const s = (mode==='fitW') ? lockedFit : userScale;
     stage.style.transform = `scale(${s})`;
@@ -229,20 +236,18 @@
     if(pct) pct.textContent = Math.round(s*100) + '%';
 
     if(lastW && lastH){
-      // ברירת רוחב ה-scroller: ב-Fit שווה לרוחב ה-viewport; בזום חופשי = תוכן*סקייל
       const wpx = (mode==='fitW') ? Math.floor(viewport.clientWidth) : Math.ceil(lastW * s);
       scroller.style.width  = wpx + 'px';
       scroller.style.height = Math.ceil(lastH * s) + 'px';
     }
 
-    // קובעים גלילות לפי הצורך בפועל
     const tol = 2;
     let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
     let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
     if(mode==='fitW'){
-      needX = false; // ב-Fit אין גלילה אופקית
+      needX = false;
       if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)){
-        needY = false; // ואם נכנס גם לגובה – אין גם גלילה אנכית
+        needY = false;
       }
     }
     viewport.style.overflowX = needX ? 'auto' : 'hidden';
@@ -250,8 +255,7 @@
     viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
   }
 
-  function layout(animate=false, fromInteraction=false){
-    // לפני לייאאוט: מי נראה
+  function layout(animate=false){
     const beforeIds = new Set(prevVisibleIds);
 
     measure(root); subHeight(root); position(root, 0, 0);
@@ -259,9 +263,9 @@
     let nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
 
-    // Fit לרוחב בלבד (עד 100%), עם קומפקטציה כשהעץ סגור
     const vpW = viewport.getBoundingClientRect().width;
-    const baseFit = Math.min(1.0, vpW / Math.max(1, w));
+    const FIT_MARGIN = parseFloat(CSS.getPropertyValue('--fit-margin')) || 24;
+    const baseFit = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
     const maxDepthVis = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
     let compactCap = 1.0;
     if (maxDepthVis <= 1) compactCap = 0.75;       // שורש בלבד
@@ -269,11 +273,11 @@
     const requiredFit = Math.max(0.2, Math.min(baseFit, compactCap));
     if(mode==='fitW'){
       lockedFit = requiredFit;
-      // RTL: להצמיד לימין בלי כרית שמאלית; להשאיר רק שוליים עדינים מימין
-      const RIGHT_PAD_PX = 16;
+      const RIGHT_PAD_PX = 24; const LEFT_PAD_PX = 24;
       const rightPadUnits = RIGHT_PAD_PX / Math.max(lockedFit, 0.0001);
-      offsetX = -minX;                 // השמאלי ביותר יושב בדיוק על 0px (אין רווח משמאל)
-      stageW  = w + rightPadUnits;     // רוחב במה = תוכן + 16px מימין
+      const leftPadUnits  = LEFT_PAD_PX  / Math.max(lockedFit, 0.0001);
+      offsetX = -minX + leftPadUnits;                 // מרווח קטן גם בצד שמאל
+      stageW  = w + leftPadUnits + rightPadUnits;     // תוכן + פדים משני הצדדים
     } else {
       const padSide = 60;                                   // מרווח לגרירה במצב חופשי
       offsetX = -minX + padSide;
@@ -284,7 +288,6 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    // מיקום קפסולות
     nodes.forEach(n=>{
       const left = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
       const top  = n.y - n.height/2;
@@ -293,13 +296,12 @@
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
-    // ציור קשתות + מיפוי child->edge
     edgeOf.clear(); edgeLayer.textContent='';
     (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
-      const PAD = 8; // רווח קטן כדי לא לגעת בקפסולה עצמה
+      const PAD = 14; // ריווח גדול יותר בין הקו לקפסולות (היה 8)
       const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
       const parentRight = offsetX + (FLOW==='rtl' ? n.x : (n.x + n.width));
-      const childEdge   = offsetX + ch.x; // ב‑RTL זה ימין של הילד; ב‑LTR זה שמאל של הילד
+      const childEdge   = offsetX + ch.x;
 
       const p1x = (FLOW==='rtl' ? parentLeft  + PAD : parentRight - PAD);
       const p2x = (FLOW==='rtl' ? childEdge   - PAD : childEdge   + PAD);
@@ -313,10 +315,8 @@
       drawEdges(ch);
     }); })(root);
 
-    // החלת הסקייל + חישוב גלילה/סמן
     applyZoom();
 
-    // Fades — פתיחה: כל מה שלא היה לפני (והוא צאצא של openingNode)
     if(animate && openingNode){
       const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
       nodes.forEach(n=>{
@@ -330,15 +330,13 @@
       });
     }
 
-    // עדכון סט הזיהוי הנראה — ישמש לפתיחה הבאה
     prevVisibleIds = new Set(nodes.map(n=>n.id));
 
     stage.style.opacity='1';
-    openingNode = null; // איפוס
+    openingNode = null;
   }
 
   function animateClose(node, done){
-    // פייד אאוט רק לצאצאים (לא לצומת עצמו)
     const list=[];
     function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
     node.children.forEach(collectDesc);
@@ -353,14 +351,13 @@
 
   function handleToggle(n){
     if(n.collapsed){
-      if(n.el) n.el.setAttribute('aria-expanded','true'); // פלוס→מינוס (פייד)
-      openingNode = n; // פתיחה במקביל; לא סוגרים אחרים
+      if(n.el) n.el.setAttribute('aria-expanded','true');
+      openingNode = n;
       n.collapsed = false;
-      layout(true, true);
+      layout(true);
     } else {
-      if(n.el) n.el.setAttribute('aria-expanded','false'); // מינוס→פלוס (פייד)
-      // סגירה: פייד אאוט לילדים והקווים שלהם בלבד, אחר כך קריסה ולייאאוט
-      animateClose(n, ()=>{ collapseDeep(n); layout(false, true); });
+      if(n.el) n.el.setAttribute('aria-expanded','false');
+      animateClose(n, ()=>{ collapseDeep(n); layout(false); });
     }
   }
 
@@ -368,7 +365,6 @@
   const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
   const currentScale = ()=> (mode==='fitW' ? lockedFit : userScale);
 
-  // כפתורים
   document.getElementById('zoomIn').addEventListener('click', ()=>{
     const base = (mode==='fitW') ? lockedFit : userScale;
     mode='free';
@@ -382,15 +378,13 @@
     applyZoom();
   });
   document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
-  document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; layout(false, false); });
+  document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; layout(false); });
 
-  // גרירה (פאנינג) עם עכבר/נגיעה אחת
   function canPan(){
     const tol = 2;
     let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
     let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
     if(mode==='fitW'){
-      // ב-Fit אין גלילה אופקית, ואנכית רק אם התוכן לא נכנס לגובה
       needX = false;
       if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)){
         needY = false;
@@ -399,7 +393,6 @@
     return needX || needY;
   }
   viewport.addEventListener('pointerdown', e=>{
-    // רק לחצן שמאלי, ולא מעל סרגל/כפתור הטוגל
     if(e.button!==0) return;
     if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
     if(!canPan()) return;
@@ -425,7 +418,6 @@
   viewport.addEventListener('pointercancel', endPan);
   viewport.addEventListener('pointerleave', endPan);
 
-  // פינץ' במובייל + פינץ' בטראקפד (ctrl+wheel)
   viewport.addEventListener('touchstart', e=>{
     if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
     if(e.touches.length===2){
@@ -461,15 +453,14 @@
     applyZoom();
   }, {passive:false});
 
-  document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(true, true); });
-  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); layout(true, true); });
+  document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(true); });
+  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); layout(true); });
 
-  // Initial layout — נעשה fitW פעם אחת, ואז ננעל
+  // Initial layout — אין SAFE_TOP יותר
   updateSafeTop();
   sizeViewport();
-  layout(false, false);
-  /* ResizeObserver הוסר כדי למנוע שגיאת loop */
-  window.addEventListener('resize', ()=>{ updateSafeTop(); sizeViewport(); layout(false, false); });
+  layout(false);
+  window.addEventListener('resize', ()=>{ updateSafeTop(); sizeViewport(); layout(false); });
 })();
 </script>
 </body>
