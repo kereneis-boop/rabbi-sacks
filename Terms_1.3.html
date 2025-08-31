@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Terms_1.3 – Rabbi Sacks (Auto‑Resize)</title>
+  <title>Terms_1.3 – Rabbi Sacks</title>
   <style>
     /* איפוס עדין */
     html, body { margin: 0; }
@@ -58,113 +58,38 @@
     }
   </style>
 </head>
-<script>
-(function () {
-  function sendHeight() {
-    var h = Math.max(
-      document.documentElement.scrollHeight,
-      document.body.scrollHeight,
-      document.documentElement.offsetHeight,
-      document.body.offsetHeight
-    );
-    parent.postMessage({ type: 'termsHeight', height: h }, '*');
-  }
-  // לעדכן את ההורה בשינויים (פתיחה/סגירה, אנימציות, טעינה)
-  if ('ResizeObserver' in window) {
-    var ro = new ResizeObserver(sendHeight);
-    ro.observe(document.documentElement);
-    ro.observe(document.body);
-    var root = document.querySelector('.vbt-terms');
-    if (root) ro.observe(root);
-  }
-  var tick = function(){ requestAnimationFrame(sendHeight); };
-  window.addEventListener('DOMContentLoaded', tick);
-  window.addEventListener('load', tick);
-  window.addEventListener('transitionend', tick, true);
-  window.addEventListener('click', function(){ setTimeout(sendHeight, 200); }, true);
-  setInterval(sendHeight, 800);
-})();
-</script>
-
-<!-- טיפ קטן (לא חובה): אם יש גלילה פנימית בפנל -->
-<!-- אפשר להגדיל את max-height של .vbt-panel (למשל ל-4000px) כדי למנוע overflow פנימי בזמן האנימציה. -->
-
-
-<!-- ===== צד ההורה (Moodle) – הטמעת ה-iframe + מאזין ===== -->
-<iframe id="termsIframe" src="https://kereneis-boop.github.io/rabbi-sacks/Terms_1.3.html" style="width:100%;border:0;display:block;height:0;" loading="eager" title="מונחי הרב זקס"></iframe>
-<script>
-(function(){
-  var iframe = document.getElementById('termsIframe');
-  var allowedOrigin = 'https://kereneis-boop.github.io';
-  function onMessage(e){
-    if (e.origin !== allowedOrigin) return;                  // קבל הודעות רק מהמקור הנכון
-    if (!e.data || e.data.type !== 'termsHeight') return;     // ודא שזה המסר שלנו
-    if (e.source !== iframe.contentWindow) return;            // ודא שזה ה-iframe הספציפי
-    var newH = Math.max(0, Math.ceil(e.data.height));
-    iframe.style.height = newH + 'px';                        // עדכון גובה דינמי – בלי גלילה פנימית
-  }
-  window.addEventListener('message', onMessage, false);
-})();
-</script>
-
-<!-- זהו. התוכן שב-Terms_1.3.html נשאר ללא שינוי; רק מתרחש Auto-Resize מהילד להורה. -->
-
-  <body>
+<body>
   <div class="vbt-terms" dir="rtl" style="max-width:1120px;margin:0 auto;font-family: Alef,-apple-system,'Segoe UI',Arial,sans-serif;color:#0f172a;">
     <div class="vbt-grid">
 
-      <!-- ===== תורה ומדע ===== -->
+      <!-- ===== הרב סולובייצ'יק ===== -->
       <div class="vbt-acc">
         <input class="vbt-toggle" type="checkbox" id="vbt-t1" />
         <label class="vbt-summary" for="vbt-t1" role="button" tabindex="0">
           <span class="vbt-icon">i</span>
-          <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">תורה ומדע</span>
+          <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">הרב סולובייצ'יק</span>
         </label>
         <div class="vbt-panel">
-          תורה ומדע: השילוב בין חכמת התורה לבין הידע הכללי, מתוך תפיסה שהאמונה היהודית אינה עומדת בניגוד לחקר העולם, אלא יכולה להעשיר אותו.
+          הרב יוסף דב סולובייצ'יק היה מההוגים היהודיים המשפיעים ביותר במאה העשרים, יצר סינתזה ייחודית בין המסורת היהודית לפילוסופיה המערבית. הוא פיתח את דמות "איש ההלכה" המשלבת בין עולם המסורת לעולם המודרני, וטבע את המושג "קהילת הברית" המדגיש את האחריות ההדדית בקהילה היהודית. השפעתו על הרב זקס ניכרת בניסיון המתמיד לגשר בין המסורת למודרנה, בחשיבות הקהילה, ובחתירה למצוא משמעות יהודית עמוקה לאתגרי הזמן.
         </div>
       </div>
 
-      <!-- ===== מחלוקת לשם שמיים ===== -->
+      <!-- ===== הרבי מלובביץ' ===== -->
       <div class="vbt-acc">
         <input class="vbt-toggle" type="checkbox" id="vbt-t2" />
         <label class="vbt-summary" for="vbt-t2" role="button" tabindex="0">
           <span class="vbt-icon">i</span>
-          <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">מחלוקת לשם שמיים</span>
+          <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">הרבי מלובביץ'</span>
         </label>
         <div class="vbt-panel">
-          מחלוקת לשם שמיים: תפיסת המחלוקת ככוח בונה, ולא הורס, כאשר היא נעשית מתוך כוונה טהורה לברר את האמת ולא מתוך אינטרסים אישיים.
-        </div>
-      </div>
-
-      <!-- ===== מנהיגות יוצרת מנהיגים ===== -->
-      <div class="vbt-acc">
-        <input class="vbt-toggle" type="checkbox" id="vbt-t3" />
-        <label class="vbt-summary" for="vbt-t3" role="button" tabindex="0">
-          <span class="vbt-icon">i</span>
-          <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">מנהיגות יוצרת מנהיגים</span>
-        </label>
-        <div class="vbt-panel">
-          מנהיגות יוצרת מנהיגים: רעיונו של הרב זקס שלפיו מנהיג אמיתי אינו מסתפק בצבירת עוקבים, אלא מטפח אנשים שימשיכו להנהיג ולחדש.
-        </div>
-      </div>
-
-      <!-- ===== ברית וקהילה ===== -->
-      <div class="vbt-acc">
-        <input class="vbt-toggle" type="checkbox" id="vbt-t4" />
-        <label class="vbt-summary" for="vbt-t4" role="button" tabindex="0">
-          <span class="vbt-icon">i</span>
-          <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">ברית וקהילה</span>
-        </label>
-        <div class="vbt-panel">
-           ברית וקהילה: ההבנה שהיהדות אינה מבוססת רק על חוקים ומצוות, אלא גם על ברית בין אנשים ויצירת קהילה מוסרית שמחויבת לערכים משותפים.
+          המנהיג השביעי והאחרון של חסידות חב"ד, היה מגדולי ההוגים והמנהיגים היהודיים במאה העשרים, שהיה ידוע בהשכלתו הרחבה הן בתורה והן במדעים. הוא היווה השראה לרב זקס בראייתו את האפשרות לשלב בין יהדות מסורתית למעורבות מלאה בעולם המודרני, ובמנהיגותו ששילבה בין נאמנות עמוקה למסורת היהודית לבין פתיחות ואחריות כלפי כלל האנושות.
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- Auto‑Resize: שליחת גובה להורה (Moodle) כדי למנוע גלילה פנימית ב-iframe) -->
+  <!-- Auto‑Resize: שליחת גובה להורה (Moodle) כדי למנוע גלילה פנימית ב-iframe -->
   <script>
   (function () {
     function sendHeight() {
@@ -177,9 +102,8 @@
       parent.postMessage({ type: 'termsHeight', height: h }, '*');
     }
 
-    var ro;
     if ('ResizeObserver' in window) {
-      ro = new ResizeObserver(sendHeight);
+      var ro = new ResizeObserver(sendHeight);
       ro.observe(document.documentElement);
       ro.observe(document.body);
       var root = document.querySelector('.vbt-terms');
@@ -194,7 +118,5 @@
     setInterval(sendHeight, 800);
   })();
   </script>
-
-  <!-- הערת הטמעה להורה (Moodle): ודאי להאזין ל-postMessage ולעדכן את גובה ה-iframe בהתאם. ה-snippet כבר נתתי לך בהודעה הקודמת. -->
 </body>
 </html>
