@@ -27,13 +27,13 @@
     .vbt-terms .vbt-title { order: 2; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; direction: rtl; }
 
     /* + / − מודגש בצד ימין */
-    .vbt-terms .vbt-pm { order: 3; display: inline-flex; width: 36px; height: 36px; align-items: center; justify-content: center; font-size: 30px; line-height: 1; font-weight: 900; }
+    .vbt-terms .vbt-pm { order: 1; display: inline-flex; width: 36px; height: 36px; align-items: center; justify-content: center; font-size: 30px; line-height: 1; font-weight: 900; }
     .vbt-terms .vbt-pm::before { content: '+'; }
     .vbt-terms .vbt-toggle:checked + .vbt-summary .vbt-pm::before { content: '−'; }
 
     /* i בעיגול – אדום בסגור, ירוק + סיבוב בפתוח, בצד שמאל */
     .vbt-terms .vbt-icon {
-      order: 1;
+      order: 3;
       width: 32px; height: 32px; border-radius: 50%; background: #FF2E2E; color: #fff;
       display: grid; place-items: center; font-weight: 900; transition: transform .35s ease, background-color .25s ease;
     }
@@ -43,9 +43,9 @@
     .vbt-terms .vbt-panel {
       margin-top: 10px; background: #D7F6E4; border-radius: 14px; padding: 0 16px; line-height: 1.55;
       max-height: 0; overflow: hidden; opacity: 0; transform: translateY(-6px);
-      transition: max-height .5s ease, opacity .45s ease, transform .45s ease, padding .45s ease;
+      transition: opacity .45s ease, transform .45s ease, padding .45s ease;
     }
-    .vbt-terms .vbt-toggle:checked ~ .vbt-panel { padding: 16px; opacity: 1; transform: translateY(0); }
+    .vbt-terms .vbt-toggle:checked ~ .vbt-panel { padding: 16px; opacity: 1; transform: translateY(0); max-height: none; }
 
     /* גריד */
     .vbt-terms .vbt-grid { display: grid; grid-template-columns: 1fr; gap: 18px; max-width: 1000px; margin: 0 auto; }
@@ -98,34 +98,10 @@
     function sendHeight(){ try { parent.postMessage({ type: 'termsHeight', height: Math.ceil(computeHeight()) }, '*'); } catch(e){} }
     function burst(ms){ var end=Date.now()+(ms||800); (function step(){ sendHeight(); if(Date.now()<end) requestAnimationFrame(step); })(); }
 
-    // ==== Dynamic panel heights to avoid inner scrolling
-    function setPanelHeight(acc){
-      var cb = acc.querySelector('.vbt-toggle');
-      var p = acc.querySelector('.vbt-panel');
-      if(!cb || !p) return;
-
-      // ביטול גלילה פנימית: בפתיחה – אנימציה לערך px ואז מעבר ל"none"; בסגירה – מ-none ל-0 עם אנימציה
-      if (cb.checked) {
-        // מדידה
-        p.style.maxHeight = 'none';
-        var target = p.scrollHeight;
-        // קובע ערך px כדי לאפשר אנימציה, ואז מאזין לסיום כדי לשחרר ל-none
-        p.style.maxHeight = target + 'px';
-        var once = function(e){ if(e.propertyName === 'max-height'){ p.style.maxHeight = 'none'; p.removeEventListener('transitionend', once); sendHeight(); }};
-        p.addEventListener('transitionend', once);
-      } else {
-        // אם כרגע none – מחזירים רגעית לגובה נוכחי ואז ל-0 כדי לאפשר אנימציה חלקה
-        if (p.style.maxHeight === 'none') {
-          p.style.maxHeight = p.scrollHeight + 'px';
-          void p.offsetHeight; // reflow
-        }
-        p.style.maxHeight = '0px';
-      }
-    }
-    function applyHeights(){ document.querySelectorAll('.vbt-acc').forEach(setPanelHeight); }
+    // (אין צורך במדידת גובה דינמית – משתמשים ב-max-height:none כדי לדחוף תוכן למטה ללא גלילה פנימית)
 
     if ('ResizeObserver' in window) {
-      var ro = new ResizeObserver(function(){ requestAnimationFrame(function(){ applyHeights(); sendHeight(); }); });
+      var ro = new ResizeObserver(function(){ requestAnimationFrame(function(){ sendHeight(); }); }); sendHeight(); }); });
       ro.observe(document.documentElement);
       ro.observe(document.body);
       var root = document.querySelector('.vbt-terms'); if (root) ro.observe(root);
@@ -134,23 +110,22 @@
     }
 
     if ('MutationObserver' in window) {
-      var mo = new MutationObserver(function(){ setTimeout(function(){ applyHeights(); sendHeight(); }, 80); });
+      var mo = new MutationObserver(function(){ setTimeout(function(){ sendHeight(); }, 80); }); sendHeight(); }, 80); });
       mo.observe(document.documentElement, { attributes:true, childList:true, subtree:true });
     }
 
-    function tick(){ requestAnimationFrame(function(){ applyHeights(); sendHeight(); }); }
+    function tick(){ requestAnimationFrame(function(){ sendHeight(); }); }); }
     window.addEventListener('DOMContentLoaded', tick);
     window.addEventListener('load', tick);
     window.addEventListener('transitionrun', function(){ burst(700); }, true);
-    window.addEventListener('transitionend', function(){ setTimeout(function(){ applyHeights(); sendHeight(); }, 80); }, true);
-    window.addEventListener('change', function(e){ if (e.target && e.target.classList && e.target.classList.contains('vbt-toggle')) { applyHeights(); burst(800); } }, true);
+    window.addEventListener('transitionend', function(){ setTimeout(sendHeight, 80); }, true); sendHeight(); }, 80); }, true);
+    window.addEventListener('change', function(e){ if (e.target && e.target.classList && e.target.classList.contains('vbt-toggle')) { burst(800); } }, true); burst(800); } }, true);
     window.addEventListener('click', function(){ setTimeout(sendHeight, 140); }, true);
 
     var hb = setInterval(sendHeight, 1800);
     window.addEventListener('pagehide', function(){ clearInterval(hb); });
 
     // initial
-    applyHeights();
     sendHeight();
 
     /* =====================
@@ -171,27 +146,23 @@
       assert(!cb.checked, 'ברירת מחדל: סגור');
       assert(pseudo(pm) === '+', 'בסגור: + מוצג');
 
-      // מיקום: + מימין, i משמאל
+      // מיקום: i מימין, + משמאל
       var rPlus = pm.getBoundingClientRect();
       var rI = icon.getBoundingClientRect();
-      assert(rPlus.left > rI.left, '+ מימין ל-i');
+      assert(rPlus.left < rI.left, '+ משמאל ל-i');
 
       // פתיחה
       cb.checked = true; cb.dispatchEvent(new Event('change', {bubbles:true}));
-      applyHeights();
       assert(pseudo(pm) === '−', 'בפתוח: −');
-      var mhOpen = parseFloat(getComputedStyle(panel).maxHeight);
-      assert(mhOpen > 0 || panel.style.maxHeight.endsWith('px'), 'בפתוח: max-height > 0');
+      // אין גלילה פנימית: max-height אמור להיות none
+      var mh = getComputedStyle(panel).maxHeight;
+      assert(mh === 'none', 'בפתוח: max-height = none (דוחף תוכן)');
 
       // סגירה
       cb.checked = false; cb.dispatchEvent(new Event('change', {bubbles:true}));
-      applyHeights();
-      var mhClosed = parseFloat(getComputedStyle(panel).maxHeight);
-      assert(mhClosed === 0 || panel.style.maxHeight === '0px', 'בסגירה: max-height = 0');
+      mh = getComputedStyle(panel).maxHeight;
+      assert(mh === '0px', 'בסגירה: max-height = 0px');
 
       console.log('All Terms tests passed ✅');
     };
   })();
-  </script>
-</body>
-</html>
