@@ -3,30 +3,41 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Terms_1.3 – Rabbi Sacks</title>
+  <title>Terms_1.4 – Rabbi Sacks (Campus + Moodle)</title>
   <style>
     html, body { margin: 0; }
     .vbt-terms * { box-sizing: border-box; }
 
-    /* אקורדיון (checkbox) */
+    /* ===== אקורדיון (checkbox) – תאימות Campus + Moodle ===== */
     .vbt-terms .vbt-acc { position: relative; border-radius: 18px; padding: 0; background: transparent; }
     .vbt-terms .vbt-toggle { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
 
+    /* קפסולה */
     .vbt-terms .vbt-summary {
-      display: flex; align-items: center; gap: 12px; direction: rtl; cursor: pointer;
-      padding: 14px 18px; border-radius: 40px; background: #F8E8FF; font-weight: 800; font-size: 18px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(0,0,0,.04);
-      list-style: none; outline: none; transition: box-shadow .35s ease, transform .2s ease;
+      display: flex; align-items: center; justify-content: space-between; flex-direction: row; /* + מימין, i משמאל */
+      gap: 12px; direction: rtl; cursor: pointer;
+      padding: 14px 18px; border-radius: 40px; background: #F3E4FF; font-weight: 800; font-size: 18px;
+      border: none; box-shadow: none; list-style: none; outline: none; transition: transform .2s ease, background-color .3s ease;
     }
     .vbt-terms .vbt-summary:hover { transform: translateY(-1px); }
-    .vbt-terms .vbt-summary:focus-visible { outline: 2px solid #fe0100; outline-offset: 2px; }
-    .vbt-terms .vbt-toggle:checked + .vbt-summary { box-shadow: 0 6px 16px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(0,0,0,.04); }
+    .vbt-terms .vbt-summary:focus-visible { outline: 2px solid #0ea5e9; outline-offset: 2px; }
+    .vbt-terms .vbt-toggle:checked + .vbt-summary { background: #D7F6E4; }
 
+    .vbt-terms .vbt-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+
+    /* + / − מודגש בצד ימין */
+    .vbt-terms .vbt-pm { display: inline-flex; width: 36px; height: 36px; align-items: center; justify-content: center; font-size: 30px; line-height: 1; font-weight: 900; }
+    .vbt-terms .vbt-pm::before { content: '+'; }
+    .vbt-terms .vbt-toggle:checked + .vbt-summary .vbt-pm::before { content: '−'; }
+
+    /* i בעיגול – אדום בסגור, ירוק + סיבוב בפתוח, בצד שמאל */
     .vbt-terms .vbt-icon {
-      width: 28px; height: 28px; border-radius: 50%; background: #fe0100; color: #fff; display: grid; place-items: center; font-weight: 900; transition: transform .35s ease;
+      width: 32px; height: 32px; border-radius: 50%; background: #FF2E2E; color: #fff;
+      display: grid; place-items: center; font-weight: 900; transition: transform .35s ease, background-color .25s ease;
     }
-    .vbt-terms .vbt-toggle:checked + .vbt-summary .vbt-icon { transform: rotate(180deg); }
+    .vbt-terms .vbt-toggle:checked + .vbt-summary .vbt-icon { background: #69DA98; transform: rotate(180deg); }
 
+    /* פנל התוכן – ירקרק, בלי צל, פתיחה חלקה */
     .vbt-terms .vbt-panel {
       margin-top: 10px; background: #D7F6E4; border-radius: 14px; padding: 0 16px; line-height: 1.55;
       max-height: 0; overflow: hidden; opacity: 0; transform: translateY(-6px);
@@ -34,10 +45,12 @@
     }
     .vbt-terms .vbt-toggle:checked ~ .vbt-panel { padding: 16px; opacity: 1; transform: translateY(0); max-height: 4000px; }
 
+    /* גריד */
     .vbt-terms .vbt-grid { display: grid; grid-template-columns: 1fr; gap: 18px; max-width: 1000px; margin: 0 auto; }
     @media (min-width: 700px) { .vbt-terms .vbt-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 
-    @media (prefers-reduced-motion: reduce) { .vbt-terms .vbt-panel, .vbt-terms .vbt-icon, .vbt-terms .vbt-summary { transition: none; } }
+    @media (prefers-reduced-motion: reduce) { .vbt-terms .vbt-panel, .vbt-terms .vbt-icon, .vbt-terms .vbt-summary { transition: none; }
+    }
   </style>
 </head>
 <body>
@@ -45,25 +58,27 @@
     <div class="vbt-grid">
 
       <!-- ===== הרב סולובייצ'יק ===== -->
-      <div class="vbt-acc">
+      <div class="vbt-acc" data-test-id="acc-1">
         <input class="vbt-toggle" type="checkbox" id="vbt-t1" />
-        <label class="vbt-summary" for="vbt-t1" role="button" tabindex="0">
-          <span class="vbt-icon">i</span>
-          <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">הרב סולובייצ'יק</span>
+        <label class="vbt-summary" for="vbt-t1" role="button" tabindex="0" data-test-id="btn-1">
+          <span class="vbt-pm" aria-hidden="true"></span>
+          <span class="vbt-title">הרב סולובייצ'יק</span>
+          <span class="vbt-icon" aria-hidden="true">i</span>
         </label>
-        <div class="vbt-panel">
+        <div class="vbt-panel" data-test-id="panel-1">
           הרב יוסף דב סולובייצ'יק היה מההוגים היהודיים המשפיעים ביותר במאה העשרים, יצר סינתזה ייחודית בין המסורת היהודית לפילוסופיה המערבית. הוא פיתח את דמות "איש ההלכה" המשלבת בין עולם המסורת לעולם המודרני, וטבע את המושג "קהילת הברית" המדגיש את האחריות ההדדית בקהילה היהודית. השפעתו על הרב זקס ניכרת בניסיון המתמיד לגשר בין המסורת למודרנה, בחשיבות הקהילה, ובחתירה למצוא משמעות יהודית עמוקה לאתגרי הזמן.
         </div>
       </div>
 
       <!-- ===== הרבי מלובביץ' ===== -->
-      <div class="vbt-acc">
+      <div class="vbt-acc" data-test-id="acc-2">
         <input class="vbt-toggle" type="checkbox" id="vbt-t2" />
-        <label class="vbt-summary" for="vbt-t2" role="button" tabindex="0">
-          <span class="vbt-icon">i</span>
-          <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">הרבי מלובביץ'</span>
+        <label class="vbt-summary" for="vbt-t2" role="button" tabindex="0" data-test-id="btn-2">
+          <span class="vbt-pm" aria-hidden="true"></span>
+          <span class="vbt-title">הרבי מלובביץ'</span>
+          <span class="vbt-icon" aria-hidden="true">i</span>
         </label>
-        <div class="vbt-panel">
+        <div class="vbt-panel" data-test-id="panel-2">
           המנהיג השביעי והאחרון של חסידות חב"ד, היה מגדולי ההוגים והמנהיגים היהודיים במאה העשרים, שהיה ידוע בהשכלתו הרחבה הן בתורה והן במדעים. הוא היווה השראה לרב זקס בראייתו את האפשרות לשלב בין יהדות מסורתית למעורבות מלאה בעולם המודרני, ובמנהיגותו ששילבה בין נאמנות עמוקה למסורת היהודית לבין פתיחות ואחריות כלפי כלל האנושות.
         </div>
       </div>
@@ -107,6 +122,43 @@
     window.addEventListener('pagehide', function(){ clearInterval(hb); });
 
     sendHeight();
+
+    /* =====================
+       🧪 בדיקות ידניות – הפעלה מקונסול: runTermsTests();
+       לא משנות מצב קבוע בדף.
+    ===================== */
+    function assert(cond, msg) { if (!cond) throw new Error('Test failed: ' + msg); }
+    window.runTermsTests = function(){
+      var acc = document.querySelector('[data-test-id="acc-1"]');
+      var btn = document.querySelector('[data-test-id="btn-1"]');
+      var panel = document.querySelector('[data-test-id="panel-1"]');
+      var cb = acc.querySelector('.vbt-toggle');
+      var pm = btn.querySelector('.vbt-pm');
+      var icon = btn.querySelector('.vbt-icon');
+      function pseudo(el){ var c = getComputedStyle(el, '::before').content || ''; return c.replace(/^(["'])|(["'])$/g,''); }
+
+      assert(!!acc && !!btn && !!panel && !!cb, 'אלמנטים קיימים');
+
+      // ברירת מחדל – סגור
+      assert(!cb.checked, 'checkbox סגור בהתחלה');
+      assert(pseudo(pm) === '+', 'בסגור: +');
+      assert(getComputedStyle(btn).backgroundColor !== 'rgb(215, 246, 228)', 'בסגור: רקע לא ירוק פתוח');
+      assert(getComputedStyle(icon).backgroundColor === 'rgb(255, 46, 46)', 'בסגור: i אדום');
+
+      // פתיחה
+      cb.checked = true; cb.dispatchEvent(new Event('change', {bubbles:true}));
+      assert(pseudo(pm) === '−', 'בפתוח: −');
+      // רקע פתוח (#D7F6E4)
+      var bg = getComputedStyle(btn).backgroundColor; // עשוי להיות rgb(215, 246, 228)
+      assert(/rgb\(215,\s*246,\s*228\)/.test(bg), 'בפתוח: רקע ירקרק פתוח');
+      assert(getComputedStyle(icon).backgroundColor === 'rgb(105, 218, 152)', 'בפתוח: i ירוק');
+
+      // סגירה
+      cb.checked = false; cb.dispatchEvent(new Event('change', {bubbles:true}));
+      assert(pseudo(pm) === '+', 'בסגירה: חזרה ל+');
+
+      console.log('All Terms tests passed ✅');
+    };
   })();
   </script>
 </body>
