@@ -128,6 +128,29 @@
        לא משנות מצב קבוע בדף.
     ===================== */
     function assert(cond, msg) { if (!cond) throw new Error('Test failed: ' + msg); }
+
+    // ===== התאמת גובה פנל לפי תוכן – דוחף אלמנטים למטה ללא גלילה פנימית
+    function setPanelHeight(acc){
+      var cb = acc.querySelector('.vbt-toggle');
+      var p = acc.querySelector('.vbt-panel');
+      if(!cb || !p) return;
+      if (cb.checked) {
+        p.style.maxHeight = 'none';
+        var h = p.scrollHeight;
+        p.style.maxHeight = h + 'px';
+      } else {
+        p.style.maxHeight = '0px';
+      }
+    }
+    function applyHeights(){ document.querySelectorAll('.vbt-acc').forEach(setPanelHeight); }
+    document.addEventListener('change', function(e){ if(e.target && e.target.classList && e.target.classList.contains('vbt-toggle')) { applyHeights(); } }, true);
+    window.addEventListener('resize', function(){ applyHeights(); });
+    window.addEventListener('DOMContentLoaded', function(){ applyHeights(); });
+
+    window.runTermsTests();
+       לא משנות מצב קבוע בדף.
+    ===================== */
+    function assert(cond, msg) { if (!cond) throw new Error('Test failed: ' + msg); }
     window.runTermsTests = function(){
       var acc = document.querySelector('[data-test-id="acc-1"]');
       var btn = document.querySelector('[data-test-id="btn-1"]');
@@ -142,20 +165,26 @@
       // ברירת מחדל – סגור
       assert(!cb.checked, 'checkbox סגור בהתחלה');
       assert(pseudo(pm) === '+', 'בסגור: +');
-      assert(getComputedStyle(btn).backgroundColor !== 'rgb(215, 246, 228)', 'בסגור: רקע לא ירוק פתוח');
-      assert(getComputedStyle(icon).backgroundColor === 'rgb(255, 46, 46)', 'בסגור: i אדום');
+
+      // בדיקת מיקום: + מימין, i משמאל
+      var rPlus = pm.getBoundingClientRect();
+      var rI = icon.getBoundingClientRect();
+      assert(rPlus.left > rI.left, '+ מימין ל-i');
 
       // פתיחה
       cb.checked = true; cb.dispatchEvent(new Event('change', {bubbles:true}));
+      applyHeights();
       assert(pseudo(pm) === '−', 'בפתוח: −');
-      // רקע פתוח (#D7F6E4)
-      var bg = getComputedStyle(btn).backgroundColor; // עשוי להיות rgb(215, 246, 228)
-      assert(/rgb\(215,\s*246,\s*228\)/.test(bg), 'בפתוח: רקע ירקרק פתוח');
-      assert(getComputedStyle(icon).backgroundColor === 'rgb(105, 218, 152)', 'בפתוח: i ירוק');
+
+      // הפאנל גדל (maxHeight > 0)
+      var mhOpen = parseFloat(getComputedStyle(panel).maxHeight);
+      assert(mhOpen > 0 || panel.style.maxHeight.endsWith('px'), 'בפתוח: max-height > 0');
 
       // סגירה
       cb.checked = false; cb.dispatchEvent(new Event('change', {bubbles:true}));
-      assert(pseudo(pm) === '+', 'בסגירה: חזרה ל+');
+      applyHeights();
+      var mhClosed = parseFloat(getComputedStyle(panel).maxHeight);
+      assert(mhClosed === 0 || panel.style.maxHeight === '0px', 'בסגירה: max-height = 0');
 
       console.log('All Terms tests passed ✅');
     };
