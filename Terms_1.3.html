@@ -103,11 +103,22 @@
       var cb = acc.querySelector('.vbt-toggle');
       var p = acc.querySelector('.vbt-panel');
       if(!cb || !p) return;
+
+      // ביטול גלילה פנימית: בפתיחה – אנימציה לערך px ואז מעבר ל"none"; בסגירה – מ-none ל-0 עם אנימציה
       if (cb.checked) {
-        p.style.maxHeight = 'none'; // reset to measure
-        var h = p.scrollHeight;
-        p.style.maxHeight = h + 'px';
+        // מדידה
+        p.style.maxHeight = 'none';
+        var target = p.scrollHeight;
+        // קובע ערך px כדי לאפשר אנימציה, ואז מאזין לסיום כדי לשחרר ל-none
+        p.style.maxHeight = target + 'px';
+        var once = function(e){ if(e.propertyName === 'max-height'){ p.style.maxHeight = 'none'; p.removeEventListener('transitionend', once); sendHeight(); }};
+        p.addEventListener('transitionend', once);
       } else {
+        // אם כרגע none – מחזירים רגעית לגובה נוכחי ואז ל-0 כדי לאפשר אנימציה חלקה
+        if (p.style.maxHeight === 'none') {
+          p.style.maxHeight = p.scrollHeight + 'px';
+          void p.offsetHeight; // reflow
+        }
         p.style.maxHeight = '0px';
       }
     }
