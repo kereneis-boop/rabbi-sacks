@@ -3,57 +3,62 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Terms_2.3 – Rabbi Sacks</title>
+  <title>Terms_1.7 – Rabbi Sacks</title>
 
-  <!-- הסגנון נשמר בדיוק כפי שסיפקת -->
+  <!-- MOODLE SAFE (no external files) -->
   <style>
     /* הכל ממוסגר בתוך .vbt-terms כדי למנוע זליגה לשאר הדף */
     .vbt-terms * { box-sizing: border-box; }
 
-    /* קופסאות אקורדיון – גרסת checkbox כדי לאפשר אנימציה גם בסגירה */
+    /* קופסאות אקורדיון – גרסת checkbox */
     .vbt-terms .vbt-acc { position: relative; border-radius: 18px; padding: 0; background: transparent; }
     .vbt-terms .vbt-toggle { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
 
+    /* קפסולה: i (ימין) | טקסט (אמצע) | +/− (שמאל) */
     .vbt-terms .vbt-summary {
-      display: flex; align-items: center; gap: 12px; direction: rtl; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; direction: rtl; cursor: pointer;
       padding: 14px 18px; border-radius: 40px; background: #F8E8FF; font-weight: 800; font-size: 18px;
       box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(0,0,0,.04);
-      list-style: none; outline: none; transition: box-shadow .35s ease, transform .2s ease;
+      list-style: none; outline: none; transition: box-shadow .35s ease, transform .2s ease, background-color .3s ease;
+      min-height: 56px; line-height: 1;
     }
     .vbt-terms .vbt-summary:hover { transform: translateY(-1px); }
     .vbt-terms .vbt-summary:focus-visible { outline: 2px solid #fe0100; outline-offset: 2px; }
+    /* פתיחה: הקפסולה מתחלפת לירקרק */
+    .vbt-terms .vbt-toggle:checked + .vbt-summary { background: #D7F6E4; box-shadow: 0 6px 16px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(0,0,0,.04); }
 
-    /* מצב פתוח – צל מעט חזק יותר */
-    .vbt-terms .vbt-toggle:checked + .vbt-summary {
-      box-shadow: 0 6px 16px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(0,0,0,.04);
-    }
+    /* כותרת במרכז */
+    .vbt-terms .vbt-title { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
 
-    /* אייקון שמסתובב בפתיחה/בסגירה */
+    /* i – בימין: אדום בסגור, ירוק + סיבוב בפתוח */
     .vbt-terms .vbt-icon {
-      width: 28px; height: 28px; border-radius: 50%; background: #fe0100; color: #fff; display: grid;
-      place-items: center; font-weight: 900; transition: transform .35s ease;
+      width: 28px; height: 28px; border-radius: 50%; background: #fe0100; color: #fff;
+      display: grid; place-items: center; font-weight: 900; transition: transform .35s ease, background-color .3s ease;
+      flex: 0 0 auto;
     }
-    .vbt-terms .vbt-toggle:checked + .vbt-summary .vbt-icon { transform: rotate(180deg); }
+    .vbt-terms .vbt-toggle:checked + .vbt-summary .vbt-icon { background: #69DA98; transform: rotate(180deg); }
 
-    /* פנל תוכן – פייד אין/אאוט מלא + גלישה חלקה בגובה */
+    /* + / − – בשמאל (ללא JS) */
+    .vbt-terms .vbt-pm {
+      width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+      font-size: 24px; line-height: 1; font-weight: 900; flex: 0 0 auto;
+    }
+    .vbt-terms .vbt-pm::before { content: '+'; }
+    .vbt-terms .vbt-toggle:checked + .vbt-summary .vbt-pm::before { content: '−'; }
+
+    /* פנל תוכן – פייד אין/אאוט + גלישה חלקה בגובה */
     .vbt-terms .vbt-panel {
       margin-top: 10px; background: #D7F6E4; border-radius: 14px; padding: 0 16px; line-height: 1.55;
       max-height: 0; overflow: hidden; opacity: 0; transform: translateY(-6px);
       transition: max-height .5s ease, opacity .45s ease, transform .45s ease, padding .45s ease;
     }
-    .vbt-terms .vbt-toggle:checked ~ .vbt-panel {
-      padding: 16px; opacity: 1; transform: translateY(0); max-height: 1200px; /* מספיק לרוב התכנים */
-    }
+    .vbt-terms .vbt-toggle:checked ~ .vbt-panel { padding: 16px; opacity: 1; transform: translateY(0); max-height: 1200px; }
 
     /* גריד רספונסיבי */
-    .vbt-terms .vbt-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 18px; max-width: 1000px; margin: 0 auto;
-    }
+    .vbt-terms .vbt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 18px; max-width: 1000px; margin: 0 auto; }
 
     /* העדפת נגישות – פחות תנועה */
-    @media (prefers-reduced-motion: reduce) {
-      .vbt-terms .vbt-panel, .vbt-terms .vbt-icon, .vbt-terms .vbt-summary { transition: none; }
-    }
+    @media (prefers-reduced-motion: reduce) { .vbt-terms .vbt-panel, .vbt-terms .vbt-icon, .vbt-terms .vbt-summary { transition: none; } }
   </style>
 </head>
 <body style="margin:0;">
@@ -68,7 +73,8 @@
       <input class="vbt-toggle" type="checkbox" id="vbt-t4" />
       <label class="vbt-summary" for="vbt-t4" role="button" tabindex="0">
         <span class="vbt-icon">i</span>
-        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">אחריות</span>
+        <span class="vbt-title">אחריות</span>
+        <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
         תפיסה פילוסופית המתמקדת בחובה המוסרית שלנו כלפי האחר. במשנתו של הרב זקס, היא ביטוי למחויבות היהודית לתיקון עולם ולדאגה לזולת.
@@ -80,7 +86,8 @@
       <input class="vbt-toggle" type="checkbox" id="vbt-t5" />
       <label class="vbt-summary" for="vbt-t5" role="button" tabindex="0">
         <span class="vbt-icon">i</span>
-        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">לוינס</span>
+        <span class="vbt-title">לוינס</span>
+        <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
         הפילוסוף עמנואל לוינס הציב את "האחר" במרכז החשיבה המוסרית. הוא טען שהמפגש עם פני האחר מטיל עלינו אחריות מוסרית בלתי ניתנת להתנערות. הרב זקס הושפע מתפיסה זו בפיתוח רעיונותיו על אחריות חברתית.
@@ -92,7 +99,8 @@
       <input class="vbt-toggle" type="checkbox" id="vbt-t6" />
       <label class="vbt-summary" for="vbt-t6" role="button" tabindex="0">
         <span class="vbt-icon">i</span>
-        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">פוסט שואה</span>
+        <span class="vbt-title">פוסט שואה</span>
+        <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
         תקופה של חשבון נפש פילוסופי ותיאולוגי אחרי השואה, שבה הוטל ספק ביסודות ההומניזם והנאורות. עבור הרב זקס, זו נקודת מפנה המחייבת חשיבה מחודשת על אחריות מוסרית ועל היחס בין דת לאתיקה.
@@ -104,7 +112,8 @@
       <input class="vbt-toggle" type="checkbox" id="vbt-t7" />
       <label class="vbt-summary" for="vbt-t7" role="button" tabindex="0">
         <span class="vbt-icon">i</span>
-        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">טוטליות</span>
+        <span class="vbt-title">טוטליות</span>
+        <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
         מושג פילוסופי המתייחס לניסיון להכיל את כל המציאות תחת מערכת מחשבה אחת כוללת. לוינס משתמש בו כמושג ביקורתי המצביע על הסכנה שבחשיבה טוטאלית. מתחברת להגותו של הרב זקס כביקורת על כך שטוטליות אינה מותירה מקום לשונות ולריבוי.
@@ -116,7 +125,8 @@
       <input class="vbt-toggle" type="checkbox" id="vbt-t8" />
       <label class="vbt-summary" for="vbt-t8" role="button" tabindex="0">
         <span class="vbt-icon">i</span>
-        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">נאורות</span>
+        <span class="vbt-title">נאורות</span>
+        <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
         תנועה אינטלקטואלית שהדגישה את כוח התבונה האנושית וערכים אוניברסליים. הרב זקס כהוגה פוסט שואתי, רואה את גבולותיה.
@@ -128,7 +138,8 @@
       <input class="vbt-toggle" type="checkbox" id="vbt-t9" />
       <label class="vbt-summary" for="vbt-t9" role="button" tabindex="0">
         <span class="vbt-icon">i</span>
-        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;">דיאלוג</span>
+        <span class="vbt-title">דיאלוג</span>
+        <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
         פרנץ רוזנצוויג פיתח תפיסה של דיאלוג כמפתח להבנת היחסים בין אדם לאלוהים ובין אדם לחברו. עבור הרב זקס, רעיון הדיאלוג של רוזנצוויג מהווה בסיס לתפיסת היהדות כסמל לדיאלוג וכניצבת בדיאלוג עם שאר האומות.
@@ -137,15 +148,16 @@
 
   </div>
 </div>
+</div>
 
-<!-- Auto-Resize (ילד): מודד גובה גם בפתיחה וגם בסגירה ושולח להורה -->
+<!-- Auto-Resize: מדידות גם בפתיחה וגם בסגירה -->
 <script>
 (function () {
   function computeHeight(){
     var b = document.body, d = document.documentElement;
     return Math.max(d.scrollHeight, b.scrollHeight, d.offsetHeight, b.offsetHeight, d.clientHeight, b.clientHeight);
   }
-  function sendHeight(){ parent.postMessage({ type: 'termsHeight', height: Math.ceil(computeHeight()) }, '*'); }
+  function sendHeight(){ try { parent.postMessage({ type: 'termsHeight', height: Math.ceil(computeHeight()) }, '*'); } catch(e){} }
   function burst(ms){ var end=Date.now()+(ms||800); (function step(){ sendHeight(); if(Date.now()<end) requestAnimationFrame(step); })(); }
 
   if ('ResizeObserver' in window) {
