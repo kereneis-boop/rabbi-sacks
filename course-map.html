@@ -13,8 +13,8 @@
     --col-step-d23:280px;    /* מרחק בין עמודות 2↔3 (קטגוריה→פריט) */
     --gap-x:36px;           /* מרווח אופקי נוסף */
     --gap-y:40px;           /* מרווח אנכי ברירת־מחדל (שורש) */
-    --gap-cat:110px;        /* מרווח בין קבוצות/קטגוריות (עומק 2) */
-    --gap-item:28px;        /* מרווח בין פריטים באותה קטגוריה (עומק 3) */
+    --gap-cat:60px;        /* מרווח בין קבוצות/קטגוריות (עומק 2) */
+    --gap-item:18px;        /* מרווח בין פריטים באותה קטגוריה (עומק 3) */
     --r:9999px; --shadow:0 8px 22px rgba(0,0,0,.10);
     --edge:#C5CBD8; --toggle:#fe0100;
     --anim-dur:.60s; --anim-ease:ease-in-out; /* פתיחה וסגירה זהות */
@@ -384,7 +384,7 @@
 
     edgeOf.clear(); edgeLayer.textContent='';
     (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
-      const PAD = 14; // ריווח גדול יותר בין הקו לקפסולות (היה 8)
+      const PAD = 2; // ריווח גדול יותר בין הקו לקפסולות (היה 8)
       const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
       const parentRight = offsetX + (FLOW==='rtl' ? n.x : (n.x + n.width));
       const childEdge   = offsetX + ch.x;
