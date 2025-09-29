@@ -7,24 +7,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --gap-between-mods-d2:40px; /* עוד 20px בין מודולות כשפתוח */
+    --gap-between-mods-d2:40px;
     --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     --bg:#ffffff; --ink:#0f172a;
     --chip-h:48px; 
-    --col-step:400px;       /* מרחק אופקי בין עמודות כלליות */
-    --col-step-d23:400px;   /* מרחק בין עמודות 2↔3 */
+    --col-step:400px;
+    --col-step-d23:400px;
     --gap-x:36px;           
     --gap-y:40px; 
     --gap-rootcat:22px;   /* עומק 1 */
     --gap-d3:22px;        /* עומק 3 */
     --gap-d4:22px;        /* עומק 4 */
     --gap-cat:22px;       /* עומק 2 */
-    --gap-item:6px;       /* עומק 3+ צפוף יותר */
+    --gap-item:6px;       /* עומק 3+ */
     --r:9999px; --shadow:0 8px 22px rgba(0,0,0,.10);
     --edge:#C5CBD8; --toggle:#fe0100;
     --anim-dur:.60s; --anim-ease:ease-in-out;
     --fit-margin:32;
-    --nudge-d2-root0-px:0;  /* NUDGE מבוטל לשמירה על יישור עמודתי */
+    --nudge-d2-root0-px:0; /* NUDGE מבוטל */
   }
   *{box-sizing:border-box}
   html, body, button, input, select, textarea, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
@@ -87,7 +87,6 @@
 </head>
 <body>
 <div class="wrap">
-  <!-- זום־בר מחוץ ל-viewport -->
   <div class="zoombar" aria-label="Zoom controls">
     <button id="fitW" title="התאם לרוחב">↔︎ התאמה</button>
     <button id="zoomOut" title="Zoom out">−</button>
@@ -220,11 +219,14 @@
   const DIR = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
   const FLOW = (data.flow||'rtl');
   const viewport = document.getElementById('viewport');
-  if(viewport) viewport.style.direction = 'ltr'; // גלילה תקינה
+  if(viewport) viewport.style.direction = 'ltr';
   const stage = document.getElementById('app');
   const scroller = document.getElementById('scroller');
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
+
+  // === FIX: להגדיר לפני השימוש בכל מאזיני המגע ===
+  let pinchStartDist = 0, pinchStartScale = 1;
 
   // מצב זום גלובלי
   let mode = 'fitW';
@@ -272,8 +274,6 @@
 
   let openingNode = null;
   let edgeOf = new Map();
-  const PAD = 6; // מרחק מהקפסולה לקו
-  let prevVisibleIds = new Set();
   let LAYOUT_MAX_DEPTH = 0;
   let lastW = 0, lastH = 0;
 
@@ -317,7 +317,7 @@
   }
 
   // דחיפה אופקית בוטלה לשמירה על יישור אחיד
-  function extraRightPx(/*n*/){ return 0; }
+  function extraRightPx(){ return 0; }
 
   function makeToggle(){
     const btn = document.createElement('button');
@@ -405,7 +405,6 @@
 
   function layout(animate=false){
     measure(root);
-
     LAYOUT_MAX_DEPTH = 0;
     (function calcDepth(n){ LAYOUT_MAX_DEPTH = Math.max(LAYOUT_MAX_DEPTH, n.depth); if(!n.collapsed) n.children.forEach(calcDepth); })(root);
 
@@ -440,14 +439,11 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    // מיקום קפסולות — ימין ביחידות (ללא עיגול) לשמירה על יישור מדויק
+    // מיקום קפסולות — ימין ביחידות (ללא עיגול)
     const sPlace = (mode==='fitW') ? lockedFit : userScale;
     nodes.forEach(n=>{
       const top  = n.y - n.height/2;
-
-      // ימין ביחידות + NUDGE (ביחידות) – אין עיגול לפיקסלים
       const rightUnits = (offsetX + n.x) + (extraRightPx(n) / Math.max(sPlace, 0.0001));
-
       const leftUnits = rightUnits - n.width;
       n.el.style.left = leftUnits + 'px';
       n.el.style.right = '';
@@ -455,17 +451,14 @@
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
-    // קווים – חישוב childEdge בלי עיגול
+    // קווים – childEdge בלי עיגול
     edgeOf.clear(); edgeLayer.textContent='';
     (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
-      const PAD_PARENT = 6;
-      const PAD_CHILD  = 0;
+      const PAD_PARENT = 6, PAD_CHILD  = 0;
       const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
       const parentRight = offsetX + (FLOW==='rtl' ? n.x : (n.x + n.width));
-
       const sNow = ((mode==='fitW') ? lockedFit : userScale);
       const childEdge   = (offsetX + ch.x) + (extraRightPx(ch) / Math.max(sNow, 0.0001));
-
       const p1x = (FLOW==='rtl' ? parentLeft  + PAD_PARENT : parentRight - PAD_PARENT);
       const p2x = (FLOW==='rtl' ? childEdge   - PAD_CHILD  : childEdge   + PAD_CHILD);
       const p1y = n.y; const p2y = ch.y;
@@ -575,9 +568,8 @@
       mode='free';
     }
   }, {passive:true});
-  let pinchStartDist=0, pinchStartScale=1;
   viewport.addEventListener('touchmove', e=>{
-    if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle"))) return;
+    if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
     if(e.touches.length===2 && pinchStartDist>0){
       e.preventDefault();
       const dist = Math.hypot(
@@ -592,7 +584,7 @@
 
   viewport.addEventListener('wheel', e=>{
     if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
-    if(!e.ctrlKey) return; // pinch zoom על משטח מגע
+    if(!e.ctrlKey) return;
     e.preventDefault();
     mode='free';
     const s = currentScale();
