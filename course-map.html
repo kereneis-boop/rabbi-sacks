@@ -7,22 +7,29 @@
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
+    --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     --bg:#ffffff; --ink:#0f172a;
     --chip-h:48px; 
     --col-step:400px;       /* מרחק אופקי בין עמודות כלליות */
-    --col-step-d23:280px;    /* מרחק בין עמודות 2↔3 (קטגוריה→פריט) */
+    --col-step-d23:400px;    /* להאריך חיבור 2↔3 כדי שלא ייראה פנימי */    /* מרחק בין עמודות 2↔3 – מיושר לעמודות אחרות */    /* מרחק בין עמודות 2↔3 (קטגוריה→פריט) */
     --gap-x:36px;           /* מרווח אופקי נוסף */
-    --gap-y:40px;           /* מרווח אנכי ברירת־מחדל (שורש) */
-    --gap-cat:60px;        /* מרווח בין קבוצות/קטגוריות (עומק 2) */
-    --gap-item:18px;        /* מרווח בין פריטים באותה קטגוריה (עומק 3) */
+    --gap-y:40px; --gap-rootcat:140px; 
+    --gap-d3:22px;        /* עומק 3: 70px center-to-center (48+22) */        /* מרווח עומק 3 */
+    --gap-d4:22px;        /* עומק 4: 70px center-to-center (48+22) */        /* מרווח עומק 4 */
+    --gap-cat:22px;        /* עומק 2: 70px center-to-center (48+22) */        /* מרווח בין קבוצות/קטגוריות (עומק 2) */
+    --gap-item:6px;        /* עומק 3+ צמוד יותר */        /* מצמצם עוד את ריווח עומק 3+ */        /* מרווח מצומצם יותר בין פריטים (עומק 3) */        /* מרווח בין פריטים באותה קטגוריה (עומק 3) – מצומצם */        /* מרווח בין פריטים באותה קטגוריה (עומק 3) */
     --r:9999px; --shadow:0 8px 22px rgba(0,0,0,.10);
     --edge:#C5CBD8; --toggle:#fe0100;
     --anim-dur:.60s; --anim-ease:ease-in-out; /* פתיחה וסגירה זהות */
+    /* --col-step-d34: disabled */    /* מרחק בין עמודות 3↔4 – כדי להאריך קווים */
+    /* --spine-dx: disabled */      /* מרחק אופקי של עמוד השדרה מההורה */
     --fit-margin:32;        /* רווח ביטחון לרוחב ב-Fit (px) */
   }
   *{box-sizing:border-box}
+  /* החלת גופן Alef בכל הממשק */
+  html, body, button, input, select, textarea, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
   html,body{height:auto;min-height:100%; overflow-x:hidden}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif}
+  body{margin:0;background:var(--bg);color:var(--ink);} 
   .wrap{padding:12px; width:100%; max-width:none; margin:0 auto; overflow:visible}
 
   /* שורת כפתורים מופרדת מעל המפה */
@@ -38,7 +45,7 @@
   svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
 
   /* Capsules */
-  .chip{position:absolute; display:inline-flex; align-items:center; height:var(--chip-h); padding:0 16px; border-radius:var(--r);
+  .chip{position:absolute; display:inline-flex; align-items:center; flex-direction:row-reverse; height:var(--chip-h); padding:0 16px; border-radius:var(--r);
         line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
         direction: rtl; text-align:right; font-weight:700; gap:14px;
         background: var(--chip-bg, #ffffff); color:#0f172a;}
@@ -145,7 +152,7 @@
         ]}
       ]},
 
-      {"label":"מודולה 4 – מטקסט לדיאלוג","children":[
+      {"label":"מודולה 4 – מטקסט לדיאלוג","gap":90,"children":[
         {"label":"פרופ' יונתן רינהולד על חזונו של הרב זקס: דיאלוג בין אמונה וחברה"},
         {"label":"דיאלוג בין אמונה וחברה"},
         {"label":"השפעת רוזנצוויג על הגות הרב זקס"},
@@ -224,31 +231,39 @@
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
   const COL_STEP= parseFloat(CSS.getPropertyValue('--col-step')) || 400;
-  const COL_STEP_D23 = parseFloat(CSS.getPropertyValue('--col-step-d23')) || (COL_STEP*0.75);
+  const COL_STEP_D23 = parseFloat(CSS.getPropertyValue('--col-step-d23')) || COL_STEP;
+  // COL_STEP_D34 removed
   const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36; 
   const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;  // root / כלליים
+  const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 140; // בין פרקי-על (depth 1)
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 110; // בין קטגוריות (depth 2)
-  const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 36;  // בין פריטים (depth 3)
+  const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 36;  // ברירת מחדל
+  const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
+  const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
+  const DEPTH_FIXED_WIDTH = false; // שומרים על רוחב טבעי לפי הטקסט // קיבוע רוחב לפי עומק ליישור עמודה
 
   function build(raw, depth=0, parent=null){
-    const node = { label: raw.label, depth, parent, collapsed: !!raw.collapsed, x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0, children: [] };
+    const node = { label: raw.label, depth, parent, collapsed: !!raw.collapsed, x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0, children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null) };
     (raw.children||[]).forEach(ch=> node.children.push(build(ch, depth+1, node)));
     return node;
   }
   const root = build(data.root, 0, null);
 
   function gapForDepth(depth){
-    if(depth>=3) return GAP_ITEM; // פריטים
-    if(depth===2) return GAP_CAT; // קטגוריות
-    return GAP_Y;                 // ברירת מחדל
+    if(depth>=4) return GAP_D4;          // עומק 4
+    if(depth===3) return GAP_D3;         // עומק 3
+    if(depth===2) return GAP_CAT;        // קטגוריות (עומק 2)
+    if(depth===1) return GAP_ROOTCAT;    // פרקי-על (עומק 1)
+    return GAP_Y;                        // שורש
   }
 
   function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
 
   let openingNode = null; // מי נפתח כעת
-  let edgeOf = new Map(); // childId -> path element
+  let edgeOf = new Map();
+  const PAD = 6; // מרחק מהקפסולה לקו // childId -> path element
   let prevVisibleIds = new Set(); // זיכרון הנראים מהלייאאוט הקודם
   let lastW = 0, lastH = 0; // ממדי לייאאוט אחרונים (לסקייל/גלילה)
   let offsetX = 0, stageW = 0; // למניעת ReferenceError
@@ -288,10 +303,25 @@
   }
   (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
 
-  function measure(node){ node.el.style.left = '-10000px'; node.el.style.top = '-10000px'; node.width = Math.max(140, node.el.offsetWidth); node.children.forEach(measure); }
+  function measure(node){
+    node.el.style.left = '-10000px';
+    node.el.style.top = '-10000px';
+    // מדידה טבעית
+    const natural = Math.max(140, node.el.offsetWidth);
+    node.width = natural;
+    node.children.forEach(measure);
+  }
   function subHeight(node){
     if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
-    let total = 0; node.children.forEach((c,i)=>{ subHeight(c); total += c._subH; if(i>0) total += gapForDepth(c.depth); });
+    let total = 0;
+    node.children.forEach((c,i)=>{
+      subHeight(c);
+      total += c._subH;
+      if(i>0){
+        const localGap = (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth);
+        total += localGap;
+      }
+    });
     node._subH = Math.max(node.height, total); return node._subH;
   }
 
@@ -300,7 +330,7 @@
     for(let i=0;i<depth;i++){
       const step = (i===2 ? COL_STEP_D23 : COL_STEP);
       acc += (step + GAP_X);
-    }
+  }
     return acc * (FLOW==='rtl' ? -1 : 1);
   }
 
@@ -310,10 +340,22 @@
     if(!(node.collapsed) && node.children.length){ let cursor = top; node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + gapForDepth(c.depth); }); }
   }
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
-  function computeBounds(nodes){ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity; nodes.forEach(n=>{ minX = Math.min(minX, (FLOW==='rtl'? n.x - n.width : n.x)); maxX = Math.max(maxX, (FLOW==='rtl'? n.x : n.x + n.width)); minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2); }); const MARG = 0; return { w: (maxX - minX) + MARG, h: (maxY - minY) + MARG, minX }; }
+  function computeBounds(nodes){
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+    nodes.forEach(n=>{
+      const left  = (FLOW==='rtl' ? n.x - n.width : n.x);
+      const right = (FLOW==='rtl' ? n.x : n.x + n.width);
+      minX = Math.min(minX, left);
+      maxX = Math.max(maxX, right);
+      minY = Math.min(minY, n.y - n.height/2);
+      maxY = Math.max(maxY, n.y + n.height/2);
+    });
+    const MARG = 0;
+    return { w: (maxX - minX) + MARG, h: (maxY - minY) + MARG, minX };
+  }
 
   // Zoom state (למנוע קפיצות בזמן אינטראקציה)
-  let mode = 'fitW'; let userScale = 1; let lockedFit = 1;
+  let mode = 'fitW'; let userScale = 1; let lockedFit = 1; // מצב זום
   var requiredFit; // guard
   function applyZoom(){
     const s = (mode==='fitW') ? lockedFit : userScale;
@@ -342,9 +384,25 @@
   }
 
   function layout(animate=false){
+    // שלב 1: מדידה ראשונית
+    measure(root);
+    // קיבוע רוחב לפי עומק כדי שכל הקפסולות באותו עומק יהיו באותה עמודה
+    if(DEPTH_FIXED_WIDTH){
+      const byDepth = new Map();
+      (function collect(n){
+        const v = byDepth.get(n.depth)||0; byDepth.set(n.depth, Math.max(v, n.width));
+        n.children.forEach(collect);
+      })(root);
+      (function apply(n){
+        const w = byDepth.get(n.depth)||n.width;
+        n.width = w; // עדכון רוחב חישובי
+        // השארת רוחב טבעי – אין קיבוע רוחב כדי שכל קפסולה תתאים לטקסט
+        n.children.forEach(apply);
+      })(root);
+    }
     const beforeIds = new Set(prevVisibleIds);
 
-    measure(root); subHeight(root); position(root, 0, 0);
+    subHeight(root); position(root, 0, 0);
 
     let nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
@@ -374,8 +432,21 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
+    const sPlace = (mode==='fitW') ? lockedFit : userScale;
+    // חישוב שפת ימין משותפת לכל עומק עם snap אחרי scale
+    const rightUnitsByDepth = new Map();
+    const rightSnappedByDepth = new Map();
+    // מחשבים שפת ימין לפי המיקום בפועל של כל צומת (בטוח יותר ב-RTL)
     nodes.forEach(n=>{
-      const left = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
+      const rightUnits = offsetX + n.x; // RTL: n.x הוא קואורדינטת ימין בעמודה שלו
+      const prev = rightUnitsByDepth.get(n.depth);
+      rightUnitsByDepth.set(n.depth, (prev==null? rightUnits : Math.max(prev, rightUnits)));
+    });
+    rightUnitsByDepth.forEach((units, depth)=>{ rightSnappedByDepth.set(depth, Math.round(units * sPlace) / Math.max(sPlace, 0.0001)); });
+
+    nodes.forEach(n=>{
+      const rightEdge = rightSnappedByDepth.get(n.depth);
+      const left = rightEdge - n.width; // RTL: ימין קבוע, רוחב משתנה
       const top  = n.y - n.height/2;
       n.el.style.left = left + 'px';
       n.el.style.top  = top + 'px';
@@ -384,13 +455,14 @@
 
     edgeOf.clear(); edgeLayer.textContent='';
     (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
-      const PAD = 2; // ריווח גדול יותר בין הקו לקפסולות (היה 8)
+      const PAD_PARENT = 6;  // רווח קטן בצד ההורה
+      const PAD_CHILD  = 0;  // אפס רווח בצד הילד לצמידות מדויקת
       const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
       const parentRight = offsetX + (FLOW==='rtl' ? n.x : (n.x + n.width));
-      const childEdge   = offsetX + ch.x;
+      const childRight  = rightSnappedByDepth.get(ch.depth);
 
-      const p1x = (FLOW==='rtl' ? parentLeft  + PAD : parentRight - PAD);
-      const p2x = (FLOW==='rtl' ? childEdge   - PAD : childEdge   + PAD);
+      const p1x = (FLOW==='rtl' ? parentLeft  + PAD_PARENT : parentRight - PAD_PARENT);
+      const p2x = (FLOW==='rtl' ? childRight - PAD_CHILD : childRight + PAD_CHILD);
       const p1y = n.y; const p2y = ch.y;
 
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
