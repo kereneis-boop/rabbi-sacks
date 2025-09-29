@@ -7,13 +7,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
+    --gap-between-mods-d2:40px; /* הוגדל בעוד 20px */ /* תוספת מרחק בין מודולות (כשמפה פתוחה) כדי להגיע ~90px ממרכז למרכז בין פריט ד2 אחרון לראשון הבא */
     --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     --bg:#ffffff; --ink:#0f172a;
     --chip-h:48px; 
     --col-step:400px;       /* מרחק אופקי בין עמודות כלליות */
     --col-step-d23:400px;    /* להאריך חיבור 2↔3 כדי שלא ייראה פנימי */    /* מרחק בין עמודות 2↔3 – מיושר לעמודות אחרות */    /* מרחק בין עמודות 2↔3 (קטגוריה→פריט) */
     --gap-x:36px;           /* מרווח אופקי נוסף */
-    --gap-y:40px; --gap-rootcat:140px; 
+    --gap-y:40px; --gap-rootcat:22px; /* עומק 1: 70px center-to-center (48+22) */ 
     --gap-d3:22px;        /* עומק 3: 70px center-to-center (48+22) */        /* מרווח עומק 3 */
     --gap-d4:22px;        /* עומק 4: 70px center-to-center (48+22) */        /* מרווח עומק 4 */
     --gap-cat:22px;        /* עומק 2: 70px center-to-center (48+22) */        /* מרווח בין קבוצות/קטגוריות (עומק 2) */
@@ -24,6 +25,7 @@
     /* --col-step-d34: disabled */    /* מרחק בין עמודות 3↔4 – כדי להאריך קווים */
     /* --spine-dx: disabled */      /* מרחק אופקי של עמוד השדרה מההורה */
     --fit-margin:32;        /* רווח ביטחון לרוחב ב-Fit (px) */
+    --nudge-d2-root0-px:35;  /* דחיפת ימין (פיקסלים) ל"מפת למידה"/"סילבוס" תחת 0 – ברוכים הבאים */        /* רווח ביטחון לרוחב ב-Fit (px) */
   }
   *{box-sizing:border-box}
   /* החלת גופן Alef בכל הממשק */
@@ -33,8 +35,24 @@
   .wrap{padding:12px; width:100%; max-width:none; margin:0 auto; overflow:visible}
 
   /* שורת כפתורים מופרדת מעל המפה */
-  .zoombar{position:sticky; top:0; display:flex; gap:8px; z-index:3; align-items:center; touch-action:auto; cursor:auto; background:#fff; padding:8px; margin:0 0 16px; border-radius:12px; box-shadow:0 6px 14px rgba(0,0,0,.08)}
-  .zoombar button{border:0; border-radius:10px; padding:8px 10px; font-family:inherit; font-weight:800; cursor:pointer; box-shadow:0 6px 14px rgba(0,0,0,.12); background:#fff}
+  .zoombar{position:sticky; top:8px; inset-inline:0; display:flex; justify-content:center; align-items:center; gap:6px; z-index:3;
+    /* glassy pill */
+    background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(10px);
+    padding:10px 12px; margin:0 auto 16px; width:max-content; border-radius:14px; 
+    border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)}
+  .zoombar button{border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-family:inherit; font-weight:800; cursor:pointer; 
+    background:linear-gradient(180deg,#ffffff,#f7f7f9); box-shadow:0 4px 12px rgba(0,0,0,.08);
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; transition:transform .12s ease, box-shadow .12s ease, background .12s ease}
+  .zoombar button:hover{box-shadow:0 8px 18px rgba(0,0,0,.12)}
+  .zoombar button:active{transform:translateY(1px)}
+  .zoombar button:focus-visible{outline:3px solid rgba(59,130,246,.5); outline-offset:2px}
+  .zoombar .pct{min-width:72px; text-align:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08); height:36px; display:inline-flex; align-items:center; justify-content:center}
+  /* round buttons for + / - */
+  #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
+  /* primary accent for Fit */
+  #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
+  /* group spacing correction on small screens */
+  @media (max-width:680px){.zoombar{width:calc(100% - 24px); justify-content:space-between}}
   .zoombar .pct{min-width:68px; text-align:center}
 
   /* במה */
@@ -114,7 +132,7 @@
         {"label":"רקע ביוגרפי והשפעתו על הגות הרב זקס"},
         {"label":"מנהיגות ומורשת הרב זקס"},
         {"label":"מבוא להגות הרב זקס"},
-        {"label":"מה למדנו?","children":[
+        {"label":"מה נלמד?","children":[
           {"label":"חקר ביוגרפי"},
           {"label":"עיצוב תפיסת עולם"},
           {"label":"מודל מנהיגותי"},
@@ -127,15 +145,7 @@
         {"label":"חקר האחריות והמחשבה היהודית"},
         {"label":"כשלון הנאורות"},
         {"label":"מסורת בעידן לא מסורתי"},
-        {"label":"מה למדנו?","children":[
-          {"label":"הגדרת הפילוסופיה היהודית, התפתחותה ההיסטורית והאינטלקטואלית, ומיקומו של הרב יונתן זקס בהקשר הפילוסופי־יהודי העכשווי"}
-        ]},
-        {"label":"מוקדי עומק","children":[
-          {"label":"האחריות כמסגרת אתית: מה מציעה הפילוסופיה היהודית להבנת האחריות בעולם המודרני"},
-          {"label":"בין מסורת למודרניות: איך מנהלים דיאלוג פורה בין המסורת היהודית לבין אתגרי העידן הפוסט-מסורתי"},
-          {"label":"הביקורת על הנאורות: מהן ההשלכות של כישלון פרויקט הנאורות על חקר המחשבה היהודית ועל רלוונטיות המקורות היהודיים"},
-          {"label":"המחשבה היהודית ככלי פעיל: כיצד הופכת המחשבה היהודית מאוסף ידע היסטורי לכלי עכשווי לפתרון דילמות מודרניות"}
-        ]}
+        {"label":"מה נלמד?","children":[{"label":"הגדרת הפילוסופיה היהודית, התפתחותה ההיסטורית והאינטלקטואלית, ומיקומו של הרב יונתן זקס בהקשר הפילוסופי־יהודי העכשווי"},{"label":"האחריות כמסגרת אתית: מה מציעה הפילוסופיה היהודית להבנת האחריות בעולם המודרני"},{"label":"בין מסורת למודרניות: איך מנהלים דיאלוג פורה בין המסורת היהודית לבין האתגרים של העידן הפוסט-מסורתי"},{"label":"הביקורת על הנאורות: מהן ההשלכות של כישלון פרויקט הנאורות על חקר המחשבה היהודית ועל רלוונטיות המקורות היהודיים"},{"label":"המחשבה היהודית ככלי פעיל: כיצד הופכת המחשבה היהודית מאוסף ידע היסטורי לכלי עכשווי לפתרון דילמות מודרניות"}]}
       ]},
 
       {"label":"מודולה 3 – המתודה הפרשנית","children":[
@@ -152,13 +162,13 @@
         ]}
       ]},
 
-      {"label":"מודולה 4 – מטקסט לדיאלוג","gap":90,"children":[
+      {"label":"מודולה 4 – מטקסט לדיאלוג","gap":22,"children":[
         {"label":"פרופ' יונתן רינהולד על חזונו של הרב זקס: דיאלוג בין אמונה וחברה"},
         {"label":"דיאלוג בין אמונה וחברה"},
         {"label":"השפעת רוזנצוויג על הגות הרב זקס"},
         {"label":"מסורת בעידן לא מסורתי"},
         {"label":"תורה וחכמה — היהדות והעולם"},
-        {"label":"מה נלמד","children":[
+        {"label":"מה נלמד?","children":[
           {"label":"דיאלוג בין אמונה לחברה – עקרון יסוד בהגותו של הרב יונתן זקס: דיאלוג בין אמונה דתית לבין החברה הפלורליסטית-מודרנית כמסגרת הכרחית לחיים מוסריים וחברתיים משותפים"},
           {"label":"שמירת המסורת בעידן מודרני – מודל המאפשר למסורת להמשיך להיות רלוונטית, מחייבת ויצירתית גם בתקופה של חילון ושינוי מתמיד"},
           {"label":"תורה וחכמה – הפריה הדדית בין התורה כקול זהות יהודית פרטיקולרית לבין החכמה האוניברסלית; סינתזה שבה זהות דתית מובחנת משתלבת בתרומה אוניברסלית"},
@@ -191,7 +201,7 @@
         {"label":"ג׳ואנה בן הרוש על מורשת הרב זקס"},
         {"label":"ג׳ואנה גרינווי — חינוך, מנהיגות וזהות יהודית בעידן מודרני"},
         {"label":"מאמר: רדיקלית אז, רדיקלית עכשיו"},
-        {"label":"מה נלמד","children":[
+        {"label":"מה נלמד?","children":[
           {"label":"תהליך הפיכתו של הרב זקס לדמות תרבותית משפיעה בשיח הציבורי בישראל"},
           {"label":"חדירת רעיונותיו מן היומיומי אל השדה ההגותי והספרותי"},
           {"label":"תרומת הארכיון – מרחב לשימור, המשכיות והנחלת המורשת"},
@@ -216,10 +226,17 @@
   const DIR = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
   const FLOW = (data.flow||'rtl');
   const viewport = document.getElementById('viewport');
+  // ננטרל השפעות RTL על גלילה כדי שמרכזון יעבוד תמיד
+  if(viewport) viewport.style.direction = 'ltr';
   const stage = document.getElementById('app');
   const scroller = document.getElementById('scroller');
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
+
+  // מצב זום גלובלי
+  let mode = 'fitW';
+  let userScale = 1;
+  let lockedFit = 1;
 
   // אין צורך ב-SAFE_TOP כי הסרגל מחוץ ל-viewport
   function updateSafeTop(){ if(viewport) viewport.style.paddingTop = '0px'; if(scroller) scroller.style.marginTop = '0px'; }
@@ -235,11 +252,13 @@
   // COL_STEP_D34 removed
   const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36; 
   const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;  // root / כלליים
+  const GAP_BETWEEN_MODS_D2 = parseFloat(CSS.getPropertyValue('--gap-between-mods-d2')) || 20;
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 140; // בין פרקי-על (depth 1)
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 110; // בין קטגוריות (depth 2)
   const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 36;  // ברירת מחדל
   const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
   const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
+  const NUDGE_D2_ROOT0_PX = parseFloat(CSS.getPropertyValue('--nudge-d2-root0-px')) || 0;
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
   const DEPTH_FIXED_WIDTH = false; // שומרים על רוחב טבעי לפי הטקסט // קיבוע רוחב לפי עומק ליישור עמודה
@@ -264,8 +283,39 @@
   let openingNode = null; // מי נפתח כעת
   let edgeOf = new Map();
   const PAD = 6; // מרחק מהקפסולה לקו // childId -> path element
-  let prevVisibleIds = new Set(); // זיכרון הנראים מהלייאאוט הקודם
+  let prevVisibleIds = new Set();
+  let LAYOUT_MAX_DEPTH = 0; // זיכרון הנראים מהלייאאוט הקודם
   let lastW = 0, lastH = 0; // ממדי לייאאוט אחרונים (לסקייל/גלילה)
+  function applyZoom(){
+    const s = (mode==='fitW') ? lockedFit : userScale;
+    stage.style.transform = `scale(${s})`;
+    const pct = document.getElementById('zoomPct'); if(pct) pct.textContent = Math.round(s*100)+"%";
+    if(lastW && lastH){
+      const wpx = (mode==='fitW') ? Math.floor(viewport.clientWidth) : Math.ceil(lastW * s);
+      scroller.style.width  = wpx + 'px';
+      scroller.style.height = Math.ceil(lastH * s) + 'px';
+    }
+    const tol = 2;
+    let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
+    let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
+    if(mode==='fitW'){
+      needX = false;
+      if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)) needY = false;
+    }
+    viewport.style.overflowX = needX ? 'auto' : 'hidden';
+    viewport.style.overflowY = needY ? 'auto' : 'hidden';
+    viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
+  }
+  // פונקציית מרכזון בסיסית – ממרכזת אופקית ואנכית באמצעות גלילה
+  function centerOn(){
+    try{
+      const targetL = Math.max(0, (scroller.scrollWidth  - viewport.clientWidth ) / 2);
+      const targetT = Math.max(0, (scroller.scrollHeight - viewport.clientHeight) / 2);
+      viewport.scrollLeft = targetL;
+      viewport.scrollTop  = targetT;
+    }catch(_){ }
+  }
+
   let offsetX = 0, stageW = 0; // למניעת ReferenceError
   // מצב פאנינג ומדידת גובה זמין
   let isPanning=false, panPending=false, startX=0, startY=0, startScrollL=0, startScrollT=0; const DRAG_T=4;
@@ -277,6 +327,16 @@
   }
 
   function isDescendant(node, anc){ let p=node.parent; while(p){ if(p===anc) return true; p=p.parent; } return false; }
+
+  // דחיפה אופקית (פיקסלים) לפריטים ספציפיים בעומק 2 תחת "0 - ברוכים הבאים"
+  function extraRightPx(n){
+    try{
+      if(n.depth===2 && n.parent && typeof n.parent.label==='string' && n.parent.label.indexOf('0 - ')===0){
+        if(n.label==='מפת למידה' || n.label==='סילבוס') return NUDGE_D2_ROOT0_PX;
+      }
+    }catch(_){ }
+    return 0;
+  }
 
   function makeToggle(){
     const btn = document.createElement('button');
@@ -337,7 +397,18 @@
   function position(node, depth, top){
     node.x = xForDepth(depth);
     node.y = top + node._subH/2;
-    if(!(node.collapsed) && node.children.length){ let cursor = top; node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + gapForDepth(c.depth); }); }
+    if(!(node.collapsed) && node.children.length){
+      let cursor = top;
+      node.children.forEach((c,idx)=>{
+        position(c, depth+1, cursor);
+        cursor += c._subH + gapForDepth(c.depth);
+        // תוספת בין מודולות: אם ההורה הוא השורש (depth 0) ויש עוד מודולה הבאה,
+        // ובאופן כללי המפה פתוחה (יש עומק >1), הוסף רווח נוסף כדי לקבל ~90px בין ד2 אחרון לראשון הבא
+        if(node.depth===0 && idx < node.children.length-1){
+          if(LAYOUT_MAX_DEPTH > 1){ cursor += GAP_BETWEEN_MODS_D2; }
+        }
+      });
+    }
   }
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
   function computeBounds(nodes){
@@ -354,53 +425,12 @@
     return { w: (maxX - minX) + MARG, h: (maxY - minY) + MARG, minX };
   }
 
-  // Zoom state (למנוע קפיצות בזמן אינטראקציה)
-  let mode = 'fitW'; let userScale = 1; let lockedFit = 1; // מצב זום
-  var requiredFit; // guard
-  function applyZoom(){
-    const s = (mode==='fitW') ? lockedFit : userScale;
-    stage.style.transform = `scale(${s})`;
-    const pct = document.getElementById('zoomPct');
-    if(pct) pct.textContent = Math.round(s*100) + '%';
-
-    if(lastW && lastH){
-      const wpx = (mode==='fitW') ? Math.floor(viewport.clientWidth) : Math.ceil(lastW * s);
-      scroller.style.width  = wpx + 'px';
-      scroller.style.height = Math.ceil(lastH * s) + 'px';
-    }
-
-    const tol = 2;
-    let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
-    let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
-    if(mode==='fitW'){
-      needX = false;
-      if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)){
-        needY = false;
-      }
-    }
-    viewport.style.overflowX = needX ? 'auto' : 'hidden';
-    viewport.style.overflowY = needY ? 'auto' : 'hidden';
-    viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
-  }
-
   function layout(animate=false){
-    // שלב 1: מדידה ראשונית
+    // מדידה והעמדה
     measure(root);
-    // קיבוע רוחב לפי עומק כדי שכל הקפסולות באותו עומק יהיו באותה עמודה
-    if(DEPTH_FIXED_WIDTH){
-      const byDepth = new Map();
-      (function collect(n){
-        const v = byDepth.get(n.depth)||0; byDepth.set(n.depth, Math.max(v, n.width));
-        n.children.forEach(collect);
-      })(root);
-      (function apply(n){
-        const w = byDepth.get(n.depth)||n.width;
-        n.width = w; // עדכון רוחב חישובי
-        // השארת רוחב טבעי – אין קיבוע רוחב כדי שכל קפסולה תתאים לטקסט
-        n.children.forEach(apply);
-      })(root);
-    }
-    const beforeIds = new Set(prevVisibleIds);
+    // חשב עומק מקסימלי נראה לפני מיקום כדי שהריווח בין-מודולות יהיה מדויק
+    LAYOUT_MAX_DEPTH = 0;
+    (function calcDepth(n){ LAYOUT_MAX_DEPTH = Math.max(LAYOUT_MAX_DEPTH, n.depth); if(!n.collapsed) n.children.forEach(calcDepth); })(root);
 
     subHeight(root); position(root, 0, 0);
 
@@ -412,18 +442,19 @@
     const baseFit = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
     const maxDepthVis = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
     let compactCap = 1.0;
-    if (maxDepthVis <= 1) compactCap = 0.75;       // שורש בלבד
-    else if (maxDepthVis === 2) compactCap = 0.88;  // שורש+קטגוריות
+    if (maxDepthVis <= 1) compactCap = 0.75; else if (maxDepthVis === 2) compactCap = 0.88;
     const requiredFit = Math.max(0.2, Math.min(baseFit, compactCap));
     if(mode==='fitW'){
       lockedFit = requiredFit;
       const RIGHT_PAD_PX = 24; const LEFT_PAD_PX = 24;
       const rightPadUnits = RIGHT_PAD_PX / Math.max(lockedFit, 0.0001);
       const leftPadUnits  = LEFT_PAD_PX  / Math.max(lockedFit, 0.0001);
-      offsetX = -minX + leftPadUnits;                 // מרווח קטן גם בצד שמאל
-      stageW  = w + leftPadUnits + rightPadUnits;     // תוכן + פדים משני הצדדים
+      offsetX = -minX + leftPadUnits;
+      stageW  = w + leftPadUnits + rightPadUnits;
     } else {
-      const padSide = 60;                                   // מרווח לגרירה במצב חופשי
+      const scaleNow = Math.max((mode==='fitW') ? lockedFit : userScale, 0.0001);
+      const desiredPad = Math.max(60, Math.floor((viewport.clientWidth/scaleNow - w)/2) + 40);
+      const padSide = desiredPad;
       offsetX = -minX + padSide;
       stageW  = w + padSide*2;
     }
@@ -432,39 +463,32 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
+    // מיקום קפסולות — יישור ימני קשיח עם snap אחרי scale למניעת סטיות סאב-פיקסל
     const sPlace = (mode==='fitW') ? lockedFit : userScale;
-    // חישוב שפת ימין משותפת לכל עומק עם snap אחרי scale
-    const rightUnitsByDepth = new Map();
-    const rightSnappedByDepth = new Map();
-    // מחשבים שפת ימין לפי המיקום בפועל של כל צומת (בטוח יותר ב-RTL)
     nodes.forEach(n=>{
-      const rightUnits = offsetX + n.x; // RTL: n.x הוא קואורדינטת ימין בעמודה שלו
-      const prev = rightUnitsByDepth.get(n.depth);
-      rightUnitsByDepth.set(n.depth, (prev==null? rightUnits : Math.max(prev, rightUnits)));
-    });
-    rightUnitsByDepth.forEach((units, depth)=>{ rightSnappedByDepth.set(depth, Math.round(units * sPlace) / Math.max(sPlace, 0.0001)); });
-
-    nodes.forEach(n=>{
-      const rightEdge = rightSnappedByDepth.get(n.depth);
-      const left = rightEdge - n.width; // RTL: ימין קבוע, רוחב משתנה
       const top  = n.y - n.height/2;
-      n.el.style.left = left + 'px';
+      // right in pixels (after scale), snapped to integer
+      const rightPx = Math.round((offsetX + n.x) * sPlace) + extraRightPx(n);
+      const leftUnits = (rightPx / Math.max(sPlace,0.0001)) - n.width;
+      n.el.style.left = leftUnits + 'px';
+      n.el.style.right = '';
       n.el.style.top  = top + 'px';
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
+    // שרטוט קווים
     edgeOf.clear(); edgeLayer.textContent='';
     (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
-      const PAD_PARENT = 6;  // רווח קטן בצד ההורה
-      const PAD_CHILD  = 0;  // אפס רווח בצד הילד לצמידות מדויקת
+      const PAD_PARENT = 6;  // ריווח קל מצד ההורה
+      const PAD_CHILD  = 0;  // אין ריווח מצד הילד – הקו ייגע בקפסולה
       const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
       const parentRight = offsetX + (FLOW==='rtl' ? n.x : (n.x + n.width));
-      const childRight  = rightSnappedByDepth.get(ch.depth);
-
+      // נקודת קצה הקו תשתמש באותו snap של שפת ימין כדי שלא יישאר רווח ויזואלי
+      const sNow = ((mode==='fitW') ? lockedFit : userScale);
+      const childEdge   = (Math.round((offsetX + ch.x) * sNow) + extraRightPx(ch)) / Math.max(sNow,0.0001);
       const p1x = (FLOW==='rtl' ? parentLeft  + PAD_PARENT : parentRight - PAD_PARENT);
-      const p2x = (FLOW==='rtl' ? childRight - PAD_CHILD : childRight + PAD_CHILD);
+      const p2x = (FLOW==='rtl' ? childEdge   - PAD_CHILD  : childEdge   + PAD_CHILD);
       const p1y = n.y; const p2y = ch.y;
-
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
       const dx=Math.abs(p2x-p1x)*.45; const c1x=(FLOW==='rtl'? p1x-dx: p1x+dx); const c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
       path.setAttribute('class','edge'); path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
@@ -474,24 +498,7 @@
     }); })(root);
 
     applyZoom();
-
-    if(animate && openingNode){
-      const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
-      nodes.forEach(n=>{
-        if(!beforeIds.has(n.id) && isDescendant(n, openingNode)){
-          n.el.classList.add('fade-enter');
-          requestAnimationFrame(()=> n.el.classList.add('fade-active'));
-          setTimeout(()=> n.el.classList.remove('fade-enter','fade-active'), dur);
-          const edge = edgeOf.get(n.id);
-          if(edge){ edge.classList.add('fade-enter'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-enter','fade-active'), dur); }
-        }
-      });
-    }
-
-    prevVisibleIds = new Set(nodes.map(n=>n.id));
-
     stage.style.opacity='1';
-    openingNode = null;
   }
 
   function animateClose(node, done){
@@ -612,13 +619,26 @@
   }, {passive:false});
 
   document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(true); });
-  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); layout(true); });
+  document.getElementById('collapseAll').addEventListener('click', ()=>{
+    (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root);
+    // עבור מיקום למרכז, נעבור למצב חופשי אך נשמור את אותו scale כמו fitW
+    mode = 'free';
+    userScale = lockedFit;
+    layout(true);
+    requestAnimationFrame(()=> centerOn(root));
+  });
 
   // Initial layout — אין SAFE_TOP יותר
   updateSafeTop();
   sizeViewport();
   layout(false);
   window.addEventListener('resize', ()=>{ updateSafeTop(); sizeViewport(); layout(false); });
+
+  // ריענון לייאאוט אחרי טעינת גופנים (Alef נטען אסינכרונית ועלול לשבור יישור ימני)
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(()=>{ layout(false); });
+    document.fonts.addEventListener?.('loadingdone', ()=> layout(false));
+  }
 })();
 </script>
 </body>
