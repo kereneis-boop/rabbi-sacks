@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { margin: 0; padding: 0; overflow: hidden; }
+    iframe { border: 0; display: block; width: 100%; }
+  </style>
+</head>
+<body>
+  <iframe id="content"></iframe>
+  <script>
+    var iframe = document.getElementById('content');
+    var url = new URLSearchParams(window.location.search).get('url');
+    if (url) iframe.src = decodeURIComponent(url);
+    
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'termsHeight' && e.data.height) {
+        iframe.style.height = (e.data.height + 10) + 'px';
+        parent.postMessage({ type: 'termsHeight', height: e.data.height + 10 }, '*');
+      }
+    });
+  </script>
+</body>
+</html>
