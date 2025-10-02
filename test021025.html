@@ -5,15 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Terms_6.8 – Rabbi Sacks (2 בכל שורה)</title>
 
-  <!-- MOODLE SAFE (no <script> from outside) -->
   <style>
-    /* הכל ממוסגר בתוך .vbt-terms כדי למנוע זליגה לשאר הדף */
     .vbt-terms * { box-sizing: border-box; }
-
-    /* קופסאות אקורדיון – גרסת checkbox כדי לאפשר אנימציה גם בסגירה */
-    .vbt-terms .vbt-acc { position: relative; border-radius: 18px; padding: 0; background: transparent; }
+    .vbt-terms .vbt-acc { position: relative; border-radius: 18px; padding: 0; background: transparent; margin-bottom: 18px; }
     .vbt-terms .vbt-toggle { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
-
     .vbt-terms .vbt-summary {
       display: flex; align-items: center; gap: 12px; direction: rtl; cursor: pointer;
       padding: 14px 18px; border-radius: 40px; background: #F8E8FF; font-weight: 800; font-size: 18px;
@@ -23,14 +18,10 @@
     }
     .vbt-terms .vbt-summary:hover { transform: translateY(-1px); }
     .vbt-terms .vbt-summary:focus-visible { outline: 2px solid #fe0100; outline-offset: 2px; }
-
-    /* מצב פתוח – צל מעט חזק יותר */
     .vbt-terms .vbt-toggle:checked + .vbt-summary {
       background: #D7F6E4;
       box-shadow: 0 6px 16px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(0,0,0,.04);
     }
-
-    /* אייקון שמסתובב בפתיחה/בסגירה */
     .vbt-terms .vbt-icon {
       width: 28px; height: 28px; border-radius: 50%; background: #fe0100; color: #fff; display: grid;
       place-items: center; font-weight: 900; transition: transform .35s ease;
@@ -40,39 +31,31 @@
       background: #69DA98;
       transform: rotate(180deg);
     }
-
-    /* פנל תוכן – פייד אין/אאוט מלא + גלישה חלקה בגובה */
     .vbt-terms .vbt-panel {
       margin-top: 10px; background: #D7F6E4; border-radius: 14px; padding: 0 16px; line-height: 1.55;
       max-height: 0; overflow: hidden; opacity: 0; transform: translateY(-6px);
       transition: max-height .5s ease, opacity .45s ease, transform .45s ease, padding .45s ease;
     }
     .vbt-terms .vbt-toggle:checked ~ .vbt-panel {
-      padding: 16px; opacity: 1; transform: translateY(0); max-height: 1200px; /* מספיק לרוב התכנים */
+      padding: 16px; opacity: 1; transform: translateY(0); max-height: 1200px;
     }
-
-    /* גריד: תמיד 2 בכל שורה על מסכים רחבים; 1 בשבר קטן */
     .vbt-terms .vbt-grid {
       display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; max-width: 1000px; margin: 0 auto;
     }
     @media (max-width: 699.98px) {
       .vbt-terms .vbt-grid { grid-template-columns: 1fr; }
     }
-
-    /* העדפת נגישות – פחות תנועה */
     @media (prefers-reduced-motion: reduce) {
       .vbt-terms .vbt-panel, .vbt-terms .vbt-icon, .vbt-terms .vbt-summary { transition: none; }
     }
   </style>
 </head>
-<body style="margin:0;">
+<body style="margin:0;padding:0;">
 
-<div class="vbt-terms" dir="rtl" style="max-width:1120px;margin:0 auto;font-family: Alef,-apple-system,'Segoe UI',Arial,sans-serif;color:#0f172a;">
+<div class="vbt-terms" dir="rtl" style="max-width:1120px;margin:0 auto;padding:20px;font-family: Alef,-apple-system,'Segoe UI',Arial,sans-serif;color:#0f172a;">
 
-  <!-- גריד רספונסיבי: 2 בכל שורה -->
   <div class="vbt-grid">
 
-    <!-- ===== ספריה לאומית ===== -->
     <div class="vbt-acc">
       <input class="vbt-toggle" type="checkbox" id="vbt-t1" />
       <label class="vbt-summary" for="vbt-t1" role="button" tabindex="0">
@@ -84,7 +67,6 @@
       </div>
     </div>
 
-    <!-- ===== ניהול סכסוכים ===== -->
     <div class="vbt-acc">
       <input class="vbt-toggle" type="checkbox" id="vbt-t2" />
       <label class="vbt-summary" for="vbt-t2" role="button" tabindex="0">
@@ -96,7 +78,6 @@
       </div>
     </div>
 
-    <!-- ===== מחלוקות הלל ושמאי ===== -->
     <div class="vbt-acc">
       <input class="vbt-toggle" type="checkbox" id="vbt-t3" />
       <label class="vbt-summary" for="vbt-t3" role="button" tabindex="0">
@@ -108,7 +89,6 @@
       </div>
     </div>
 
-    <!-- ===== אהרון הכהן משכין שלום ===== -->
     <div class="vbt-acc">
       <input class="vbt-toggle" type="checkbox" id="vbt-t4" />
       <label class="vbt-summary" for="vbt-t4" role="button" tabindex="0">
@@ -124,38 +104,30 @@
 </div>
 
 <script>
-(function () {
-  function computeHeight(){
-    var b = document.body, d = document.documentElement;
-    return Math.max(d.scrollHeight, b.scrollHeight, d.offsetHeight, b.offsetHeight);
+(function(){
+  var lastHeight = 0;
+  function notifyHeight(){
+    var h = Math.max(
+      document.documentElement.scrollHeight,
+      document.documentElement.offsetHeight,
+      document.body.scrollHeight,
+      document.body.offsetHeight
+    );
+    if(h !== lastHeight){
+      lastHeight = h;
+      try{
+        parent.postMessage({sentinel:'moodle-resize',height:h},'*');
+      }catch(e){}
+    }
   }
-  function sendHeight(){ 
-    document.body.offsetHeight;
-    var h = Math.ceil(computeHeight());
-    try { 
-      parent.postMessage({ type: 'termsHeight', height: h }, '*'); 
-    } catch(e){} 
-  }
-  sendHeight();
-  window.addEventListener('load', function() {
-    setTimeout(sendHeight, 100);
-  });
-  document.querySelectorAll('.vbt-toggle').forEach(function(checkbox) {
-    checkbox.addEventListener('change', function() {
-      setTimeout(sendHeight, 10);
-      setTimeout(sendHeight, 100);
-      setTimeout(sendHeight, 250);
-      setTimeout(sendHeight, 450);
-      setTimeout(sendHeight, 600);
+  setInterval(notifyHeight, 200);
+  document.querySelectorAll('.vbt-toggle').forEach(function(cb){
+    cb.addEventListener('change', function(){
+      setTimeout(notifyHeight, 50);
+      setTimeout(notifyHeight, 300);
+      setTimeout(notifyHeight, 600);
     });
   });
-  if ('ResizeObserver' in window) {
-    var ro = new ResizeObserver(function(){ 
-      requestAnimationFrame(sendHeight);
-    });
-    ro.observe(document.body);
-    ro.observe(document.documentElement);
-  }
 })();
 </script>
 
