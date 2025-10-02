@@ -123,46 +123,38 @@
   </div>
 </div>
 
-<!-- Auto-Resize: שליחת גובה להורה -->
 <script>
 (function () {
   function computeHeight(){
     var b = document.body, d = document.documentElement;
-    return Math.max(d.scrollHeight, b.scrollHeight, d.offsetHeight, b.offsetHeight, d.clientHeight, b.clientHeight);
+    return Math.max(d.scrollHeight, b.scrollHeight, d.offsetHeight, b.offsetHeight);
   }
-  
   function sendHeight(){ 
+    document.body.offsetHeight;
     var h = Math.ceil(computeHeight());
     try { 
       parent.postMessage({ type: 'termsHeight', height: h }, '*'); 
     } catch(e){} 
   }
-
-  // שלח גובה מיד
   sendHeight();
-  
-  // שלח אחרי טעינה מלאה
   window.addEventListener('load', function() {
     setTimeout(sendHeight, 100);
   });
-
-  // האזן לשינויים בצ'קבוקסים (פתיחה/סגירה של קפסולות)
   document.querySelectorAll('.vbt-toggle').forEach(function(checkbox) {
     checkbox.addEventListener('change', function() {
-      // שלח מספר פעמים כדי לתפוס את האנימציה
-      setTimeout(sendHeight, 50);
-      setTimeout(sendHeight, 200);
-      setTimeout(sendHeight, 400);
-      setTimeout(sendHeight, 650);
+      setTimeout(sendHeight, 10);
+      setTimeout(sendHeight, 100);
+      setTimeout(sendHeight, 250);
+      setTimeout(sendHeight, 450);
+      setTimeout(sendHeight, 600);
     });
   });
-
-  // ResizeObserver כגיבוי אם הדפדפן תומך
   if ('ResizeObserver' in window) {
     var ro = new ResizeObserver(function(){ 
-      setTimeout(sendHeight, 50); 
+      requestAnimationFrame(sendHeight);
     });
     ro.observe(document.body);
+    ro.observe(document.documentElement);
   }
 })();
 </script>
