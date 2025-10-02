@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Terms_6.3 – Rabbi Sacks</title>
+  <title>Terms – Single Card Centered (Ghost Columns) – Rabbi Sacks</title>
 
   <!-- MOODLE SAFE (no external files) -->
   <style>
@@ -57,6 +57,9 @@
     /* גריד רספונסיבי */
     .vbt-terms .vbt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 18px; max-width: 1000px; margin: 0 auto; }
 
+    /* פריטי רפאים – כדי למרכז כרטיס יחיד כאילו יש 3 עמודות */
+    .vbt-terms .vbt-ghost{ visibility: hidden; height: 0; padding: 0; margin: 0; border: 0; }
+
     /* העדפת נגישות – פחות תנועה */
     @media (prefers-reduced-motion: reduce) { .vbt-terms .vbt-panel, .vbt-terms .vbt-icon, .vbt-terms .vbt-summary { transition: none; } }
   </style>
@@ -68,6 +71,9 @@
   <!-- גריד רספונסיבי -->
   <div class="vbt-grid">
 
+    <!-- רפאֵה: תופס את העמודה הימנית -->
+    <div class="vbt-acc vbt-ghost" aria-hidden="true"></div>
+
     <!-- ===== כתיבה פילוסופית ===== -->
     <div class="vbt-acc">
       <input class="vbt-toggle" type="checkbox" id="vbt-t1" />
@@ -77,8 +83,12 @@
         <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
-כתיבה פילוסופית: כתיבה שמטרתה לנסח, לנתח ולבקר טענות רעיוניות באופן בהיר, שיטתי ומדויק. מתאפיינת בהצגת טענות מרכזיות, הנמקתן באמצעות נימוקים רציונליים, והצבת התנגדויות אפשריות תוך ניסיון להתמודד איתן.      </div>
+        כתיבה פילוסופית: כתיבה שמטרתה לנסח, לנתח ולבקר טענות רעיוניות באופן בהיר, שיטתי ומדויק. מתאפיינת בהצגת טענות מרכזיות, הנמקתן באמצעות נימוקים רציונליים, והצבת התנגדויות אפשריות תוך ניסיון להתמודד איתן.
+      </div>
     </div>
+
+    <!-- רפאֵה: תופס את העמודה השמאלית -->
+    <div class="vbt-acc vbt-ghost" aria-hidden="true"></div>
 
   </div>
 </div>
