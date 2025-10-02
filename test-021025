@@ -1,0 +1,41 @@
+<script>
+(function () {
+  function computeHeight(){
+    var b = document.body, d = document.documentElement;
+    return Math.max(d.scrollHeight, b.scrollHeight, d.offsetHeight, b.offsetHeight, d.clientHeight, b.clientHeight);
+  }
+  
+  function sendHeight(){ 
+    var h = Math.ceil(computeHeight());
+    try { 
+      parent.postMessage({ type: 'termsHeight', height: h }, '*'); 
+    } catch(e){} 
+  }
+
+  // שלח גובה מיד
+  sendHeight();
+  
+  // שלח אחרי טעינה
+  window.addEventListener('load', function() {
+    setTimeout(sendHeight, 100);
+  });
+
+  // האזן לשינויים בצ'קבוקסים
+  document.querySelectorAll('.vbt-toggle').forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+      // המתן לסיום האנימציה
+      setTimeout(sendHeight, 100);
+      setTimeout(sendHeight, 300);
+      setTimeout(sendHeight, 600);
+    });
+  });
+
+  // ResizeObserver כגיבוי
+  if ('ResizeObserver' in window) {
+    var ro = new ResizeObserver(function(){ 
+      setTimeout(sendHeight, 50); 
+    });
+    ro.observe(document.body);
+  }
+})();
+</script>
