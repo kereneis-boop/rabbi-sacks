@@ -73,7 +73,7 @@
     /* העדפת נגישות – פחות תנועה */
     @media (prefers-reduced-motion: reduce) { .vbt-terms .vbt-panel, .vbt-terms .vbt-icon, .vbt-terms .vbt-summary { transition: none; } }
 /* אינדקס – רספונסיביות למספר אותיות בשורה */
-@media (max-width: 599px){ .vbt-terms .vbt-alpha { grid-template-columns: repeat(6, minmax(36px,1fr)); } }
+@media (max-width: 599px){ .vbt-terms .vbt-alpha { position: sticky; top: 0; z-index: 50; display:grid; grid-template-columns: repeat(8, minmax(36px,1fr)); gap:8px; align-items:center; justify-content:center; margin:0 auto 18px; max-width:1000px; background:#fff; padding:8px; border-radius:999px; box-shadow: 0 1px 0 rgba(0,0,0,.06); } }
 @media (min-width: 1000px){ .vbt-terms .vbt-alpha { grid-template-columns: repeat(12, minmax(36px,1fr)); } }
 
 /* === רשימת מונחים (ללא קפסולות) === */
@@ -83,7 +83,7 @@
 .vbt-terms .vbt-term + .vbt-term { margin-top:10px; }
 .vbt-terms .vbt-term-title { margin:0 0 6px; font-size:18px; font-weight:800; color:#0f172a; }
 .vbt-terms .vbt-term-desc { margin:0; line-height:1.6; }
-.vbt-terms .vbt-letter-group { margin-bottom:22px; } }
+.vbt-terms .vbt-letter-group { margin-bottom:22px; }
       /* === אינדקס אלפביתי (כפתורי קפסולה ורודים/ירקרקים) === */
     .vbt-terms .vbt-alpha { display:grid; grid-template-columns: repeat(8, minmax(36px,1fr)); gap:8px; align-items:center; justify-content:center; margin:10px auto 18px; max-width:1000px; }
     .vbt-terms .vbt-alpha-btn { display:inline-flex; align-items:center; justify-content:center; min-width:36px; height:36px; padding:0 10px; border-radius:999px; border:0; cursor:pointer; font-weight:800; background:#F8E8FF; color:#0f172a; transition:transform .15s ease, background-color .25s ease; }
@@ -129,15 +129,17 @@
   <section class="vbt-letter-group" data-letter="א" aria-label="א">
     <h2 class="vbt-letter-heading">א</h2>
     <article class="vbt-term"><h3 class="vbt-term-title">אברהם</h3><p class="vbt-term-desc">אברהם – מסמל בהגותו של הרב זקס מודל כפול: הן כ"אברהם העברי" העומד בעבר האחד מול העולם כולו תוך שמירה על אמונתו וערכיו, והן דרך אמירת ה"הנני" שלו המסמלת עמידה מלאה של נוכחות והקשבה כלפי האחר; שתי תכונות אלו מדגישות את היכולת לשלב בין נאמנות לאמת פנימית לבין פתיחות ואחריות כלפי האנושות כולה.</p></article>
+    <article class="vbt-term"><h3 class="vbt-term-title">אהרון הכהן משכין שלום</h3><p class="vbt-term-desc">אהרון הכהן משכין שלום - אחיו של משה והכהן הגדול הראשון, שנודע כמגשר, ומתווך בין אנשים ומפשר סכסוכים. נתפס כמופת לאדם הפועל לאחדות ולריפוי מתחים חברתיים.</p></article>
+    <article class="vbt-term"><h3 class="vbt-term-title">אוניברסליות</h3><p class="vbt-term-desc">אוניברסליות: האמונה שערכים מסוימים תקפים לכל בני האדם, ללא תלות ברקע התרבותי או הדתי שלהם.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">אחדות</h3><p class="vbt-term-desc">אחדות - הרב זקס חיפש לקדם את רעיון האחדות היהודית, כאשר כל יהודי יכול לתרום את חלקו ולחוות את הצד הרוחני שבזהותו היהודית, כפי שנראה גם בהשפעתו על החברה הישראלית.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">אחריות</h3><p class="vbt-term-desc">אחריות - תפיסה פילוסופית המתמקדת בחובה המוסרית שלנו כלפי האחר. במשנתו של הרב זקס, היא ביטוי למחויבות היהודית לתיקון עולם ולדאגה לזולת.</p></article>
-    <article class="vbt-term"><h3 class="vbt-term-title">אהרון הכהן משכין שלום</h3><p class="vbt-term-desc">אהרון הכהן משכין שלום - אחיו של משה והכהן הגדול הראשון, שנודע כמגשר, ומתווך בין אנשים ומפשר סכסוכים. נתפס כמופת לאדם הפועל לאחדות ולריפוי מתחים חברתיים.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">אנטי תיאודיציה</h3><p class="vbt-term-desc">אנטי תיאודיציה - גישה פילוסופית השוללת את הניסיון להצדיק את הרוע והסבל בעולם מנקודת מבט תיאולוגית. לפי גישה זו, שהתחזקה במיוחד לאחר השואה, אין להצדיק את הסבל האנושי באמצעות הסברים תיאולוגיים, ויש לקבל את מציאות הרוע כאתגר אמוני ומוסרי. גישתו של הרב זקס היא אנטי תיאודציונית.</p></article>
   </section>
 
   <!-- === ב === -->
   <section class="vbt-letter-group" data-letter="ב" aria-label="ב">
     <h2 class="vbt-letter-heading">ב</h2>
+    <article class="vbt-term"><h3 class="vbt-term-title">ביקורת על מגבלות הנאורות</h3><p class="vbt-term-desc">ביקורת על מגבלות הנאורות – שניהם הדגישו כי למרות תרומתה, הנאורות לבדה אינה מבטיחה מוסריות ולכן יש צורך בעוגן ערכי-דתי.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">בית הלורדים</h3><p class="vbt-term-desc">בית הלורדים - בית הלורדים הוא הבית העליון של הפרלמנט הבריטי, לצד בית הנבחרים. תפקידו העיקרי הוא לבחון מחדש חקיקה שמתקבלת בבית הנבחרים, ליזום דיונים בעניינים לאומיים ובינלאומיים, ולספק מומחיות וייעוץ בלתי תלוי. הרב זקס היה הרב הראשי השני של אנגליה שהיה חלק מבית הלורדים והפך שם לדמות משמעותית ומשפיעה.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">ברית</h3><p class="vbt-term-desc">ברית - פילוסופיית הברית של הרב זקס מציבה את הברית כעקרון יסוד ביהדות, השונה מהותית מחוזה, שכן היא מבוססת על מחויבות מוסרית וזהות משותפת ולא על אינטרסים הדדיים. הברית יוצרת חברה שבה האחריות מתפרסת בין חבריה ולא ריכוזית, תוך דיאלוג ושיתוף פעולה. היא מגדירה לא רק את היחס בין האדם לאלוהים, אלא גם את המחויבות הקהילתית והחברתית, ומובילה לתפיסת תיקון עולם החורגת מגבולות העם היהודי לכלל האנושות.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">ברית וקהילה</h3><p class="vbt-term-desc">ברית וקהילה - ההבנה שהיהדות אינה מבוססת רק על חוקים ומצוות, אלא גם על ברית בין אנשים ויצירת קהילה מוסרית שמחויבת לערכים משותפים.</p></article>
@@ -147,7 +149,9 @@
   <section class="vbt-letter-group" data-letter="ד" aria-label="ד">
     <h2 class="vbt-letter-heading">ד</h2>
     <article class="vbt-term"><h3 class="vbt-term-title">דיאלוג</h3><p class="vbt-term-desc">דיאלוג - פרנץ רוזנצוויג פיתח תפיסה של דיאלוג כמפתח להבנת היחסים בין אדם לאלוהים ובין אדם לחברו. עבור הרב זקס, רעיון הדיאלוג של רוזנצוויג מהווה בסיס לתפיסת היהדות כסמל לדיאלוג וכניצבת בדיאלוג עם שאר האומות.</p></article>
+    <article class="vbt-term"><h3 class="vbt-term-title">דיאלוג בין-דתי</h3><p class="vbt-term-desc">דיאלוג בין-דתי: תקשורת ושיתוף פעולה בין בני דתות שונות, במטרה לקדם הבנה וכבוד הדדי.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">דיאלוג כיסוד הקיום האנושי</h3><p class="vbt-term-desc">דיאלוג כיסוד הקיום האנושי – רוזנצווייג, ובהשראתו הרב זקס, ראו בדיאלוג בין אדם לאדם ובין אדם לאלוהים תנאי מרכזי להבנת החיים הדתיים והאנושיים.</p></article>
+    <article class="vbt-term"><h3 class="vbt-term-title">דמוקרטיה</h3><p class="vbt-term-desc">דמוקרטיה: שיטת ממשל בה הכוח נמצא בידי העם, לרוב באמצעות נציגים נבחרים. זקס הדגיש כי דמוקרטיה חייבת להיות מעבר להצבעה בלבד.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">דרשה</h3><p class="vbt-term-desc">דרשה - הדרשה בעיני הרב זקס היא אמנות של חיבור בין המסורת היהודית העתיקה לבין המציאות העכשווית. היא משמשת ככלי פרשני וחינוכי המאפשר לחלץ משמעות רלוונטית מהטקסטים המסורתיים ולהפוך אותם למקור השראה והדרכה בחיים המודרניים.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">דת ומדע</h3><p class="vbt-term-desc">דת ומדע - שני אופני הבנה של המציאות, שלעיתים נתפסים כניגודים ולעיתים כמשלימים. המדע מבוסס על תצפיות, חוקים טבעיים ושיטתיות אמפירית, בעוד הדת עוסקת במשמעות, מוסר וטרנסצנדנטיות. שאלת היחס בין הדת למדע מלווה את ההגות היהודית. הרב זקס טוען שהם משלימים זה את זה.</p></article>
   </section>
@@ -155,8 +159,15 @@
   <!-- === ה === -->
   <section class="vbt-letter-group" data-letter="ה" aria-label="ה">
     <h2 class="vbt-letter-heading">ה</h2>
+    <article class="vbt-term"><h3 class="vbt-term-title">המשכיות יהודית</h3><p class="vbt-term-desc">המשכיות יהודית - יוזמה שהרב זקס הקים במטרה להחיות ולחזק את הזהות היהודית בקהילות יהודיות, במיוחד בקהילות אנגלו-יהודיות, ולהתמודד עם אתגרי ההתבוללות והאסימילציה.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">הרב סולובייצ'יק</h3><p class="vbt-term-desc">הרב סולובייצ'יק - הרב יוסף דב סולובייצ'יק היה מההוגים היהודיים המשפיעים ביותר במאה העשרים, יצר סינתזה ייחודית בין המסורת היהודית לפילוסופיה המערבית. הוא פיתח את דמות "איש ההלכה" המשלבת בין עולם המסורת לעולם המודרני, וטבע את המושג "קהילת הברית" המדגיש את האחריות ההדדית בקהילה היהודית. השפעתו על הרב זקס ניכרת בניסיון המתמיד לגשר בין המסורת למודרנה, בחשיבות הקהילה, ובחתירה למצוא משמעות יהודית עמוקה לאתגרי הזמן.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">הרבי מלובביץ'</h3><p class="vbt-term-desc">הרבי מלובביץ' - המנהיג השביעי והאחרון של חסידות חב"ד, היה מגדולי ההוגים והמנהיגים היהודיים במאה העשרים, שהיה ידוע בהשכלתו הרחבה הן בתורה והן במדעים. הוא היווה השראה לרב זקס בראייתו את האפשרות לשלב בין יהדות מסורתית למעורבות מלאה בעולם המודרני, ובמנהיגותו ששילבה בין נאמנות עמוקה למסורת היהודית לבין פתיחות ואחריות כלפי כלל האנושות.</p></article>
+  </section>
+
+  <!-- === ט === -->
+  <section class="vbt-letter-group" data-letter="ט" aria-label="ט">
+    <h2 class="vbt-letter-heading">ט</h2>
+    <article class="vbt-term"><h3 class="vbt-term-title">טוטליות</h3><p class="vbt-term-desc">טוטליות - מושג פילוסופי המתייחס לניסיון להכיל את כל המציאות תחת מערכת מחשבה אחת כוללת. לוינס משתמש בו כמושג ביקורתי המצביע על הסכנה שבחשיבה טוטאלית. מתחברת להגותו של הרב זקס כביקורת על כך שטוטליות אינה מותירה מקום לשונות ולריבוי.</p></article>
   </section>
 
   <!-- === כ === -->
@@ -174,10 +185,9 @@
   <!-- === מ === -->
   <section class="vbt-letter-group" data-letter="מ" aria-label="מ">
     <h2 class="vbt-letter-heading">מ</h2>
-    <article class="vbt-term"><h3 class="vbt-term-title">מחלוקת לשם שמיים</h3><p class="vbt-term-desc">מחלוקת לשם שמיים - תפיסת המחלוקת ככוח בונה, ולא הורס, כאשר היא נעשית מתוך כוונה טהורה לברר את האמת ולא מתוך אינטרסים אישיים.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">מחלוקות הלל ושמאי</h3><p class="vbt-term-desc">מחלוקות הלל ושמאי - הלל ושמאי היו זוג חכמים מהם התפתחו שתי אסכולות בהגותם של חז"ל, שהתאפיינו בגישות שונות לפרשנות ההלכה. הרב זקס ראה במחלוקות אלו דוגמה לאופן שבו תרבות דיון מכבדת יכולה לחזק חברה, בתנאי שהמחלוקת היא "לשם שמים".</p></article>
+    <article class="vbt-term"><h3 class="vbt-term-title">מחלוקת לשם שמיים</h3><p class="vbt-term-desc">מחלוקת לשם שמיים - תפיסת המחלוקת ככוח בונה, ולא הורס, כאשר היא נעשית מתוך כוונה טהורה לברר את האמת ולא מתוך אינטרסים אישיים.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">מיסטיקה</h3><p class="vbt-term-desc">מיסטיקה - בעוד שהרב זקס לא היה הוגה מיסטי במובהק, הוא ראה במיסטיקה היהודית דרך להבנת העומק הרוחני של היהדות. בכתביו, הוא משלב לעיתים תובנות מהקבלה והחסידות, אך תמיד בהקשר של משמעותן המעשית לחיים היהודיים המודרניים.</p></article>
-    <article class="vbt-term"><h3 class="vbt-term-title">המשכיות יהודית</h3><p class="vbt-term-desc">המשכיות יהודית - יוזמה שהרב זקס הקים במטרה להחיות ולחזק את הזהות היהודית בקהילות יהודיות, במיוחד בקהילות אנגלו-יהודיות, ולהתמודד עם אתגרי ההתבוללות והאסימילציה.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">מנהיגות יוצרת מנהיגים</h3><p class="vbt-term-desc">מנהיגות יוצרת מנהיגים - רעיונו של הרב זקס שלפיו מנהיג אמיתי אינו מסתפק בצבירת עוקבים, אלא מטפח אנשים שימשיכו להנהיג ולחדש.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">מנהיגות שיתופית</h3><p class="vbt-term-desc">מנהיגות שיתופית - הרב זקס פעל לגייס אנשים ממגוון תחומים מקצועיים, כולל חינוך, אמנות, ותחומים אחרים, כדי להוביל את יוזמת המשכיות ולחזק את הקהילה היהודית על ידי יצירת שיתופי פעולה רחבים.</p></article>
   </section>
@@ -192,9 +202,10 @@
   <!-- === פ === -->
   <section class="vbt-letter-group" data-letter="פ" aria-label="פ">
     <h2 class="vbt-letter-heading">פ</h2>
+    <article class="vbt-term"><h3 class="vbt-term-title">פונדמנטליזם</h3><p class="vbt-term-desc">פונדמנטליזם: גישה דתית הדוגלת בפרשנות מחמירה וליטרלית של כתבי הקודש.</p></article>
+    <article class="vbt-term"><h3 class="vbt-term-title">פוסט שואה</h3><p class="vbt-term-desc">פוסט שואה - תקופה של חשבון נפש פילוסופי ותיאולוגי אחרי השואה, שבה הוטל ספק ביסודות ההומניזם והנאורות. עבור הרב זקס, זו נקודת מפנה המחייבת חשיבה מחודשת על אחריות מוסרית ועל היחס בין דת לאתיקה.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">פילוסופיה יהודית</h3><p class="vbt-term-desc">פילוסופיה יהודית - ענף בפילוסופיה העוסק בחקר המחשבה היהודית והתמודדות עם שאלות יסוד פילוסופיות מנקודת מבט יהודית, תוך מציאת המשמעות היהודית למול הפילוסופיה. הפילוסופיה היהודית משלבת בין מקורות יהודיים מסורתיים לבין כלים פילוסופיים. הרב זקס פיתח פילוסופיה יהודית והיה עסוק בהפגשת העולם הפילוסופי הכללי עם המסורת היהודית.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">פנים</h3><p class="vbt-term-desc">פנים - מושג מרכזי בהגותו של לוינס שהשפיע על הרב זקס. הפנים אינן רק המראה הפיזי של האדם, אלא ביטוי לנוכחותו המוסרית של האחר. המפגש עם פני האחר הוא מפגש מוסרי המטיל עלינו אחריות. בפנים של האחר מתגלה הציווי המוסרי "לא תרצח" והן מהוות קריאה לאחריות ולהכרה בערך האנושי הבלתי ניתן לרדוקציה.</p></article>
-    <article class="vbt-term"><h3 class="vbt-term-title">פוסט שואה</h3><p class="vbt-term-desc">פוסט שואה - תקופה של חשבון נפש פילוסופי ותיאולוגי אחרי השואה, שבה הוטל ספק ביסודות ההומניזם והנאורות. עבור הרב זקס, זו נקודת מפנה המחייבת חשיבה מחודשת על אחריות מוסרית ועל היחס בין דת לאתיקה.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">פרשנות</h3><p class="vbt-term-desc">פרשנות - מתודה של קריאה והבנה של טקסטים. עמדה רבנית כלפי הטקסטים הדתיים. בהגותו של הרב זקס, הפרשנות היא הדרך להתמודד עם טקסטים מסורתיים ולחלץ מהם משמעות רלוונטית לזמננו. זו הדרך למצוא במסורת הבנה עמוקה ומענה לאתגרים העכשוויים.</p></article>
   </section>
 
@@ -216,7 +227,6 @@
     <h2 class="vbt-letter-heading">ת</h2>
     <article class="vbt-term"><h3 class="vbt-term-title">תורה ומדע</h3><p class="vbt-term-desc">תורה ומדע - הדיון על היחס בין התורה והמסורת היהודית לבין הידע והמתודות המדעיות המודרניות. הרב זקס ראה בשניהם מקורות משלימים להבנת המציאות, וטען שאין סתירה הכרחית ביניהם אלא הם מייצגים דרכים שונות להבנת העולם.</p></article>
     <article class="vbt-term"><h3 class="vbt-term-title">תרגום</h3><p class="vbt-term-desc">תרגום - התרגום בתפיסת הרב זקס הוא יותר מהעברה טכנית של טקסט משפה לשפה; זהו תהליך של גישור תרבותי ורעיוני. הוא רואה בתרגום כלי מרכזי להנגשת רעיונות יהודיים לעולם המודרני ולהעברת מסרים אוניברסליים, תוך שמירה על המשמעות העמוקה של המקור.</p></article>
-    <article class="vbt-term"><h3 class="vbt-term-title">טוטליות</h3><p class="vbt-term-desc">טוטליות - מושג פילוסופי המתייחס לניסיון להכיל את כל המציאות תחת מערכת מחשבה אחת כוללת. לוינס משתמש בו כמושג ביקורתי המצביע על הסכנה שבחשיבה טוטאלית. מתחברת להגותו של הרב זקס כביקורת על כך שטוטליות אינה מותירה מקום לשונות ולריבוי.</p></article>
   </section>
 </div>
 </div>
