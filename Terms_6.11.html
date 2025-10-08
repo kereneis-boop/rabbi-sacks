@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Terms_6.11 – Rabbi Sacks</title>
+  <title>Terms_1.7 – Rabbi Sacks</title>
 
   <!-- MOODLE SAFE (no external files) -->
   <style>
@@ -57,10 +57,6 @@
     /* גריד רספונסיבי */
     .vbt-terms .vbt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 18px; max-width: 1000px; margin: 0 auto; }
 
-    /* כאשר יש 4 מושגים: שומרים על רוחב קפסולה וקובעים 2 בעמודה בכל שורה במסכים רחבים */
-    .vbt-terms .vbt-grid--two-fixed { display: grid; grid-template-columns: 1fr; gap: 18px; max-width: 1000px; margin: 0 auto; }
-    @media (min-width: 700px) { .vbt-terms .vbt-grid--two-fixed { grid-template-columns: repeat(2, minmax(0,1fr)); } }
-
     /* העדפת נגישות – פחות תנועה */
     @media (prefers-reduced-motion: reduce) { .vbt-terms .vbt-panel, .vbt-terms .vbt-icon, .vbt-terms .vbt-summary { transition: none; } }
   </style>
@@ -70,57 +66,44 @@
 <div class="vbt-terms" dir="rtl" style="max-width:1120px;margin:0 auto;font-family: Alef,-apple-system,'Segoe UI',Arial,sans-serif;color:#0f172a;">
 
   <!-- גריד רספונסיבי -->
-  <div class="vbt-grid vbt-grid--two-fixed">
-
-    <!-- ===== תורה ומדע ===== -->
-    <div class="vbt-acc">
-      <input class="vbt-toggle" type="checkbox" id="vbt-t1" />
-      <label class="vbt-summary" for="vbt-t1" role="button" tabindex="0">
-        <span class="vbt-icon">i</span>
-        <span class="vbt-title">תורה ומדע</span>
-        <span class="vbt-pm" aria-hidden="true"></span>
-      </label>
-      <div class="vbt-panel">
-        תורה ומדע: השילוב בין חכמת התורה לבין הידע הכללי, מתוך תפיסה שהאמונה היהודית אינה עומדת בניגוד לחקר העולם, אלא יכולה להעשיר אותו.
-      </div>
-    </div>
+  <div class="vbt-grid">
 
     <!-- ===== מחלוקת לשם שמיים ===== -->
     <div class="vbt-acc">
-      <input class="vbt-toggle" type="checkbox" id="vbt-t2" />
-      <label class="vbt-summary" for="vbt-t2" role="button" tabindex="0">
+      <input class="vbt-toggle" type="checkbox" id="vbt-t1" />
+      <label class="vbt-summary" for="vbt-t1" role="button" tabindex="0">
         <span class="vbt-icon">i</span>
         <span class="vbt-title">מחלוקת לשם שמיים</span>
         <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
-        מחלוקת לשם שמיים: תפיסת המחלוקת ככוח בונה, ולא הורס, כאשר היא נעשית מתוך כוונה טהורה לברר את האמת ולא מתוך אינטרסים אישיים.
+        תפיסת המחלוקת ככוח בונה, ולא הורס, כאשר היא נעשית מתוך כוונה טהורה לברר את האמת ולא מתוך אינטרסים אישיים.
       </div>
     </div>
 
     <!-- ===== מנהיגות יוצרת מנהיגים ===== -->
     <div class="vbt-acc">
-      <input class="vbt-toggle" type="checkbox" id="vbt-t3" />
-      <label class="vbt-summary" for="vbt-t3" role="button" tabindex="0">
+      <input class="vbt-toggle" type="checkbox" id="vbt-t2" />
+      <label class="vbt-summary" for="vbt-t2" role="button" tabindex="0">
         <span class="vbt-icon">i</span>
         <span class="vbt-title">מנהיגות יוצרת מנהיגים</span>
         <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
-        מנהיגות יוצרת מנהיגים: רעיונו של הרב זקס שלפיו מנהיג אמיתי אינו מסתפק בצבירת עוקבים, אלא מטפח אנשים שימשיכו להנהיג ולחדש.
+        רעיונו של הרב זקס שלפיו מנהיג אמיתי אינו מסתפק בצבירת עוקבים, אלא מטפח אנשים שימשיכו להנהיג ולחדש.
       </div>
     </div>
 
     <!-- ===== ברית וקהילה ===== -->
     <div class="vbt-acc">
-      <input class="vbt-toggle" type="checkbox" id="vbt-t4" />
-      <label class="vbt-summary" for="vbt-t4" role="button" tabindex="0">
+      <input class="vbt-toggle" type="checkbox" id="vbt-t3" />
+      <label class="vbt-summary" for="vbt-t3" role="button" tabindex="0">
         <span class="vbt-icon">i</span>
         <span class="vbt-title">ברית וקהילה</span>
         <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
-         ברית וקהילה: ההבנה שהיהדות אינה מבוססת רק על חוקים ומצוות, אלא גם על ברית בין אנשים ויצירת קהילה מוסרית שמחויבת לערכים משותפים.
+        ההבנה שהיהדות אינה מבוססת רק על חוקים ומצוות, אלא גם על ברית בין אנשים ויצירת קהילה מוסרית שמחויבת לערכים משותפים.
       </div>
     </div>
 
