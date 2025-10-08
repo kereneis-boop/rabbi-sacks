@@ -55,11 +55,7 @@
     .vbt-terms .vbt-toggle:checked ~ .vbt-panel { padding: 16px; opacity: 1; transform: translateY(0); max-height: 1200px; }
 
     /* גריד רספונסיבי */
-    \.vbt-terms \.vbt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 18px; max-width: 1000px; margin: 0 auto; }
-
-    /* כאשר יש 4 מושגים: שומרים על רוחב קפסולה וקובעים 2 בעמודה בכל שורה במסכים רחבים */
-    .vbt-terms .vbt-grid--two-fixed { display: grid; grid-template-columns: 1fr; gap: 18px; max-width: 1000px; margin: 0 auto; }
-    @media (min-width: 700px) { .vbt-terms .vbt-grid--two-fixed { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    .vbt-terms .vbt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 18px; max-width: 1000px; margin: 0 auto; }
 
     /* העדפת נגישות – פחות תנועה */
     @media (prefers-reduced-motion: reduce) { .vbt-terms .vbt-panel, .vbt-terms .vbt-icon, .vbt-terms .vbt-summary { transition: none; } }
@@ -70,7 +66,7 @@
 <div class="vbt-terms" dir="rtl" style="max-width:1120px;margin:0 auto;font-family: Alef,-apple-system,'Segoe UI',Arial,sans-serif;color:#0f172a;">
 
   <!-- גריד רספונסיבי -->
-  <div class="vbt-grid vbt-grid--two-fixed">
+  <div class="vbt-grid">
 
     <!-- ===== המשכיות יהודית ===== -->
     <div class="vbt-acc">
@@ -81,7 +77,7 @@
         <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
-        המשכיות יהודית: יוזמה שהרב זקס הקים במטרה להחיות ולחזק את הזהות היהודית בקהילות יהודיות, במיוחד בקהילות אנגלו-יהודיות, ולהתמודד עם אתגרי ההתבוללות והאסימילציה.
+        יוזמה שהרב זקס הקים במטרה להחיות ולחזק את הזהות היהודית בקהילות יהודיות, במיוחד בקהילות אנגלו-יהודיות, ולהתמודד עם אתגרי ההתבוללות והאסימילציה.
       </div>
     </div>
 
@@ -94,7 +90,7 @@
         <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
-        מנהיגות שיתופית: הרב זקס פעל לגייס אנשים ממגוון תחומים מקצועיים, כולל חינוך, אמנות, ותחומים אחרים, כדי להוביל את יוזמת המשכיות ולחזק את הקהילה היהודית על ידי יצירת שיתופי פעולה רחבים.
+        הרב זקס פעל לגייס אנשים ממגוון תחומים מקצועיים, כולל חינוך, אמנות, ותחומים אחרים, כדי להוביל את יוזמת המשכיות ולחזק את הקהילה היהודית על ידי יצירת שיתופי פעולה רחבים.
       </div>
     </div>
 
@@ -107,10 +103,12 @@
         <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
-        אחדות: הרב זקס חיפש לקדם את רעיון האחדות היהודית, כאשר כל יהודי יכול לתרום את חלקו ולחוות את הצד הרוחני שבזהותו היהודית, כפי שנראה גם בהשפעתו על החברה הישראלית.
+        הרב זקס חיפש לקדם את רעיון האחדות היהודית, כאשר כל יהודי יכול לתרום את חלקו ולחוות את הצד הרוחני שבזהותו היהודית, כפי שנראה גם בהשפעתו על החברה הישראלית.
       </div>
     </div>
 
+  </div>
+</div>
 
 <!-- Auto-Resize: מדידות גם בפתיחה וגם בסגירה -->
 <script>
