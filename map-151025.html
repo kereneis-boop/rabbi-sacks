@@ -12,7 +12,7 @@
     --bg:#ffffff; --ink:#0f172a;
     --chip-h:48px; 
     --gap-x:36px;           
-    --gap-x-d01:100px;      /* רווח אופקי מיוחד בין עומק 0 לעומק 1 */
+    --gap-x-d01:100px;      /* רווח אופקי מיוחד בין עומק 0 לעומק 1 (אפשר לכוונן) */
     --gap-y:40px; 
     --gap-rootcat:22px;   /* עומק 1 */
     --gap-d3:22px;        /* עומק 3 */
@@ -120,7 +120,8 @@
       {"label":"1 - ביוגרפיה","children":[
         {"label":"רקע ביוגרפי והשפעתו על הגות הרב זקס"},
         {"label":"מנהיגות ומורשת הרב זקס"},
-        {"label":"מבוא להגות הרב זקס"},{"label":"מה למדנו?","children":[
+        {"label":"מבוא להגות הרב זקס"},
+        {"label":"מה למדנו?","children":[
           {"label":"חקר ביוגרפי"},
           {"label":"עיצוב תפיסת עולם"},
           {"label":"מודל מנהיגותי"},
@@ -132,7 +133,14 @@
         {"label":"מבוא לפילוסופיה יהודית"},
         {"label":"חקר האחריות והמחשבה היהודית"},
         {"label":"כשלון הנאורות"},
-        {"label":"מסורת בעידן לא מסורתי"},{"label":"מה למדנו?","children":[{"label":"הגדרת הפילוסופיה היהודית, התפתחותה ההיסטורית והאינטלקטואלית, ומיקומו של הרב יונתן זקס בהקשר הפילוסופי־יהודי העכשווי"},{"label":"האחריות כמסגרת אתית: מה מציעה הפילוסופיה היהודית להבנת האחריות בעולם המודרני"},{"label":"בין מסורת למודרניות: איך מנהלים דיאלוג פורה בין המסורת היהודית לבין האתגרים של העידן הפוסט-מסורתי"},{"label":"הביקורת על הנאורות: מהן ההשלכות של כישלון פרויקט הנאורות על חקר המחשבה היהודית ועל רלוונטיות המקורות היהודיים"},{"label":"המחשבה היהודית ככלי פעיל: כיצד הופכת המחשבה היהודית מאוסף ידע היסטורי לכלי עכשווי לפתרון דילמות מודרניות"}]}
+        {"label":"מסורת בעידן לא מסורתי"},
+        {"label":"מה למדנו?","children":[
+          {"label":"הגדרת הפילוסופיה היהודית, התפתחותה ההיסטורית והאינטלקטואלית, ומיקומו של הרב יונתן זקס בהקשר הפילוסופי־יהודי העכשווי"},
+          {"label":"האחריות כמסגרת אתית: מה מציעה הפילוסופיה היהודית להבנת האחריות בעולם המודרני"},
+          {"label":"בין מסורת למודרניות: איך מנהלים דיאלוג פורה בין המסורת היהודית לבין האתגרים של העידן הפוסט-מסורתי"},
+          {"label":"הביקורת על הנאורות: מהן ההשלכות של כישלון פרויקט הנאורות על חקר המחשבה היהודית ועל רלוונטיות המקורות היהודיים"},
+          {"label":"המחשבה היהודית ככלי פעיל: כיצד הופכת המחשבה היהודית מאוסף ידע היסטורי לכלי עכשווי לפתרון דילמות מודרניות"}
+        ]}
       ]},
 
       {"label":"3 - המתודה הפרשנית","children":[
@@ -209,9 +217,9 @@
 <script>
 (function(){
   let data; 
-  try{ 
+  try { 
     data = JSON.parse(document.getElementById('mindmap-data').textContent); 
-  }catch(e){ 
+  } catch(e){ 
     console.error('Mindmap JSON parse error:', e); 
     data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים - נא לבדוק JSON","children":[]}};
   }
@@ -231,7 +239,7 @@
   let lockedFit = 1;
   let pinchStartDist = 0, pinchStartScale = 1;
 
-  // Anchor by FLOW
+  // קובע עוגן במה לפי זרימה (FLOW), לא לפי כיוון טקסט (DIR)
   if(FLOW==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; stage.style.right=''; }
   else { stage.style.transformOrigin = 'top right'; stage.style.right='0'; stage.style.left=''; }
   stage.style.top='0'; stage.style.position='absolute';
@@ -239,12 +247,12 @@
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
   const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36; 
-  const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y')) || 40;
+  const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;
   const GAP_BETWEEN_MODS_D2 = parseFloat(CSS.getPropertyValue('--gap-between-mods-d2')) || 20;
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
   const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
-  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
+  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X; // רווח 0↔1
   const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
   const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
 
@@ -258,13 +266,18 @@
     return GAP_Y;
   }
 
-  // דיפולט סגור מתחת לעומק 2
+  // *** שינוי 1: דיפולט סגור לעומקים >= 2 ***
   function build(raw, depth=0, parent=null){
-    const node = { 
-      label: raw.label, depth, parent, 
-      collapsed: (typeof raw.collapsed === 'boolean') ? !!raw.collapsed : (depth >= 2),
-      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0, 
-      children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null) 
+    const defaultCollapsed = (depth >= 2);
+    const node = {
+      label: raw.label,
+      depth,
+      parent,
+      collapsed: ('collapsed' in raw) ? !!raw.collapsed : defaultCollapsed,
+      x:0, y:0, width:0, height:CHIP_H, el:null, id: Math.random().toString(36).slice(2),
+      _subH:0,
+      children: [],
+      gapOverride: (typeof raw.gap==='number'? raw.gap : null)
     };
     (raw.children||[]).forEach(ch=> node.children.push(build(ch, depth+1, node)));
     return node;
@@ -312,6 +325,7 @@
     node._subH = Math.max(node.height, total); return node._subH;
   }
 
+  // עוגני עמודות
   let DEPTH_ANCHORS = new Map();
   function xForDepth(depth){ return DEPTH_ANCHORS.get(depth) || 0; }
 
@@ -342,15 +356,18 @@
     return { w:(maxX-minX), h:(maxY-minY), minX };
   }
 
+  // === LAYOUT ===
   const SHOW_GUIDES = false;
-  let lastW = 0, lastH = 0, offsetX = 0, stageW = 0;
+  let LAYOUT_MAX_DEPTH = 0, lastW = 0, lastH = 0, offsetX = 0, stageW = 0;
   const edgeOf = new Map();
 
   function layout(){
-    // 1) מדידה מוקדמת
+    // 1) מדידה
     measure(root);
 
-    // 2) מיקום ראשוני
+    // 2) מיקום זמני + איסוף נראים כדי לחשב עוגנים דינמיים
+    LAYOUT_MAX_DEPTH = 0;
+    (function calcDepthInit(n){ LAYOUT_MAX_DEPTH=Math.max(LAYOUT_MAX_DEPTH,n.depth); if(!n.collapsed) n.children.forEach(calcDepthInit); })(root);
     subHeight(root); position(root,0,0);
     let nodesTmp=[]; collectVisible(root, nodesTmp);
 
@@ -358,7 +375,7 @@
     const depthMaxW = new Map();
     nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140)); });
 
-    // 4) עוגנים לעמודות
+    // 4) עוגנים: d מתחיל אחרי maxWidth(d-1)+GAP_X
     DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
     let acc=0; const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
     for(let d=1; d<=maxDepthVis+1; d++){
@@ -368,28 +385,25 @@
     }
 
     // 5) מיקום סופי
+    LAYOUT_MAX_DEPTH = 0; (function calcDepth(n){ LAYOUT_MAX_DEPTH=Math.max(LAYOUT_MAX_DEPTH,n.depth); if(!n.collapsed) n.children.forEach(calcDepth); })(root);
     subHeight(root); position(root, 0, 0);
 
-    // 6) יישור אנכי: השורש למרכז עמודת עומק 1
-    if(root.children && root.children.length){
-      const firstColTotalH = root.children.reduce((sum, _c, i)=>{
-        let add = CHIP_H;
-        if(i>0) add += gapForDepth(1);
-        if(i>0) add += GAP_BETWEEN_MODS_D2;
-        return sum + add;
-      }, 0);
-      const desiredRootY = firstColTotalH / 2;
+    // *** שינוי 2: מירכוז השורש ביחס לעמודת עומק-1 ***
+    if (root.children && root.children.length){
+      const firstY = root.children[0].y;
+      const lastY  = root.children[root.children.length - 1].y;
+      const desiredRootY = (firstY + lastY) / 2;
       const deltaY = desiredRootY - root.y;
       (function shiftAll(n){
         n.y += deltaY;
-        if(!n.collapsed) n.children.forEach(shiftAll);
+        if (!n.collapsed) n.children.forEach(shiftAll);
       })(root);
     }
 
     const nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
 
-    // 7) התאמת רוחב/הטייה
+    // 6) Fit/Scroll boxes
     const vpW = viewport.getBoundingClientRect().width;
     const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
     const baseFit = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
@@ -413,7 +427,7 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    // 8) מיקום קפסולות עם snap לסקייל
+    // 7) מיקום קפסולות (SNAP לפיקסלים)
     const sPlace = (mode==='fitW') ? lockedFit : userScale;
     nodes.forEach(n=>{
       const top = n.y - n.height/2;
@@ -429,8 +443,18 @@
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
-    // 9) קווים
+    // 8) קווים
     edgeOf.clear(); edgeLayer.textContent='';
+    if(SHOW_GUIDES){
+      DEPTH_ANCHORS.forEach((ax, d)=>{
+        const sNow = Math.max((mode==='fitW') ? lockedFit : userScale, 0.0001);
+        const rx = (Math.round((offsetX + ax) * sNow))/sNow;
+        const g = document.createElementNS('http://www.w3.org/2000/svg','path');
+        g.setAttribute('class','edge'); g.setAttribute('stroke-dasharray','4 6'); g.setAttribute('opacity','0.25');
+        g.setAttribute('d', `M ${rx} 0 L ${rx} ${lastH||1000}`);
+        edgeLayer.appendChild(g);
+      });
+    }
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const PAD_PARENT=6, PAD_CHILD=0;
       const sNow = Math.max((mode==='fitW') ? lockedFit : userScale, 0.0001);
@@ -531,15 +555,34 @@
   document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
   document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; userScale=lockedFit; layout(); });
 
+  // בדיקות קצרות לקונסול
+  function runTests(){
+    try{
+      const anyLabel = document.querySelector('.chip .label');
+      if(anyLabel){
+        const cs = getComputedStyle(anyLabel);
+        console.assert(cs.direction==='rtl' && (cs.textAlign==='right' || cs.textAlign==='start'), 'RTL/text-align on label failed');
+      }
+      // Anchors monotonic per FLOW
+      if(FLOW==='rtl'){
+        let prev = Infinity, ok=true; DEPTH_ANCHORS.forEach((v,k)=>{ if(k===0) return; if(!(v<=prev)) ok=false; prev=v; }); console.assert(ok, 'DEPTH_ANCHORS not monotonic RTL');
+      } else {
+        let prev = -Infinity, ok=true; DEPTH_ANCHORS.forEach((v,k)=>{ if(k===0) return; if(!(v>=prev)) ok=false; prev=v; }); console.assert(ok, 'DEPTH_ANCHORS not monotonic LTR');
+      }
+      // Edge count = visible nodes minus root
+      let nodes=[]; collectVisible(root,nodes); const edges = edgeLayer.querySelectorAll('path.edge').length; console.assert(edges === Math.max(0, nodes.length-1), 'Edges count mismatch');
+      console.log('Mind-map smoke tests passed');
+    }catch(err){ console.warn('Tests error', err); }
+  }
+
   // init
   (function sizeViewportInit(){ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; })();
-  layout();
-  window.addEventListener('resize', ()=>{ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; layout(); });
+  layout(); runTests();
+  window.addEventListener('resize', ()=>{ sizeViewport(); layout(); });
 
-  // Re-layout after fonts load
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(()=>{ layout(); });
-    document.fonts.addEventListener?.('loadingdone', ()=> { layout(); });
+    document.fonts.ready.then(()=>{ layout(); runTests(); });
+    document.fonts.addEventListener?.('loadingdone', ()=> { layout(); runTests(); });
   }
 })();
 </script>
