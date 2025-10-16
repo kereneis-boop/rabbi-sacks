@@ -136,14 +136,14 @@
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
 
-  // Zoom state
+  /* ==== Zoom state ==== */
   let mode = 'fitW';
   let userScale = 1;
   let lockedFit = 1;
   let pinchStartDist = 0, pinchStartScale = 1;
-  let recalcFitOnLayout = true; // חישוב lockedFit רק כשצריך
+  let recalcFitOnLayout = true; // נחשב lockedFit רק כשצריך (טעינה/גודל חלון/כפתור התאמה)
 
-  // קובע עוגן במה לפי זרימה
+  /* עוגן הבמה לפי זרימה */
   if(FLOW==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; stage.style.right=''; }
   else { stage.style.transformOrigin = 'top right'; stage.style.right='0'; stage.style.left=''; }
   stage.style.top='0'; stage.style.position='absolute';
@@ -177,9 +177,9 @@
   }
   const root = build(data.root, 0, null);
 
-  // דיפולט: רק השורש וענף 0–1 פתוחים (אין ילדים בפיילוד הזה, אז בפועל השורש פתוח)
+  /* דיפולט: השורש פתוח, כל המודולות (עומק 1) סגורות */
   root.collapsed = false;
-  root.children.forEach(c => c.collapsed = true); // כל המודולות סגורות ביוזמת המשתמש
+  root.children.forEach(c => c.collapsed = true);
 
   function ensureChip(node){
     if(node.el) return;
@@ -261,7 +261,10 @@
 
     LAYOUT_MAX_DEPTH = 0;
     (function calcDepthInit(n){ LAYOUT_MAX_DEPTH=Math.max(LAYOUT_MAX_DEPTH,n.depth); if(!n.collapsed) n.children.forEach(calcDepthInit); })(root);
-    subHeight(root); position(root,0,0);
+    subHeight(root);
+    /* מיקום רגיל כפי שעבד קודם – בלי הסטות אנכיות מיוחדות */
+    position(root,0,0);
+
     let nodesTmp=[]; collectVisible(root, nodesTmp);
 
     const depthMaxW = new Map();
@@ -275,19 +278,15 @@
       DEPTH_ANCHORS.set(d, (FLOW==='rtl' ? -acc : acc));
     }
 
-    // מרכוז אנכי של השורש ביחס לענף 0–7
-    const totalChildrenH = root.children.reduce((sum, c, i)=> sum + CHIP_H + (i? gapForDepth(1):0), 0);
-    const startTop = - totalChildrenH/2; // כך השורש יישב סביב אמצע העמודה הראשונה
-    subHeight(root); position(root, 0, startTop);
+    subHeight(root); position(root, 0, 0);
 
     const nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
 
-    // Fit / Scale
+    /* Fit / Scale */
     const vpW = viewport.getBoundingClientRect().width;
     const vpH = viewport.clientHeight || window.innerHeight;
     const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
-
     const fitW = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
     const fitH = Math.min(1.0, (vpH - 24) / Math.max(1, h));
     const baseFit = Math.min(fitW, fitH);
@@ -385,7 +384,7 @@
   function updateSafeTop(){ if(viewport) viewport.style.paddingTop = '0px'; if(scroller) scroller.style.marginTop = '0px'; }
   function sizeViewport(){ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; }
 
-  // Toggle handlers
+  /* Toggle handlers */
   function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
   function animateClose(node, done){
     const list=[]; function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
@@ -401,7 +400,7 @@
     if(n.collapsed){
       if(n.el) n.el.setAttribute('aria-expanded','true');
       n.collapsed=false;
-      // לא מחשבים fit מחדש – הזום נשאר כפי שהוא
+      /* הזום לא מחושב מחדש כאן */
       layout();
     } else {
       if(n.el) n.el.setAttribute('aria-expanded','false');
@@ -409,7 +408,7 @@
     }
   }
 
-  // Zoom + Pan
+  /* Zoom + Pan */
   const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
   const currentScale = ()=> (mode==='fitW' ? lockedFit : userScale);
   document.getElementById('zoomIn').addEventListener('click', ()=>{
@@ -423,7 +422,7 @@
   document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
   document.getElementById('fitW').addEventListener('click', ()=>{
     mode='fitW';
-    recalcFitOnLayout = true; // רק עכשיו לחשב lockedFit מחדש
+    recalcFitOnLayout = true; // לחשב התאמה מחדש רק כשמבקשים
     layout();
   });
 
@@ -452,13 +451,13 @@
   document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
   document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; userScale=lockedFit; layout(); });
 
-  // init
-  updateSafeTop();
-  (function sizeViewportInit(){ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; })();
+  /* init */
+  function sizeViewport(){ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; }
+  sizeViewport();
   layout();
 
   window.addEventListener('resize', ()=>{
-    updateSafeTop(); sizeViewport();
+    sizeViewport();
     recalcFitOnLayout = true; // שינוי חלון → לחשב התאמה מחדש
     layout();
   });
