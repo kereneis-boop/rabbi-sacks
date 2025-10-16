@@ -76,6 +76,7 @@
     line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
     direction: rtl; text-align:right; font-weight:700; gap:14px;
     background: var(--chip-bg, #ffffff); color:#0f172a;
+    cursor:pointer;
   }
   .chip[data-kind="root"]{font-weight:800}
   .label{pointer-events:none; direction: rtl; text-align: right}
@@ -134,7 +135,6 @@
         {"label":"למה הרב זקס? למה עכשיו?"},
         {"label":"ברכת נשיא המדינה"}
       ]},
-
       {"label":"1 - ביוגרפיה","children":[
         {"label":"רקע ביוגרפי והשפעתו על הגות הרב זקס"},
         {"label":"מנהיגות ומורשת הרב זקס"},
@@ -146,7 +146,6 @@
           {"label":"התבוננות מחודשת בזהות יהודית ומנהיגות במאה ה-21"}
         ]}
       ]},
-
       {"label":"2 - יסודות פילוסופיים","children":[
         {"label":"מבוא לפילוסופיה יהודית"},
         {"label":"חקר האחריות והמחשבה היהודית"},
@@ -160,7 +159,6 @@
           {"label":"המחשבה היהודית ככלי פעיל"}
         ]}
       ]},
-
       {"label":"3 - המתודה הפרשנית","children":[
         {"label":"מבוא לפרשנות עפ\"י הרב זקס"},
         {"label":"מרבנות לפילוסופיה"},
@@ -174,7 +172,6 @@
           {"label":"בנייה מתוך אתגר"}
         ]}
       ]},
-
       {"label":"4 - מטקסט לדיאלוג","children":[
         {"label":"פרופ' יונתן רינהולד על חזונו של הרב זקס"},
         {"label":"דיאלוג בין אמונה וחברה"},
@@ -188,7 +185,6 @@
           {"label":"יסודות פילוסופיים"}
         ]}
       ]},
-
       {"label":"5 - מדע, מודרניות ומנהיגות","children":[
         {"label":"מודרניות וחברה"},
         {"label":"מודרניות ומנהיגות בחברה"},
@@ -205,7 +201,6 @@
           {"label":"תרומה לשיח מדע–דת"}
         ]}
       ]},
-
       {"label":"6 - מורשת חיה","children":[
         {"label":"מורשת הרב זקס והשפעותיה"},
         {"label":"פרופ׳ אדם פרזינגר"},
@@ -222,7 +217,6 @@
           {"label":"מסורת ככוח להתחדשות"}
         ]}
       ]},
-
       {"label":"7 - סיכום","children":[
         {"label":"חלון לערכים, זהות ומנהיגות"},
         {"label":"פרויקט מסכם"}
@@ -255,7 +249,7 @@
   let lockedFit = 1;         // scale שנקבע אוטומטית ב-fit
   let pinchStartDist = 0, pinchStartScale = 1;
 
-  let didInitialFitAll = false; // התאמת גובה/רוחב ראשונית כדי לראות כל עומק-1
+  let didInitialFitAll = false; // התאמה ראשונית כך שכל עומק-1 ייראה
 
   // עוגן במה לפי זרימה
   if(FLOW==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; stage.style.right=''; }
@@ -277,9 +271,8 @@
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
-  /* ----- בניית עץ עם דיפולט פתוח: עומק 0 גלוי, עומק 1 גלוי (סגור פנימית) ----- */
+  /* ----- בניית עץ (ברירת מחדל: שורש פתוח, כל היתר סגור) ----- */
   function build(raw, depth=0, parent=null, idxInParent=0){
-    // root פתוח; כל האחרים סגורים כברירת מחדל
     const defaultCollapsed = depth === 0 ? false : true;
     const node = { 
       label: raw.label, depth, parent, 
@@ -301,11 +294,20 @@
     const label = document.createElement('span'); label.className='label'; label.textContent=node.label; el.appendChild(label);
     if(node.children.length){
       const t = document.createElement('button');
-      t.className = 'toggle'; t.setAttribute('aria-label','פתח/סגור');
+      t.className = 'toggle'; t.setAttribute('aria-label','פתח/סגור'); t.type='button';
       t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
       el.appendChild(t);
       el.setAttribute('aria-expanded', String(!node.collapsed));
+
+      // לחיצה על הכפתור + על כל הקפסולה
       t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
+      el.addEventListener('click', ev => {
+        // לאפשר לחיצה בכל שטח הקפסולה
+        if (ev.target.closest('.toggle')) return; 
+        handleToggle(node);
+      });
+
+      // מקשים
       el.setAttribute('tabindex','0'); el.setAttribute('role','button');
       el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); handleToggle(node); } });
     }
@@ -333,6 +335,7 @@
     return GAP_Y;
   }
 
+  // *** תיקון מרכזיות השורש: נספר גם את הרווח המיוחד בין מודולות עומק-1 ***
   function subHeight(node){
     if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
     let total = 0;
@@ -340,6 +343,8 @@
       subHeight(c);
       total += c._subH;
       if(i>0){ total += (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth); }
+      // תוספת ייחודית לעומק 0 – רווח בין מודולות
+      if(node.depth===0 && i<node.children.length-1){ total += GAP_BETWEEN_MODS_D2; }
     });
     node._subH = Math.max(node.height, total); return node._subH;
   }
@@ -405,14 +410,14 @@
     const nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
 
-    // 6) Fit ראשוני גם לגובה וגם לרוחב כך שכל עומק-1 ייראה
+    // 6) Fit ראשוני כך שכל עומק-1 ייראה
     const vpW = viewport.getBoundingClientRect().width;
     const vpH = viewport.clientHeight || window.innerHeight;
     const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
 
     const fitW = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
     const fitH = Math.min(1.0, (vpH - 24) / Math.max(1, h));
-    const baseFit = Math.min(fitW, fitH); // לקחת את המחמיר כדי לראות הכל
+    const baseFit = Math.min(fitW, fitH);
 
     const maxDepthNow = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
     let compactCap = 1.0; if(maxDepthNow<=1) compactCap=0.75; else if(maxDepthNow===2) compactCap=0.88;
@@ -475,6 +480,30 @@
     stage.style.opacity='1';
   }
 
+  /* ----- Toggle ----- */
+  function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
+  function animateClose(node, done){
+    const list=[]; function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
+    node.children.forEach(collectDesc);
+    const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
+    list.forEach(n=>{
+      if(n.el){ n.el.classList.add('fade-exit'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur); }
+      const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-exit'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-exit','fade-active'), dur); }
+    });
+    setTimeout(done, dur);
+  }
+  function handleToggle(n){ 
+    if(!n.children.length) return;
+    if(n.collapsed){ 
+      n.collapsed=false; 
+      if(n.el) n.el.setAttribute('aria-expanded','true'); 
+      layout(); 
+    } else { 
+      if(n.el) n.el.setAttribute('aria-expanded','false'); 
+      animateClose(n, ()=>{ collapseDeep(n); layout(); }); 
+    } 
+  }
+
   /* ----- Zoom & Scroll ----- */
   function applyZoom(){
     const s = (mode==='fitW') ? lockedFit : userScale;
@@ -505,6 +534,7 @@
   document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
   document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; layout(); });
 
+  // אל תתחיל PAN בלחיצה על קפסולה/טוגל
   function canPan(){
     const tol = 2;
     let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
@@ -516,16 +546,40 @@
     return needX || needY;
   }
   let isPanning=false, panPending=false, startX=0, startY=0, startScrollL=0, startScrollT=0;
-  viewport.addEventListener('pointerdown', e=>{ if(e.button!==0) return; if(e.target.closest('.zoombar')||e.target.closest('.toggle')) return; if(!canPan()) return; panPending=true; isPanning=false; startX=e.clientX; startY=e.clientY; startScrollL=viewport.scrollLeft; startScrollT=viewport.scrollTop; });
-  viewport.addEventListener('pointermove', e=>{ if(!(panPending||isPanning)) return; const dx=e.clientX-startX, dy=e.clientY-startY; if(!isPanning){ if(Math.abs(dx)+Math.abs(dy)<4) return; isPanning=true; try{viewport.setPointerCapture(e.pointerId);}catch(_){} viewport.style.cursor='grabbing'; } viewport.scrollLeft=startScrollL-dx; viewport.scrollTop=startScrollT-dy; });
+  viewport.addEventListener('pointerdown', e=>{
+    if(e.button!==0) return;
+    if(e.target.closest('.zoombar') || e.target.closest('.toggle') || e.target.closest('.chip')) return; // <-- מניעת pan על קפסולות
+    if(!canPan()) return; 
+    panPending=true; isPanning=false; startX=e.clientX; startY=e.clientY; startScrollL=viewport.scrollLeft; startScrollT=viewport.scrollTop; 
+  });
+  viewport.addEventListener('pointermove', e=>{
+    if(!(panPending||isPanning)) return; 
+    const dx=e.clientX-startX, dy=e.clientY-startY; 
+    if(!isPanning){ if(Math.abs(dx)+Math.abs(dy)<4) return; isPanning=true; try{viewport.setPointerCapture(e.pointerId);}catch(_){} viewport.style.cursor='grabbing'; } 
+    viewport.scrollLeft=startScrollL-dx; viewport.scrollTop=startScrollT-dy; 
+  });
   function endPan(){ panPending=false; isPanning=false; viewport.style.cursor=(canPan()? 'grab':'auto'); }
   viewport.addEventListener('pointerup', endPan); viewport.addEventListener('pointercancel', endPan); viewport.addEventListener('pointerleave', endPan);
 
-  viewport.addEventListener('touchstart', e=>{ if(e.target.closest('.zoombar')||e.target.closest('.toggle')) return; if(e.touches.length===2){ pinchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); pinchStartScale = currentScale(); mode='free'; } }, {passive:true});
-  viewport.addEventListener('touchmove', e=>{ if(e.target.closest('.zoombar')||e.target.closest('.toggle')) return; if(e.touches.length===2 && pinchStartDist>0){ e.preventDefault(); const dist=Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); userScale=clamp(pinchStartScale * (dist / pinchStartDist), 0.2, 3); applyZoom(); } }, {passive:false});
+  viewport.addEventListener('touchstart', e=>{ 
+    if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return; 
+    if(e.touches.length===2){ 
+      pinchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); 
+      pinchStartScale = currentScale(); mode='free'; 
+    } 
+  }, {passive:true});
+  viewport.addEventListener('touchmove', e=>{ 
+    if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return; 
+    if(e.touches.length===2 && pinchStartDist>0){ 
+      e.preventDefault(); 
+      const dist=Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); 
+      userScale=clamp(pinchStartScale * (dist / pinchStartDist), 0.2, 3); 
+      applyZoom(); 
+    } 
+  }, {passive:false});
   viewport.addEventListener('touchend', e=>{ if(e.touches.length<2){ pinchStartDist=0; } });
 
-  viewport.addEventListener('wheel', e=>{ if(e.target.closest('.zoombar')||e.target.closest('.toggle')) return; if(!e.ctrlKey) return; e.preventDefault(); mode='free'; const s = currentScale(); userScale = clamp(s * Math.exp(-e.deltaY/500), 0.2, 3); applyZoom(); }, {passive:false});
+  viewport.addEventListener('wheel', e=>{ if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return; if(!e.ctrlKey) return; e.preventDefault(); mode='free'; const s = currentScale(); userScale = clamp(s * Math.exp(-e.deltaY/500), 0.2, 3); applyZoom(); }, {passive:false});
 
   document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
   document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; userScale=lockedFit; layout(); });
