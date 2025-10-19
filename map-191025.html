@@ -108,7 +108,7 @@
     <button id="zoomPct" class="pct" title="100%">100%</button>
     <button id="zoomIn" title="Zoom in">+</button>
     <button id="expandAll" title="פתח הכל">פתח־הכל</button>
-    <button id="collapseAll" title="סגור־הכל">סגור־הכל</button>
+    <button id="collapseAll" title="סגור הכל">סגור־הכל</button>
   </div>
 
   <div id="viewport" class="viewport">
@@ -249,8 +249,10 @@
   let lockedFit = 1;         // scale שנקבע אוטומטית ב-fit
   let pinchStartDist = 0, pinchStartScale = 1;
 
-  // חשוב: לחשב fit רק כשצריך (טעינה / התאמה / שינוי גודל / שינוי פונט)
-  let recalcFitOnLayout = true;
+  // NEW: נועל את הזום אחרי ההתאמה הראשונית/ידנית
+  let zoomFrozen = false;
+
+  let didInitialFitAll = false; // התאמה ראשונית כך שכל עומק-1 ייראה
 
   // עוגן במה לפי זרימה
   if(FLOW==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; stage.style.right=''; }
@@ -335,7 +337,7 @@
     return GAP_Y;
   }
 
-  // מרכזיות השורש – נספר גם את הרווח המיוחד בין מודולות עומק-1
+  // ספירת רווחי עומק-1 למרכז שורש
   function subHeight(node){
     if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
     let total = 0;
@@ -354,7 +356,7 @@
 
   function position(node, depth, top){
     node.x = xForDepth(depth);
-    node.y = top + node._subH/2;
+    node.y = top + node._subH/2;  // ממורכז ביחס לתת-העץ
     if(!(node.collapsed) && node.children.length){
       let cursor = top;
       node.children.forEach((c,idx)=>{
@@ -395,7 +397,7 @@
     const depthMaxW = new Map();
     nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140)); });
 
-    // 4) עוגנים סופיים
+    // 4) חישוב עוגנים סופיים
     DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
     let acc=0; const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
     for(let d=1; d<=maxDepthVis+1; d++){
@@ -409,7 +411,7 @@
     const nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
 
-    // 6) Fit – מחשבים lockedFit רק כשrecalcFitOnLayout=true
+    // 6) Fit ו"קיבוע" זום
     const vpW = viewport.getBoundingClientRect().width;
     const vpH = viewport.clientHeight || window.innerHeight;
     const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
@@ -421,9 +423,18 @@
     const maxDepthNow = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
     let compactCap = 1.0; if(maxDepthNow<=1) compactCap=0.75; else if(maxDepthNow===2) compactCap=0.88;
 
-    if (mode === 'fitW' && recalcFitOnLayout) {
+    if (!didInitialFitAll){
       lockedFit = Math.max(0.2, Math.min(baseFit, compactCap));
-      recalcFitOnLayout = false; // לא לשנות זום בפתיחה/סגירה
+      didInitialFitAll = true;
+    } else {
+      lockedFit = Math.max(0.2, Math.min(fitW, compactCap));
+    }
+
+    /* ===== קיבוע זום לאחר התאמה ראשונית ===== */
+    if (!zoomFrozen) {
+      userScale = lockedFit; // מה שחושב ב-fit הופך לזום "משתמש"
+      mode = 'free';         // מעבר למצב חופשי – מכאן ואילך layout לא ישנה את הזום
+      zoomFrozen = true;
     }
 
     if(mode==='fitW'){
@@ -441,7 +452,7 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    // 7) קפסולות
+    // 7) מיקום קפסולות
     const sPlace = (mode==='fitW') ? lockedFit : userScale;
     nodes.forEach(n=>{
       const top = n.y - n.height/2;
@@ -494,7 +505,6 @@
     if(n.collapsed){ 
       n.collapsed=false; 
       if(n.el) n.el.setAttribute('aria-expanded','true'); 
-      // שימי לב: לא משנים recalcFitOnLayout → הזום לא משתנה
       layout(); 
     } else { 
       if(n.el) n.el.setAttribute('aria-expanded','false'); 
@@ -527,11 +537,29 @@
   const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
   const currentScale = ()=> (mode==='fitW' ? lockedFit : userScale);
 
-  document.getElementById('zoomIn').addEventListener('click', ()=>{ const base = (mode==='fitW') ? lockedFit : userScale; mode='free'; userScale = clamp(base + 0.10, 0.2, 3); applyZoom(); });
-  document.getElementById('zoomOut').addEventListener('click', ()=>{ const base = (mode==='fitW') ? lockedFit : userScale; mode='free'; userScale = clamp(base - 0.10, 0.2, 3); applyZoom(); });
-  document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
-  document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; recalcFitOnLayout = true; layout(); });
+  document.getElementById('zoomIn').addEventListener('click', ()=>{
+    const base = (mode==='fitW') ? lockedFit : userScale;
+    mode='free'; userScale = clamp(base + 0.10, 0.2, 3);
+    zoomFrozen = true; // נשארים על free ומקבעים את הזום החדש
+    applyZoom();
+  });
+  document.getElementById('zoomOut').addEventListener('click', ()=>{
+    const base = (mode==='fitW') ? lockedFit : userScale;
+    mode='free'; userScale = clamp(base - 0.10, 0.2, 3);
+    zoomFrozen = true;
+    applyZoom();
+  });
+  document.getElementById('zoomPct').addEventListener('click', ()=>{
+    mode='free'; userScale=1; zoomFrozen = true; applyZoom();
+  });
+  document.getElementById('fitW').addEventListener('click', ()=>{
+    // התאמה מחודשת: מתירים ל-layout לחשב fit חדש ואז "מקבעים" אותו שוב
+    zoomFrozen = false;     
+    mode='fitW';
+    layout();               // יחשב lockedFit -> יקבע userScale -> יעבור ל-free
+  });
 
+  // אל תתחיל PAN בלחיצה על קפסולה/טוגל
   function canPan(){
     const tol = 2;
     let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
@@ -562,7 +590,7 @@
     if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return; 
     if(e.touches.length===2){ 
       pinchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); 
-      pinchStartScale = currentScale(); mode='free'; 
+      pinchStartScale = currentScale(); mode='free'; zoomFrozen = true;
     } 
   }, {passive:true});
   viewport.addEventListener('touchmove', e=>{ 
@@ -576,24 +604,30 @@
   }, {passive:false});
   viewport.addEventListener('touchend', e=>{ if(e.touches.length<2){ pinchStartDist=0; } });
 
-  viewport.addEventListener('wheel', e=>{ if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return; if(!e.ctrlKey) return; e.preventDefault(); mode='free'; const s = currentScale(); userScale = clamp(s * Math.exp(-e.deltaY/500), 0.2, 3); applyZoom(); }, {passive:false});
+  viewport.addEventListener('wheel', e=>{
+    if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return;
+    if(!e.ctrlKey) return;
+    e.preventDefault();
+    mode='free'; zoomFrozen = true;
+    const s = currentScale();
+    userScale = clamp(s * Math.exp(-e.deltaY/500), 0.2, 3);
+    applyZoom();
+  }, {passive:false});
 
   document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
-  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; userScale=lockedFit; applyZoom(); layout(); });
+  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; zoomFrozen = true; /* השאר על הזום הנוכחי */ layout(); });
 
   /* ----- גודל הבמה ----- */
   function sizeViewport(){ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; }
-
   sizeViewport(); 
-  recalcFitOnLayout = true; // חישוב זום ראשוני
   layout();
 
-  // רנדר מחדש אחרי טעינת הפונטים / שינוי גודל → כן לחשב התאמה מחדש
+  // רנדר מחדש אחרי טעינת הפונטים
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(()=>{ recalcFitOnLayout = true; layout(); });
-    document.fonts.addEventListener?.('loadingdone', ()=> { recalcFitOnLayout = true; layout(); });
+    document.fonts.ready.then(()=>{ layout(); });
+    document.fonts.addEventListener?.('loadingdone', ()=> { layout(); });
   }
-  window.addEventListener('resize', ()=>{ sizeViewport(); recalcFitOnLayout = true; layout(); });
+  window.addEventListener('resize', ()=>{ sizeViewport(); layout(); });
 })();
 </script>
 </body>
