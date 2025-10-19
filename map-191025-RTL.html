@@ -125,7 +125,7 @@
 <script id="mindmap-data" type="application/json">
 {
   "dir": "rtl",
-  "flow": "rtl",                   // *** כאן שינוי הכיוון – זרימה מימין לשמאל ***
+  "flow": "rtl",
   "root": {
     "label": "הרב זקס - חלון להגות יהודית",
     "children": [
@@ -143,7 +143,7 @@
           {"label":"חקר ביוגרפי"},
           {"label":"עיצוב תפיסת עולם"},
           {"label":"מודל מנהיגותי"},
-          {"label":"התבוננות מחודשת בזהות יהודית ומנהיגות במאה ה-21"}
+          {"label":"התבונונות מחודשת בזהות יהודית ומנהיגות במאה ה-21"}
         ]}
       ]},
       {"label":"2 - יסודות פילוסופיים","children":[
@@ -237,7 +237,6 @@
   const FLOW = (data.flow||'rtl');  // RTL flow – עץ מימין לשמאל
 
   const viewport = document.getElementById('viewport');
-  /* שומרים על כיוון גלילה לוגי; הייצוג הגרפי מטופל ע"י FLOW */
   if(viewport) viewport.style.direction = 'ltr';
   const stage = document.getElementById('app');
   const scroller = document.getElementById('scroller');
@@ -245,16 +244,14 @@
   const edgeLayer = document.getElementById('edges');
 
   /* ----- מצב זום ו-Fit ----- */
-  let mode = 'fitW';         // zoom mode: fitW | free
+  let mode = 'fitW';         
   let userScale = 1;
-  let lockedFit = 1;         // scale שנקבע אוטומטית ב-fit
+  let lockedFit = 1;         
   let pinchStartDist = 0, pinchStartScale = 1;
 
-  // נועל את הזום אחרי ההתאמה הראשונית/ידנית
   let zoomFrozen = false;
-  let didInitialFitAll = false; // התאמה ראשונית כך שכל עומק-1 ייראה
+  let didInitialFitAll = false; 
 
-  // עוגן במה לפי זרימה
   if(FLOW==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; stage.style.right=''; }
   else { stage.style.transformOrigin = 'top right'; stage.style.right='0'; stage.style.left=''; }
   stage.style.top='0'; stage.style.position='absolute';
@@ -268,13 +265,13 @@
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
   const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
-  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X; // רווח 0↔1
+  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X; 
   const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
   const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
-  /* ----- בניית עץ (ברירת מחדל: שורש פתוח, כל היתר סגור) ----- */
+  /* ----- בניית עץ (שורש פתוח, כל היתר סגור) ----- */
   function build(raw, depth=0, parent=null, idxInParent=0){
     const defaultCollapsed = depth === 0 ? false : true;
     const node = { 
@@ -302,14 +299,9 @@
       el.appendChild(t);
       el.setAttribute('aria-expanded', String(!node.collapsed));
 
-      // לחיצה על הכפתור + על כל הקפסולה
       t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
-      el.addEventListener('click', ev => {
-        if (ev.target.closest('.toggle')) return; 
-        handleToggle(node);
-      });
+      el.addEventListener('click', ev => { if (ev.target.closest('.toggle')) return; handleToggle(node); });
 
-      // מקשים
       el.setAttribute('tabindex','0'); el.setAttribute('role','button');
       el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); handleToggle(node); } });
     }
@@ -337,7 +329,6 @@
     return GAP_Y;
   }
 
-  // ספירת רווחי עומק-1 כדי למרכז את השורש אנכית מול קבוצות מודולות
   function subHeight(node){
     if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
     let total = 0;
@@ -356,7 +347,7 @@
 
   function position(node, depth, top){
     node.x = xForDepth(depth);
-    node.y = top + node._subH/2;  // ממורכז ביחס לתת-העץ
+    node.y = top + node._subH/2;
     if(!(node.collapsed) && node.children.length){
       let cursor = top;
       node.children.forEach((c,idx)=>{
@@ -386,18 +377,13 @@
   const edgeOf = new Map();
 
   function layout(){
-    // 1) מדידה
     measure(root);
-
-    // 2) עוגנים זמניים
     subHeight(root); position(root,0,0);
     let nodesTmp=[]; collectVisible(root, nodesTmp);
 
-    // 3) רוחב מקסימלי לכל עומק
     const depthMaxW = new Map();
     nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140)); });
 
-    // 4) חישוב עוגנים סופיים (ב-RTL העוגנים של עומקים מתקדמים זזים שמאלה – ערכים שליליים)
     DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
     let acc=0; const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
     for(let d=1; d<=maxDepthVis+1; d++){
@@ -406,12 +392,10 @@
       DEPTH_ANCHORS.set(d, (FLOW==='rtl' ? -acc : acc));
     }
 
-    // 5) מיקום סופי
     subHeight(root); position(root, 0, 0);
     const nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
 
-    // 6) Fit וקיבוע זום
     const vpW = viewport.getBoundingClientRect().width;
     const vpH = viewport.clientHeight || window.innerHeight;
     const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
@@ -430,7 +414,6 @@
       lockedFit = Math.max(0.2, Math.min(fitW, compactCap));
     }
 
-    // מקבעים את הזום אחרי הריצה הראשונה בלבד
     if (!zoomFrozen) {
       userScale = lockedFit;
       mode = 'free';
@@ -452,7 +435,6 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    // 7) מיקום קפסולות
     const sPlace = (mode==='fitW') ? lockedFit : userScale;
     nodes.forEach(n=>{
       const top = n.y - n.height/2;
@@ -466,7 +448,6 @@
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
-    // 8) קווים
     edgeOf.clear(); edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const PAD_PARENT=6, PAD_CHILD=0;
@@ -540,7 +521,7 @@
   document.getElementById('zoomIn').addEventListener('click', ()=>{
     const base = (mode==='fitW') ? lockedFit : userScale;
     mode='free'; userScale = clamp(base + 0.10, 0.2, 3);
-    zoomFrozen = true; // מקבעים זום ידני
+    zoomFrozen = true;
     applyZoom();
   });
   document.getElementById('zoomOut').addEventListener('click', ()=>{
@@ -553,13 +534,11 @@
     mode='free'; userScale=1; zoomFrozen = true; applyZoom();
   });
   document.getElementById('fitW').addEventListener('click', ()=>{
-    // התאמה מחודשת: מתירים ל-layout לחשב fit חדש ואז "מקבעים" אותו שוב
     zoomFrozen = false;     
     mode='fitW';
-    layout();               // יחשב lockedFit -> יקבע userScale -> יעבור ל-free
+    layout();               
   });
 
-  // אל תתחיל PAN בלחיצה על קפסולה/טוגל
   function canPan(){
     const tol = 2;
     let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
@@ -617,12 +596,10 @@
   document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
   document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; zoomFrozen = true; layout(); });
 
-  /* ----- גודל הבמה ----- */
   function sizeViewport(){ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; }
   sizeViewport(); 
   layout();
 
-  // רנדר מחדש אחרי טעינת הפונטים
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(()=>{ layout(); });
     document.fonts.addEventListener?.('loadingdone', ()=> { layout(); });
