@@ -71,7 +71,8 @@
 
   /* Capsules */
   .chip{
-    position:absolute; display:inline-flex; align-items:center; flex-direction:row-reverse; 
+    position:absolute; display:inline-flex; align-items:center; /* הפכנו ל-row רגיל ועכשיו נשלטת סדר ה‑DOM */
+    flex-direction:row;
     height:var(--chip-h); padding:0 16px; border-radius:var(--r);
     line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
     direction: rtl; text-align:right; font-weight:700; gap:14px;
@@ -291,21 +292,31 @@
     if(node.el) return;
     const el = document.createElement('div'); el.className = 'chip';
     el.dataset.kind = node.depth===0 ? 'root' : (node.children.length? 'cat':'leaf');
-    const label = document.createElement('span'); label.className='label'; label.textContent=node.label; el.appendChild(label);
+
+    // חשוב: append toggle BEFORE label כדי לשלוט במיקום ה־+ בקלות (וסדר DOM נקבע כעת)
+    let t = null;
     if(node.children.length){
-      const t = document.createElement('button');
+      t = document.createElement('button');
       t.className = 'toggle'; t.setAttribute('aria-label','פתח/סגור'); t.type='button';
       t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
-      el.appendChild(t);
-      el.setAttribute('aria-expanded', String(!node.collapsed));
       t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
+      el.appendChild(t);
+    }
+
+    const label = document.createElement('span'); label.className='label'; label.textContent=node.label;
+    el.appendChild(label);
+
+    if(node.children.length){
+      // set aria and keyboard handlers on the chip (not just on the toggle)
+      el.setAttribute('aria-expanded', String(!node.collapsed));
+      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
       el.addEventListener('click', ev => {
         if (ev.target.closest('.toggle')) return;
         handleToggle(node);
       });
-      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
       el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); handleToggle(node); } });
     }
+
     const base = DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4];
     el.style.setProperty('--chip-bg', base);
     chipLayer.appendChild(el); node.el=el;
@@ -314,11 +325,34 @@
 
   /* ----- מדידות וגבהים ----- */
   function measure(node){
-    node.el.style.left = '-10000px';
-    node.el.style.top = '-10000px';
-    const natural = Math.max(140, node.el.offsetWidth);
+    // כדי למדוד בלי לגרום "קפיצות" בדף, נרנד את האלמנט בצורה מוסתרת אך בשלב התצורה הנכונה
+    const el = node.el;
+    // שמירת סטייל קיים
+    const prevDisplay = el.style.display || '';
+    const prevVisibility = el.style.visibility || '';
+    const prevLeft = el.style.left || '';
+    const prevRight = el.style.right || '';
+    const prevTop = el.style.top || '';
+
+    // הכנה למדידה: לוודא שהאלמנט מוצג ובמיקום מחוץ למסגרת
+    el.style.display = 'inline-flex';
+    el.style.visibility = 'hidden';
+    el.style.left = '-10000px';
+    el.style.right = '-10000px';
+    el.style.top = '-10000px';
+
+    // מדידה
+    const natural = Math.max(140, el.offsetWidth);
     node.naturalWidth = natural;
     node.width = natural;
+
+    // שחזור
+    el.style.display = prevDisplay;
+    el.style.visibility = prevVisibility;
+    el.style.left = prevLeft;
+    el.style.right = prevRight;
+    el.style.top = prevTop;
+
     node.children.forEach(measure);
   }
 
@@ -360,6 +394,8 @@
   }
 
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
+  function collectAll(n, arr){ arr.push(n); n.children.forEach(ch=>collectAll(ch, arr)); }
+
   function computeBounds(nodes){
     let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
     nodes.forEach(n=>{
@@ -385,7 +421,7 @@
     subHeight(root); position(root,0,0);
     let nodesTmp=[]; collectVisible(root, nodesTmp);
 
-    // 3) רוחב מקסימלי لكل עומק
+    // 3) רוחב מקסימלי לכל עומק
     const depthMaxW = new Map();
     nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140)); });
 
@@ -446,6 +482,19 @@
     stage.style.height = Math.ceil(h) + 'px';
 
     // 7) מיקום קפסולות
+    // כדי להסתיר קפסולות שאינן גלויות ולהימנע מקפיצות — נקבע למי שאינו גלוי display:none
+    const visibleSet = new Set(nodes);
+    const allNodes = []; collectAll(root, allNodes);
+    allNodes.forEach(n => {
+      if(!n.el) return;
+      if(visibleSet.has(n)){
+        n.el.style.display = 'inline-flex';
+      } else {
+        n.el.style.display = 'none';
+      }
+    });
+
+    // כעת נעמיד את אלה שבאמת גלויים במקומם הסופי
     nodes.forEach(n=>{
       const top = n.y - n.height/2;
       
