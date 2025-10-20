@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>הרב זקס - חלון להגות יהודית - Mind-Map Standalone</title>
-<link href="https://fonts.googleapis.com/css2?family=Alef:wght=400;700&display=swap" rel="stylesheet">
+<title>הרב זקס - חלון להגות יהודית - Mind-Map Standalone (RTL)</title>
+<link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --gap-between-mods-d2:40px;
@@ -12,7 +12,7 @@
     --bg:#ffffff; --ink:#0f172a;
 
     --chip-h:48px; 
-    --gap-x:36px;            
+    --gap-x:36px;           
     --gap-x-d01:100px;      /* רווח אופקי מיוחד בין עומק 0 לעומק 1 */
     --gap-y:40px; 
     --gap-rootcat:22px;     /* עומק 1 */
@@ -63,7 +63,7 @@
   .zoombar .pct{min-width:68px; text-align:center}
 
   /* במה */
-  .viewport{position:relative; width:100%; height:auto; overflow:hidden; touch-action:none; cursor:grab; direction: rtl;}
+  .viewport{position:relative; width:100%; height:auto; overflow:hidden; touch-action:none; cursor:grab}
   .scroller{position:relative;}
   .stage{position:relative; min-height:380px; min-width:0; transform-origin: top right; opacity:0}
   .chips{position:absolute; inset:0; z-index:1}
@@ -71,8 +71,7 @@
 
   /* Capsules */
   .chip{
-    position:absolute; display:inline-flex; align-items:center; /* הפכנו ל-row רגיל ועכשיו נשלטת סדר ה‑DOM */
-    flex-direction:row;
+    position:absolute; display:inline-flex; align-items:center; flex-direction:row-reverse; 
     height:var(--chip-h); padding:0 16px; border-radius:var(--r);
     line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
     direction: rtl; text-align:right; font-weight:700; gap:14px;
@@ -122,6 +121,7 @@
   </div>
 </div>
 
+<!-- === DATA (הרב זקס) === -->
 <script id="mindmap-data" type="application/json">
 {
   "dir": "rtl",
@@ -152,7 +152,7 @@
         {"label":"כשלון הנאורות"},
         {"label":"מסורת בעידן לא מסורתי"},
         {"label":"מה למדנו?","children":[
-          {"label":"הגדרת הפילוסופיה היהודית, התפתחותה ההיסטורית והאינטלקטואלית, ומיקומו של הרב יונתן זקס בהקשר הפילוסופי"},
+          {"label":"הגדרת הפילוסופיה היהודית, התפתחותה ההיסטורית והאינטלקטואלית, ומיקומו של הרב יונתן זקס בהקשר הפילוסופי־יהודי העכשווי"},
           {"label":"האחריות כמסגרת אתית"},
           {"label":"בין מסורת למודרניות"},
           {"label":"הביקורת על הנאורות"},
@@ -229,30 +229,32 @@
 <script>
 (function(){
   /* ----- נתונים ----- */
-  let data;
+  let data; 
   try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
-  catch(e){
-    console.error('Mindmap JSON parse error:', e);
-    data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים - נא לבדוק JSON","children":[]}};
-  }
+  catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים - נא לבדוק JSON","children":[]}}; }
 
   const DIR = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
-  const FLOW = (data.flow||'rtl');
+  const FLOW = (data.flow||'rtl'); // RTL
 
   const viewport = document.getElementById('viewport');
+  if(viewport) viewport.style.direction = 'ltr'; // לשמירת התנהגות גלילה עקבית
   const stage = document.getElementById('app');
   const scroller = document.getElementById('scroller');
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
 
   /* ----- מצב זום ו-Fit ----- */
-  let mode = 'fitW';
+  let mode = 'fitW';         // zoom mode: fitW | free
   let userScale = 1;
-  let lockedFit = 1;
+  let lockedFit = 1;         // scale שנקבע אוטומטית ב-fit
   let pinchStartDist = 0, pinchStartScale = 1;
-  let zoomFrozen = false;
-  let didInitialFitAll = false;
 
+  // נועל את הזום אחרי ההתאמה הראשונית/ידנית
+  let zoomFrozen = false;
+
+  let didInitialFitAll = false; // התאמה ראשונית כך שכל עומק-1 ייראה
+
+  // עוגן במה לפי זרימה
   if(FLOW==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; stage.style.right=''; }
   else { stage.style.transformOrigin = 'top right'; stage.style.right='0'; stage.style.left=''; }
   stage.style.top='0'; stage.style.position='absolute';
@@ -260,25 +262,25 @@
   /* ----- קבועים מ-CSS ----- */
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
-  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36;
+  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36; 
   const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;
   const GAP_BETWEEN_MODS_D2 = parseFloat(CSS.getPropertyValue('--gap-between-mods-d2')) || 20;
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
   const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
-  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
+  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X; // רווח 0↔1
   const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
   const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
-  /* ----- בניית עץ ----- */
+  /* ----- בניית עץ (ברירת מחדל: שורש פתוח, כל היתר סגור) ----- */
   function build(raw, depth=0, parent=null, idxInParent=0){
     const defaultCollapsed = depth === 0 ? false : true;
-    const node = {
-      label: raw.label, depth, parent,
+    const node = { 
+      label: raw.label, depth, parent, 
       collapsed: (typeof raw.collapsed==='boolean' ? raw.collapsed : defaultCollapsed),
-      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0,
+      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0, 
       children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null),
       idx: idxInParent
     };
@@ -292,31 +294,25 @@
     if(node.el) return;
     const el = document.createElement('div'); el.className = 'chip';
     el.dataset.kind = node.depth===0 ? 'root' : (node.children.length? 'cat':'leaf');
-
-    // חשוב: append toggle BEFORE label כדי לשלוט במיקום ה־+ בקלות (וסדר DOM נקבע כעת)
-    let t = null;
+    const label = document.createElement('span'); label.className='label'; label.textContent=node.label; el.appendChild(label);
     if(node.children.length){
-      t = document.createElement('button');
+      const t = document.createElement('button');
       t.className = 'toggle'; t.setAttribute('aria-label','פתח/סגור'); t.type='button';
       t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
-      t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
       el.appendChild(t);
-    }
-
-    const label = document.createElement('span'); label.className='label'; label.textContent=node.label;
-    el.appendChild(label);
-
-    if(node.children.length){
-      // set aria and keyboard handlers on the chip (not just on the toggle)
       el.setAttribute('aria-expanded', String(!node.collapsed));
-      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
+
+      // לחיצה על הכפתור + על כל הקפסולה
+      t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
       el.addEventListener('click', ev => {
-        if (ev.target.closest('.toggle')) return;
+        if (ev.target.closest('.toggle')) return; 
         handleToggle(node);
       });
+
+      // מקשים
+      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
       el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); handleToggle(node); } });
     }
-
     const base = DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4];
     el.style.setProperty('--chip-bg', base);
     chipLayer.appendChild(el); node.el=el;
@@ -325,34 +321,11 @@
 
   /* ----- מדידות וגבהים ----- */
   function measure(node){
-    // כדי למדוד בלי לגרום "קפיצות" בדף, נרנד את האלמנט בצורה מוסתרת אך בשלב התצורה הנכונה
-    const el = node.el;
-    // שמירת סטייל קיים
-    const prevDisplay = el.style.display || '';
-    const prevVisibility = el.style.visibility || '';
-    const prevLeft = el.style.left || '';
-    const prevRight = el.style.right || '';
-    const prevTop = el.style.top || '';
-
-    // הכנה למדידה: לוודא שהאלמנט מוצג ובמיקום מחוץ למסגרת
-    el.style.display = 'inline-flex';
-    el.style.visibility = 'hidden';
-    el.style.left = '-10000px';
-    el.style.right = '-10000px';
-    el.style.top = '-10000px';
-
-    // מדידה
-    const natural = Math.max(140, el.offsetWidth);
+    node.el.style.left = '-10000px';
+    node.el.style.top = '-10000px';
+    const natural = Math.max(140, node.el.offsetWidth);
     node.naturalWidth = natural;
     node.width = natural;
-
-    // שחזור
-    el.style.display = prevDisplay;
-    el.style.visibility = prevVisibility;
-    el.style.left = prevLeft;
-    el.style.right = prevRight;
-    el.style.top = prevTop;
-
     node.children.forEach(measure);
   }
 
@@ -364,6 +337,7 @@
     return GAP_Y;
   }
 
+  // ספירת רווחי עומק-1 למרכז שורש
   function subHeight(node){
     if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
     let total = 0;
@@ -382,7 +356,7 @@
 
   function position(node, depth, top){
     node.x = xForDepth(depth);
-    node.y = top + node._subH/2;
+    node.y = top + node._subH/2;  // ממורכז ביחס לתת-העץ
     if(!(node.collapsed) && node.children.length){
       let cursor = top;
       node.children.forEach((c,idx)=>{
@@ -394,8 +368,6 @@
   }
 
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
-  function collectAll(n, arr){ arr.push(n); n.children.forEach(ch=>collectAll(ch, arr)); }
-
   function computeBounds(nodes){
     let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
     nodes.forEach(n=>{
@@ -406,10 +378,10 @@
       minY = Math.min(minY, n.y - n.height/2);
       maxY = Math.max(maxY, n.y + n.height/2);
     });
-    return { w:(maxX-minX), h:(maxY-minY), minX, maxX };
+    return { w:(maxX-minX), h:(maxY-minY), minX };
   }
 
-  /* ----- Layout (תיקון ל-RTL) ----- */
+  /* ----- Layout ----- */
   let lastW = 0, lastH = 0, offsetX = 0, stageW = 0;
   const edgeOf = new Map();
 
@@ -425,7 +397,7 @@
     const depthMaxW = new Map();
     nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140)); });
 
-    // 4) חישוב עוגנים סופיים (ערכים שליליים עבור RTL)
+    // 4) חישוב עוגנים סופיים
     DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
     let acc=0; const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
     for(let d=1; d<=maxDepthVis+1; d++){
@@ -437,15 +409,17 @@
     // 5) מיקום סופי
     subHeight(root); position(root, 0, 0);
     const nodes=[]; collectVisible(root, nodes);
-    const { w, h, minX, maxX } = computeBounds(nodes);
+    const { w, h, minX } = computeBounds(nodes);
 
     // 6) Fit ו"קיבוע" זום
     const vpW = viewport.getBoundingClientRect().width;
     const vpH = viewport.clientHeight || window.innerHeight;
     const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
+
     const fitW = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
     const fitH = Math.min(1.0, (vpH - 24) / Math.max(1, h));
     const baseFit = Math.min(fitW, fitH);
+
     const maxDepthNow = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
     let compactCap = 1.0; if(maxDepthNow<=1) compactCap=0.75; else if(maxDepthNow===2) compactCap=0.88;
 
@@ -456,24 +430,21 @@
       lockedFit = Math.max(0.2, Math.min(fitW, compactCap));
     }
 
+    /* ===== קיבוע זום לאחר התאמה ראשונית ===== */
     if (!zoomFrozen) {
-      userScale = lockedFit;
-      mode = 'free';
+      userScale = lockedFit; // מה שחושב ב-fit הופך לזום "משתמש"
+      mode = 'free';         // מעבר למצב חופשי – מכאן ואילך layout לא ישנה את הזום
       zoomFrozen = true;
     }
 
-    const DEFAULT_PAD = 40;
-    const sNow = (mode==='fitW') ? lockedFit : userScale;
-    
-    if(FLOW==='rtl'){
-      // offsetX הוא המרווח מימין (השורש)
-      const desiredPad = Math.max(DEFAULT_PAD, Math.floor((viewport.clientWidth/sNow - w)/2) + DEFAULT_PAD/2);
-      offsetX = desiredPad;
-      stageW = w + desiredPad*2;
+    if(mode==='fitW'){
+      const RIGHT_PAD = 24, LEFT_PAD = 24;
+      offsetX = -minX + (LEFT_PAD/lockedFit);
+      stageW  = w + (LEFT_PAD+RIGHT_PAD)/lockedFit;
     } else {
-      // LTR
-      const desiredPad = Math.max(DEFAULT_PAD, Math.floor((viewport.clientWidth/sNow - w)/2) + DEFAULT_PAD/2);
-      offsetX = -minX + desiredPad; // דוחף את הכל ימינה
+      const sNow = Math.max(userScale, 0.0001);
+      const desiredPad = Math.max(60, Math.floor((viewport.clientWidth/sNow - w)/2) + 40);
+      offsetX = -minX + desiredPad;
       stageW  = w + desiredPad*2;
     }
 
@@ -481,71 +452,35 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    // 7) מיקום קפסולות
-    // כדי להסתיר קפסולות שאינן גלויות ולהימנע מקפיצות — נקבע למי שאינו גלוי display:none
-    const visibleSet = new Set(nodes);
-    const allNodes = []; collectAll(root, allNodes);
-    allNodes.forEach(n => {
-      if(!n.el) return;
-      if(visibleSet.has(n)){
-        n.el.style.display = 'inline-flex';
-      } else {
-        n.el.style.display = 'none';
-      }
-    });
-
-    // כעת נעמיד את אלה שבאמת גלויים במקומם הסופי
+    // 7) מיקום קפסולות (עיגון לימין העמודה ב-RTL)
+    const sPlace = (mode==='fitW') ? lockedFit : userScale;
     nodes.forEach(n=>{
       const top = n.y - n.height/2;
-      
-      if(FLOW==='rtl'){
-        // נ.ח. (0) נמצא ב-stage.right (0)
-        // rightUnits = padding ימני (offsetX) + |n.x| (המרחק מהשורש)
-        const rightUnits = offsetX + Math.abs(n.x);
-        n.el.style.left = '';
-        n.el.style.right = rightUnits + 'px';
-      } else {
-        // LTR
-        const leftUnits = offsetX + n.x;
-        n.el.style.right = '';
-        n.el.style.left  = leftUnits + 'px';
-      }
-      
+      const anchorUnits = offsetX + n.x;           // עוגן (קצה ימין ב-RTL)
+      const anchorPx    = Math.round(anchorUnits * Math.max(sPlace,0.0001));
+      const snapped     = anchorPx / Math.max(sPlace,0.0001);
+      let leftUnits = (FLOW==='rtl') ? (snapped - n.width) : snapped;
+      n.el.style.right = '';
+      n.el.style.left  = leftUnits + 'px';
       n.el.style.top   = top + 'px';
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
-    // 8) קווים (תיקון ל-RTL)
+    // 8) קווים
     edgeOf.clear(); edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const PAD_PARENT=6, PAD_CHILD=0;
+      const sNow = Math.max((mode==='fitW') ? lockedFit : userScale, 0.0001);
+      const parentAnchor = (Math.round((offsetX + n.x) * sNow)) / sNow;
+      const childAnchor  = (Math.round((offsetX + ch.x) * sNow)) / sNow;
+      const p1x = (FLOW==='rtl') ? (parentAnchor - PAD_PARENT) : (parentAnchor + n.width - PAD_PARENT);
+      const p2x = (FLOW==='rtl') ? (childAnchor  - PAD_CHILD)  : (childAnchor  + PAD_CHILD);
       const p1y = n.y, p2y = ch.y;
-
-      if(FLOW==='rtl'){
-        // הקו יוצא מהצד השמאלי של האב ונכנס לצד הימני של הבן
-        const parentRightAnchor = offsetX + Math.abs(n.x);
-        const childRightAnchor = offsetX + Math.abs(ch.x);
-        
-        const p1x = parentRightAnchor - n.width + PAD_PARENT; // קצה שמאלי של האב
-        const p2x = childRightAnchor - PAD_CHILD; // קצה ימני של הבן
-        
-        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-        const dx=Math.abs(p2x-p1x)*.45;
-        const c1x = p1x - dx; // שליטה שמאלה מהאב
-        const c2x = p2x + dx; // שליטה ימינה מהבן
-        path.setAttribute('class','edge');
-        path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
-        edgeOf.set(ch.id, path); edgeLayer.appendChild(path);
-      } else {
-        // LTR logic (original)
-        const p1x = offsetX + n.x + n.width - PAD_PARENT;
-        const p2x = offsetX + ch.x + PAD_CHILD;
-        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-        const dx=Math.abs(p2x-p1x)*.45, c1x=p1x+dx, c2x=p2x-dx;
-        path.setAttribute('class','edge');
-        path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
-        edgeOf.set(ch.id, path); edgeLayer.appendChild(path);
-      }
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const dx=Math.abs(p2x-p1x)*.45, c1x=(FLOW==='rtl'? p1x-dx: p1x+dx), c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
+      path.setAttribute('class','edge');
+      path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
+      edgeOf.set(ch.id, path); edgeLayer.appendChild(path);
       draw(ch);
     }); })(root);
 
@@ -553,69 +488,50 @@
     stage.style.opacity='1';
   }
 
-  /* ----- Toggle & Zoom & Pan ----- */
-
+  /* ----- Toggle ----- */
   function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
   function animateClose(node, done){
     const list=[]; function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
     node.children.forEach(collectDesc);
     const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
     list.forEach(n=>{
-      if(n.el){
-        n.el.classList.add('fade-exit');
-        requestAnimationFrame(()=> n.el.classList.add('fade-active'));
-        setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur);
-      }
-      const edge = edgeOf.get(n.id);
-      if(edge){
-        edge.classList.add('fade-exit');
-        requestAnimationFrame(()=> edge.classList.add('fade-active'));
-        setTimeout(()=> edge.classList.remove('fade-exit','fade-active'), dur);
-      }
+      if(n.el){ n.el.classList.add('fade-exit'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur); }
+      const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-exit'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-exit','fade-active'), dur); }
     });
     setTimeout(done, dur);
   }
-  function handleToggle(n){
+  function handleToggle(n){ 
     if(!n.children.length) return;
-    if(n.collapsed){
-      n.collapsed=false;
-      if(n.el) n.el.setAttribute('aria-expanded','true');
-      layout();
-    } else {
-      if(n.el) n.el.setAttribute('aria-expanded','false');
-      animateClose(n, ()=>{ collapseDeep(n); layout(); });
-    }
+    if(n.collapsed){ 
+      n.collapsed=false; 
+      if(n.el) n.el.setAttribute('aria-expanded','true'); 
+      layout(); 
+    } else { 
+      if(n.el) n.el.setAttribute('aria-expanded','false'); 
+      animateClose(n, ()=>{ collapseDeep(n); layout(); }); 
+    } 
   }
 
-
+  /* ----- Zoom & Scroll ----- */
   function applyZoom(){
     const s = (mode==='fitW') ? lockedFit : userScale;
     stage.style.transform = `scale(${s})`;
     const pct = document.getElementById('zoomPct'); if(pct) pct.textContent = Math.round(s*100)+"%";
-    
     if(lastW && lastH){
-      const wpx = Math.ceil(stageW * s);
+      const wpx = (mode==='fitW') ? Math.floor(viewport.clientWidth) : Math.ceil(lastW * s);
       scroller.style.width  = wpx + 'px';
       scroller.style.height = Math.ceil(lastH * s) + 'px';
     }
-
     const tol = 2;
-    let needX = (scroller.offsetWidth - viewport.clientWidth) > tol;
+    let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
     let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
-    
     if(mode==='fitW'){
       needX = false;
       if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)) needY = false;
     }
-
     viewport.style.overflowX = needX ? 'auto' : 'hidden';
     viewport.style.overflowY = needY ? 'auto' : 'hidden';
     viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
-    
-    // אם יש צורך בגלילה אופקית (NeedX), גלול אוטומטית לימין (בגלל RTL)
-    if(FLOW==='rtl' && needX && !isPanning && scroller.scrollWidth > viewport.clientWidth){
-      viewport.scrollLeft = scroller.scrollWidth; // גלילה אוטומטית לימין
-    }
   }
 
   const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
@@ -624,7 +540,7 @@
   document.getElementById('zoomIn').addEventListener('click', ()=>{
     const base = (mode==='fitW') ? lockedFit : userScale;
     mode='free'; userScale = clamp(base + 0.10, 0.2, 3);
-    zoomFrozen = true;
+    zoomFrozen = true; // נשארים על free ומקבעים את הזום החדש
     applyZoom();
   });
   document.getElementById('zoomOut').addEventListener('click', ()=>{
@@ -637,14 +553,16 @@
     mode='free'; userScale=1; zoomFrozen = true; applyZoom();
   });
   document.getElementById('fitW').addEventListener('click', ()=>{
-    zoomFrozen = false;
+    // התאמה מחודשת: מתירים ל-layout לחשב fit חדש ואז "מקבעים" אותו שוב
+    zoomFrozen = false;     
     mode='fitW';
-    layout();
+    layout();               // יחשב lockedFit -> יקבע userScale -> יעבור ל-free
   });
 
+  // אל תתחיל PAN בלחיצה על קפסולה/טוגל
   function canPan(){
     const tol = 2;
-    let needX = (scroller.offsetWidth - viewport.clientWidth) > tol;
+    let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
     let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
     if(mode==='fitW'){
       needX = false;
@@ -656,33 +574,33 @@
   viewport.addEventListener('pointerdown', e=>{
     if(e.button!==0) return;
     if(e.target.closest('.zoombar') || e.target.closest('.toggle') || e.target.closest('.chip')) return;
-    if(!canPan()) return;
-    panPending=true; isPanning=false; startX=e.clientX; startY=e.clientY; startScrollL=viewport.scrollLeft; startScrollT=viewport.scrollTop;
+    if(!canPan()) return; 
+    panPending=true; isPanning=false; startX=e.clientX; startY=e.clientY; startScrollL=viewport.scrollLeft; startScrollT=viewport.scrollTop; 
   });
   viewport.addEventListener('pointermove', e=>{
-    if(!(panPending||isPanning)) return;
-    const dx=e.clientX-startX, dy=e.clientY-startY;
-    if(!isPanning){ if(Math.abs(dx)+Math.abs(dy)<4) return; isPanning=true; try{viewport.setPointerCapture(e.pointerId);}catch(_){} viewport.style.cursor='grabbing'; }
-    viewport.scrollLeft=startScrollL-dx; viewport.scrollTop=startScrollT-dy;
+    if(!(panPending||isPanning)) return; 
+    const dx=e.clientX-startX, dy=e.clientY-startY; 
+    if(!isPanning){ if(Math.abs(dx)+Math.abs(dy)<4) return; isPanning=true; try{viewport.setPointerCapture(e.pointerId);}catch(_){} viewport.style.cursor='grabbing'; } 
+    viewport.scrollLeft=startScrollL-dx; viewport.scrollTop=startScrollT-dy; 
   });
   function endPan(){ panPending=false; isPanning=false; viewport.style.cursor=(canPan()? 'grab':'auto'); }
   viewport.addEventListener('pointerup', endPan); viewport.addEventListener('pointercancel', endPan); viewport.addEventListener('pointerleave', endPan);
 
-  viewport.addEventListener('touchstart', e=>{
-    if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return;
-    if(e.touches.length===2){
-      pinchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  viewport.addEventListener('touchstart', e=>{ 
+    if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return; 
+    if(e.touches.length===2){ 
+      pinchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); 
       pinchStartScale = currentScale(); mode='free'; zoomFrozen = true;
-    }
+    } 
   }, {passive:true});
-  viewport.addEventListener('touchmove', e=>{
-    if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return;
-    if(e.touches.length===2 && pinchStartDist>0){
-      e.preventDefault();
-      const dist=Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-      userScale=clamp(pinchStartScale * (dist / pinchStartDist), 0.2, 3);
-      applyZoom();
-    }
+  viewport.addEventListener('touchmove', e=>{ 
+    if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return; 
+    if(e.touches.length===2 && pinchStartDist>0){ 
+      e.preventDefault(); 
+      const dist=Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); 
+      userScale=clamp(pinchStartScale * (dist / pinchStartDist), 0.2, 3); 
+      applyZoom(); 
+    } 
   }, {passive:false});
   viewport.addEventListener('touchend', e=>{ if(e.touches.length<2){ pinchStartDist=0; } });
 
@@ -697,11 +615,11 @@
   }, {passive:false});
 
   document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
-  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; zoomFrozen = true; layout(); });
+  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; zoomFrozen = true; /* השאר על הזום הנוכחי */ layout(); });
 
   /* ----- גודל הבמה ----- */
   function sizeViewport(){ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; }
-  sizeViewport();
+  sizeViewport(); 
   layout();
 
   // רנדר מחדש אחרי טעינת הפונטים
