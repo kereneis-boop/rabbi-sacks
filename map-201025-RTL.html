@@ -71,20 +71,21 @@
 
   /* Capsules */
   .chip{
-    position:absolute; display:inline-flex; align-items:center; flex-direction:row-reverse; 
+    position:absolute; display:flex; align-items:center;
     height:var(--chip-h); padding:0 16px; border-radius:var(--r);
     line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
     direction: rtl; text-align:right; font-weight:700; gap:14px;
-    background: var(--chip-bg, #ffffff); color:#0f172a;
-    cursor:pointer;
+    background: var(--chip-bg, #ffffff); color:#0f172a; cursor:pointer;
   }
   .chip[data-kind="root"]{font-weight:800}
   .label{pointer-events:none; direction: rtl; text-align: right}
+  /* הכפתור בסוף הקפסולה (ב-RTL = שמאל) */
+  .chip .toggle{margin-inline-start:auto}
 
   /* Toggle */
   .toggle{position:relative; width:28px;height:28px;border-radius:50%;flex:0 0 auto;background:var(--toggle); cursor:pointer; border:0}
   .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition: opacity var(--anim-dur) var(--anim-ease)}
-  .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg); transition: opacity var(--anim-dur) var(--anim-ease)}
+  .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg)}
   .chip[aria-expanded="true"] .toggle .bar.v{opacity:0}
 
   .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
@@ -237,7 +238,7 @@
   const FLOW = (data.flow||'rtl'); // RTL
 
   const viewport = document.getElementById('viewport');
-  if(viewport) viewport.style.direction = 'ltr'; // לשמירת התנהגות גלילה עקבית
+  if(viewport) viewport.style.direction = 'ltr'; // גלילה עקבית
   const stage = document.getElementById('app');
   const scroller = document.getElementById('scroller');
   const chipLayer = document.getElementById('chips');
@@ -249,10 +250,8 @@
   let lockedFit = 1;         // scale שנקבע אוטומטית ב-fit
   let pinchStartDist = 0, pinchStartScale = 1;
 
-  // נועל את הזום אחרי ההתאמה הראשונית/ידנית
   let zoomFrozen = false;
-
-  let didInitialFitAll = false; // התאמה ראשונית כך שכל עומק-1 ייראה
+  let didInitialFitAll = false;
 
   // עוגן במה לפי זרימה
   if(FLOW==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; stage.style.right=''; }
@@ -274,7 +273,7 @@
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
-  /* ----- בניית עץ (ברירת מחדל: שורש פתוח, כל היתר סגור) ----- */
+  /* ----- בניית עץ ----- */
   function build(raw, depth=0, parent=null, idxInParent=0){
     const defaultCollapsed = depth === 0 ? false : true;
     const node = { 
@@ -301,15 +300,8 @@
       t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
       el.appendChild(t);
       el.setAttribute('aria-expanded', String(!node.collapsed));
-
-      // לחיצה על הכפתור + על כל הקפסולה
       t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
-      el.addEventListener('click', ev => {
-        if (ev.target.closest('.toggle')) return; 
-        handleToggle(node);
-      });
-
-      // מקשים
+      el.addEventListener('click', ev => { if (ev.target.closest('.toggle')) return; handleToggle(node); });
       el.setAttribute('tabindex','0'); el.setAttribute('role','button');
       el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); handleToggle(node); } });
     }
@@ -337,7 +329,6 @@
     return GAP_Y;
   }
 
-  // ספירת רווחי עומק-1 למרכז שורש
   function subHeight(node){
     if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
     let total = 0;
@@ -411,7 +402,7 @@
     const nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
 
-    // 6) Fit ו"קיבוע" זום
+    // 6) Fit וקיבוע זום
     const vpW = viewport.getBoundingClientRect().width;
     const vpH = viewport.clientHeight || window.innerHeight;
     const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
@@ -423,19 +414,10 @@
     const maxDepthNow = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
     let compactCap = 1.0; if(maxDepthNow<=1) compactCap=0.75; else if(maxDepthNow===2) compactCap=0.88;
 
-    if (!didInitialFitAll){
-      lockedFit = Math.max(0.2, Math.min(baseFit, compactCap));
-      didInitialFitAll = true;
-    } else {
-      lockedFit = Math.max(0.2, Math.min(fitW, compactCap));
-    }
+    if (!didInitialFitAll){ lockedFit = Math.max(0.2, Math.min(baseFit, compactCap)); didInitialFitAll = true; }
+    else { lockedFit = Math.max(0.2, Math.min(fitW, compactCap)); }
 
-    /* ===== קיבוע זום לאחר התאמה ראשונית ===== */
-    if (!zoomFrozen) {
-      userScale = lockedFit; // מה שחושב ב-fit הופך לזום "משתמש"
-      mode = 'free';         // מעבר למצב חופשי – מכאן ואילך layout לא ישנה את הזום
-      zoomFrozen = true;
-    }
+    if (!zoomFrozen){ userScale = lockedFit; mode='free'; zoomFrozen = true; }
 
     if(mode==='fitW'){
       const RIGHT_PAD = 24, LEFT_PAD = 24;
@@ -452,30 +434,30 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    // 7) מיקום קפסולות (עיגון לימין העמודה ב-RTL)
-    const sPlace = (mode==='fitW') ? lockedFit : userScale;
+    /* ---- 7) מיקום קפסולות: יישור לימין עמודה, ללא snapping ---- */
     nodes.forEach(n=>{
       const top = n.y - n.height/2;
-      const anchorUnits = offsetX + n.x;           // עוגן (קצה ימין ב-RTL)
-      const anchorPx    = Math.round(anchorUnits * Math.max(sPlace,0.0001));
-      const snapped     = anchorPx / Math.max(sPlace,0.0001);
-      let leftUnits = (FLOW==='rtl') ? (snapped - n.width) : snapped;
-      n.el.style.right = '';
+      const rightUnits = offsetX + n.x;            // עוגן ימין של העמודה (RTL)
+      const leftUnits  = (FLOW==='rtl') ? (rightUnits - n.width) : rightUnits;
       n.el.style.left  = leftUnits + 'px';
       n.el.style.top   = top + 'px';
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
-    // 8) קווים
+    /* ---- 8) קווים: משתמשים באותן קואורדינטות בדיוק כמו הקפסולות ---- */
     edgeOf.clear(); edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const PAD_PARENT=6, PAD_CHILD=0;
-      const sNow = Math.max((mode==='fitW') ? lockedFit : userScale, 0.0001);
-      const parentAnchor = (Math.round((offsetX + n.x) * sNow)) / sNow;
-      const childAnchor  = (Math.round((offsetX + ch.x) * sNow)) / sNow;
-      const p1x = (FLOW==='rtl') ? (parentAnchor - PAD_PARENT) : (parentAnchor + n.width - PAD_PARENT);
-      const p2x = (FLOW==='rtl') ? (childAnchor  - PAD_CHILD)  : (childAnchor  + PAD_CHILD);
+
+      // אותם עוגנים כמו במיקום הקפסולות:
+      const parentRight = offsetX + n.x;                  // קצה ימין של ההורה (RTL)
+      const childRight  = offsetX + ch.x;                 // קצה ימין של הילד
+      const parentLeft  = parentRight - n.width;          // קצה שמאל של ההורה
+
+      const p1x = (FLOW==='rtl') ? (parentLeft + PAD_PARENT) : (parentRight - PAD_PARENT);
+      const p2x = (FLOW==='rtl') ? (childRight - PAD_CHILD)  : (childRight + ch.width + PAD_CHILD);
       const p1y = n.y, p2y = ch.y;
+
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
       const dx=Math.abs(p2x-p1x)*.45, c1x=(FLOW==='rtl'? p1x-dx: p1x+dx), c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
       path.setAttribute('class','edge');
@@ -502,14 +484,8 @@
   }
   function handleToggle(n){ 
     if(!n.children.length) return;
-    if(n.collapsed){ 
-      n.collapsed=false; 
-      if(n.el) n.el.setAttribute('aria-expanded','true'); 
-      layout(); 
-    } else { 
-      if(n.el) n.el.setAttribute('aria-expanded','false'); 
-      animateClose(n, ()=>{ collapseDeep(n); layout(); }); 
-    } 
+    if(n.collapsed){ n.collapsed=false; if(n.el) n.el.setAttribute('aria-expanded','true'); layout(); }
+    else { if(n.el) n.el.setAttribute('aria-expanded','false'); animateClose(n, ()=>{ collapseDeep(n); layout(); }); }
   }
 
   /* ----- Zoom & Scroll ----- */
@@ -534,95 +510,19 @@
     viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
   }
 
-  const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
-  const currentScale = ()=> (mode==='fitW' ? lockedFit : userScale);
-
-  document.getElementById('zoomIn').addEventListener('click', ()=>{
-    const base = (mode==='fitW') ? lockedFit : userScale;
-    mode='free'; userScale = clamp(base + 0.10, 0.2, 3);
-    zoomFrozen = true; // נשארים על free ומקבעים את הזום החדש
-    applyZoom();
-  });
-  document.getElementById('zoomOut').addEventListener('click', ()=>{
-    const base = (mode==='fitW') ? lockedFit : userScale;
-    mode='free'; userScale = clamp(base - 0.10, 0.2, 3);
-    zoomFrozen = true;
-    applyZoom();
-  });
-  document.getElementById('zoomPct').addEventListener('click', ()=>{
-    mode='free'; userScale=1; zoomFrozen = true; applyZoom();
-  });
-  document.getElementById('fitW').addEventListener('click', ()=>{
-    // התאמה מחודשת: מתירים ל-layout לחשב fit חדש ואז "מקבעים" אותו שוב
-    zoomFrozen = false;     
-    mode='fitW';
-    layout();               // יחשב lockedFit -> יקבע userScale -> יעבור ל-free
-  });
-
-  // אל תתחיל PAN בלחיצה על קפסולה/טוגל
-  function canPan(){
-    const tol = 2;
-    let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
-    let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
-    if(mode==='fitW'){
-      needX = false;
-      if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)) needY = false;
-    }
-    return needX || needY;
-  }
-  let isPanning=false, panPending=false, startX=0, startY=0, startScrollL=0, startScrollT=0;
-  viewport.addEventListener('pointerdown', e=>{
-    if(e.button!==0) return;
-    if(e.target.closest('.zoombar') || e.target.closest('.toggle') || e.target.closest('.chip')) return;
-    if(!canPan()) return; 
-    panPending=true; isPanning=false; startX=e.clientX; startY=e.clientY; startScrollL=viewport.scrollLeft; startScrollT=viewport.scrollTop; 
-  });
-  viewport.addEventListener('pointermove', e=>{
-    if(!(panPending||isPanning)) return; 
-    const dx=e.clientX-startX, dy=e.clientY-startY; 
-    if(!isPanning){ if(Math.abs(dx)+Math.abs(dy)<4) return; isPanning=true; try{viewport.setPointerCapture(e.pointerId);}catch(_){} viewport.style.cursor='grabbing'; } 
-    viewport.scrollLeft=startScrollL-dx; viewport.scrollTop=startScrollT-dy; 
-  });
-  function endPan(){ panPending=false; isPanning=false; viewport.style.cursor=(canPan()? 'grab':'auto'); }
-  viewport.addEventListener('pointerup', endPan); viewport.addEventListener('pointercancel', endPan); viewport.addEventListener('pointerleave', endPan);
-
-  viewport.addEventListener('touchstart', e=>{ 
-    if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return; 
-    if(e.touches.length===2){ 
-      pinchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); 
-      pinchStartScale = currentScale(); mode='free'; zoomFrozen = true;
-    } 
-  }, {passive:true});
-  viewport.addEventListener('touchmove', e=>{ 
-    if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return; 
-    if(e.touches.length===2 && pinchStartDist>0){ 
-      e.preventDefault(); 
-      const dist=Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); 
-      userScale=clamp(pinchStartScale * (dist / pinchStartDist), 0.2, 3); 
-      applyZoom(); 
-    } 
-  }, {passive:false});
-  viewport.addEventListener('touchend', e=>{ if(e.touches.length<2){ pinchStartDist=0; } });
-
-  viewport.addEventListener('wheel', e=>{
-    if(e.target.closest('.zoombar')||e.target.closest('.toggle')||e.target.closest('.chip')) return;
-    if(!e.ctrlKey) return;
-    e.preventDefault();
-    mode='free'; zoomFrozen = true;
-    const s = currentScale();
-    userScale = clamp(s * Math.exp(-e.deltaY/500), 0.2, 3);
-    applyZoom();
-  }, {passive:false});
+  document.getElementById('zoomIn').addEventListener('click', ()=>{ mode='free'; userScale = Math.min((userScale||lockedFit) + 0.10, 3); applyZoom(); });
+  document.getElementById('zoomOut').addEventListener('click', ()=>{ mode='free'; userScale = Math.max((userScale||lockedFit) - 0.10, 0.2); applyZoom(); });
+  document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
+  document.getElementById('fitW').addEventListener('click', ()=>{ zoomFrozen = false; mode='fitW'; layout(); });
 
   document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
-  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; zoomFrozen = true; /* השאר על הזום הנוכחי */ layout(); });
+  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; layout(); });
 
   /* ----- גודל הבמה ----- */
   function sizeViewport(){ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; }
   sizeViewport(); 
   layout();
 
-  // רנדר מחדש אחרי טעינת הפונטים
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(()=>{ layout(); });
     document.fonts.addEventListener?.('loadingdone', ()=> { layout(); });
