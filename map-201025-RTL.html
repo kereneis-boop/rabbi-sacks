@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>הרב זקס - חלון להגות יהודית - Mind-Map Standalone</title>
-<link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Alef:wght=400;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --gap-between-mods-d2:40px;
@@ -230,30 +230,29 @@
   /* ----- נתונים ----- */
   let data; 
   try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
-  catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים - נא לבדוק JSON","children":[]}}; }
+  catch(e){ 
+    console.error('Mindmap JSON parse error:', e); 
+    // אם יש שגיאת JSON, נשתמש בנתוני בסיס במקום אובייקט השגיאה כדי לא לשבור את הלוגיקה
+    data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים - נא לבדוק JSON","children":[]}}; 
+  }
 
   const DIR = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
   const FLOW = (data.flow||'rtl');
 
   const viewport = document.getElementById('viewport');
-  // viewport.style.direction = 'ltr'; // הוסר כדי לאפשר גלילה RTL
   const stage = document.getElementById('app');
   const scroller = document.getElementById('scroller');
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
 
   /* ----- מצב זום ו-Fit ----- */
-  let mode = 'fitW';         // zoom mode: fitW | free
+  let mode = 'fitW';         
   let userScale = 1;
-  let lockedFit = 1;         // scale שנקבע אוטומטית ב-fit
+  let lockedFit = 1;         
   let pinchStartDist = 0, pinchStartScale = 1;
-
-  // NEW: נועל את הזום אחרי ההתאמה הראשונית/ידנית
   let zoomFrozen = false;
+  let didInitialFitAll = false; 
 
-  let didInitialFitAll = false; // התאמה ראשונית כך שכל עומק-1 ייראה
-
-  // עוגן במה לפי זרימה (נשאר top right עבור RTL)
   if(FLOW==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; stage.style.right=''; }
   else { stage.style.transformOrigin = 'top right'; stage.style.right='0'; stage.style.left=''; }
   stage.style.top='0'; stage.style.position='absolute';
@@ -267,13 +266,13 @@
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
   const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
-  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X; // רווח 0↔1
+  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X; 
   const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
   const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
-  /* ----- בניית עץ (ברירת מחדל: שורש פתוח, כל היתר סגור) ----- */
+  /* ----- בניית עץ ----- */
   function build(raw, depth=0, parent=null, idxInParent=0){
     const defaultCollapsed = depth === 0 ? false : true;
     const node = { 
@@ -300,15 +299,11 @@
       t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
       el.appendChild(t);
       el.setAttribute('aria-expanded', String(!node.collapsed));
-
-      // לחיצה על הכפתור + על כל הקפסולה
       t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
       el.addEventListener('click', ev => {
         if (ev.target.closest('.toggle')) return; 
         handleToggle(node);
       });
-
-      // מקשים
       el.setAttribute('tabindex','0'); el.setAttribute('role','button');
       el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); handleToggle(node); } });
     }
@@ -336,7 +331,6 @@
     return GAP_Y;
   }
 
-  // ספירת רווחי עומק-1 למרכז שורש
   function subHeight(node){
     if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
     let total = 0;
@@ -355,7 +349,7 @@
 
   function position(node, depth, top){
     node.x = xForDepth(depth);
-    node.y = top + node._subH/2;  // ממורכז ביחס לתת-העץ
+    node.y = top + node._subH/2;  
     if(!(node.collapsed) && node.children.length){
       let cursor = top;
       node.children.forEach((c,idx)=>{
@@ -370,7 +364,6 @@
   function computeBounds(nodes){
     let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
     nodes.forEach(n=>{
-      // minX ו-maxX הם קואורדינטות בתוך ה-Stage
       const left  = (FLOW==='rtl' ? n.x - n.width : n.x);
       const right = (FLOW==='rtl' ? n.x : n.x + n.width);
       minX = Math.min(minX, left);
@@ -378,10 +371,10 @@
       minY = Math.min(minY, n.y - n.height/2);
       maxY = Math.max(maxY, n.y + n.height/2);
     });
-    return { w:(maxX-minX), h:(maxY-minY), minX, maxX }; // החזרת maxX עבור RTL
+    return { w:(maxX-minX), h:(maxY-minY), minX, maxX }; 
   }
 
-  /* ----- Layout ----- */
+  /* ----- Layout (תיקון ל-RTL) ----- */
   let lastW = 0, lastH = 0, offsetX = 0, stageW = 0;
   const edgeOf = new Map();
 
@@ -397,7 +390,7 @@
     const depthMaxW = new Map();
     nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140)); });
 
-    // 4) חישוב עוגנים סופיים
+    // 4) חישוב עוגנים סופיים (ערכים שליליים עבור RTL)
     DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
     let acc=0; const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
     for(let d=1; d<=maxDepthVis+1; d++){
@@ -415,11 +408,9 @@
     const vpW = viewport.getBoundingClientRect().width;
     const vpH = viewport.clientHeight || window.innerHeight;
     const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
-
     const fitW = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
     const fitH = Math.min(1.0, (vpH - 24) / Math.max(1, h));
     const baseFit = Math.min(fitW, fitH);
-
     const maxDepthNow = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
     let compactCap = 1.0; if(maxDepthNow<=1) compactCap=0.75; else if(maxDepthNow===2) compactCap=0.88;
 
@@ -430,44 +421,28 @@
       lockedFit = Math.max(0.2, Math.min(fitW, compactCap));
     }
 
-    /* ===== קיבוע זום לאחר התאמה ראשונית ===== */
     if (!zoomFrozen) {
-      userScale = lockedFit; // מה שחושב ב-fit הופך לזום "משתמש"
-      mode = 'free';         // מעבר למצב חופשי – מכאן ואילך layout לא ישנה את הזום
+      userScale = lockedFit; 
+      mode = 'free';         
       zoomFrozen = true;
     }
 
-    const RIGHT_PAD = 24, LEFT_PAD = 24;
+    const DEFAULT_PAD = 40;
+    const sNow = (mode==='fitW') ? lockedFit : userScale;
+    
     if(FLOW==='rtl'){
-      const sNow = (mode==='fitW') ? lockedFit : userScale;
-      const vpUnits = viewport.clientWidth / sNow;
-      // Stage Starts at 0, goes to -w. Root is at x=0 (right edge)
-      // stageW is total width needed in Units
-      stageW = w + (LEFT_PAD + RIGHT_PAD) / sNow;
-      offsetX = -minX + LEFT_PAD / sNow; // מיקום הקצה השמאלי של העץ
-      
-      // צריך להזיז את כל ה-Stage ימינה כדי שהקצה הימני של השורש יהיה מיושר לצד ימין של ה-viewport
-      // stage.style.right מוגדר כ-0
-      // ה-Stage יתחיל ב-0 (ימין), וילך שמאלה עד StageW
-      // StageW צריך להיות Stage.width.
-      // offsetX צריך להיות ה-offset הדרוש כדי ש-maxX (שהוא 0, קצה השורש) יהיה בפדדינג המתאים.
-
-      // Stage width in px
-      lastW = Math.ceil(w + (LEFT_PAD + RIGHT_PAD));
-      // Offset from right: maxX (0) should be at RIGHT_PAD
-      offsetX = RIGHT_PAD;
-      stageW = w + LEFT_PAD + RIGHT_PAD;
+      // offsetX הוא המרווח מימין (השורש)
+      const desiredPad = Math.max(DEFAULT_PAD, Math.floor((viewport.clientWidth/sNow - w)/2) + DEFAULT_PAD/2);
+      offsetX = desiredPad; 
+      stageW = w + desiredPad*2;
     } else {
-      // LTR logic (as before, but simplified using minX/maxX)
-      const sNow = (mode==='fitW') ? lockedFit : userScale;
-      const desiredPad = Math.max(60, Math.floor((viewport.clientWidth/sNow - w)/2) + 40);
-      offsetX = -minX + desiredPad;
+      // LTR
+      const desiredPad = Math.max(DEFAULT_PAD, Math.floor((viewport.clientWidth/sNow - w)/2) + DEFAULT_PAD/2);
+      offsetX = -minX + desiredPad; // דוחף את הכל ימינה
       stageW  = w + desiredPad*2;
-      lastW = stageW;
     }
 
-
-    lastH = h;
+    lastW = stageW; lastH = h;
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
@@ -476,17 +451,14 @@
       const top = n.y - n.height/2;
       
       if(FLOW==='rtl'){
-        // המיקום x הוא המרחק ממרכז ה-Root (שהוא הקצה הימני)
-        // n.x = מרחק שמאלה מהשורש
-        // מיקום הקצה הימני של ה-chip ביחס לקצה הימני של ה-Stage (שנמצא ב-0)
-        // right = offsetX (הרווח מימין) + |n.x| (המרחק מהשורש)
-        const rightUnits = offsetX + Math.abs(n.x);
+        // נ.ח. (0) נמצא ב-stage.right (0)
+        // rightUnits = padding ימני (offsetX) + |n.x| (המרחק מהשורש)
+        const rightUnits = offsetX + Math.abs(n.x); 
         n.el.style.left = '';
         n.el.style.right = rightUnits + 'px';
       } else {
         // LTR
-        const anchorUnits = offsetX + n.x;
-        const leftUnits = anchorUnits;
+        const leftUnits = offsetX + n.x;
         n.el.style.right = '';
         n.el.style.left  = leftUnits + 'px';
       }
@@ -495,33 +467,31 @@
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
-    // 8) קווים
+    // 8) קווים (תיקון ל-RTL)
     edgeOf.clear(); edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const PAD_PARENT=6, PAD_CHILD=0;
       const p1y = n.y, p2y = ch.y;
 
-      // חישוב קצה ימין (RTL) או קצה שמאל (LTR) של כל קפסולה
       if(FLOW==='rtl'){
         // הקו יוצא מהצד השמאלי של האב ונכנס לצד הימני של הבן
-        // x-coordinate is relative to stage right (0 is right edge)
-        const p1x = offsetX + Math.abs(n.x) - n.width + PAD_PARENT; // קצה שמאלי של האב
-        const p2x = offsetX + Math.abs(ch.x) - PAD_CHILD; // קצה ימני של הבן
+        const parentRightAnchor = offsetX + Math.abs(n.x);
+        const childRightAnchor = offsetX + Math.abs(ch.x);
+        
+        const p1x = parentRightAnchor - n.width + PAD_PARENT; // קצה שמאלי של האב
+        const p2x = childRightAnchor - PAD_CHILD; // קצה ימני של הבן
         
         const path = document.createElementNS('http://www.w3.org/2000/svg','path');
         const dx=Math.abs(p2x-p1x)*.45;
-        const c1x = p1x - dx; // שליטה ימינה
-        const c2x = p2x + dx; // שליטה שמאלה
+        const c1x = p1x - dx; // שליטה שמאלה מהאב
+        const c2x = p2x + dx; // שליטה ימינה מהבן
         path.setAttribute('class','edge');
         path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
         edgeOf.set(ch.id, path); edgeLayer.appendChild(path);
       } else {
         // LTR logic (original)
-        const sNow = Math.max((mode==='fitW') ? lockedFit : userScale, 0.0001);
-        const parentAnchor = (Math.round((offsetX + n.x) * sNow)) / sNow;
-        const childAnchor  = (Math.round((offsetX + ch.x) * sNow)) / sNow;
-        const p1x = parentAnchor + n.width - PAD_PARENT; 
-        const p2x = childAnchor  + PAD_CHILD;
+        const p1x = offsetX + n.x + n.width - PAD_PARENT; 
+        const p2x = offsetX + ch.x + PAD_CHILD;
         const path = document.createElementNS('http://www.w3.org/2000/svg','path');
         const dx=Math.abs(p2x-p1x)*.45, c1x=p1x+dx, c2x=p2x-dx;
         path.setAttribute('class','edge');
@@ -535,7 +505,8 @@
     stage.style.opacity='1';
   }
 
-  /* ----- Toggle ----- */
+  /* ----- Toggle & Zoom & Pan (ללא שינויים מהותיים) ----- */
+
   function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
   function animateClose(node, done){
     const list=[]; function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
@@ -559,15 +530,14 @@
     } 
   }
 
-  /* ----- Zoom & Scroll ----- */
+
   function applyZoom(){
     const s = (mode==='fitW') ? lockedFit : userScale;
     stage.style.transform = `scale(${s})`;
     const pct = document.getElementById('zoomPct'); if(pct) pct.textContent = Math.round(s*100)+"%";
     
-    // רוחב הסקולר מושפע מה-scale הנוכחי
     if(lastW && lastH){
-      const wpx = (mode==='fitW') ? Math.floor(viewport.clientWidth) : Math.ceil(stageW * s); // stageW זה ב-Units, לא ב-px
+      const wpx = Math.ceil(stageW * s);
       scroller.style.width  = wpx + 'px';
       scroller.style.height = Math.ceil(lastH * s) + 'px';
     }
@@ -576,7 +546,6 @@
     let needX = (scroller.offsetWidth - viewport.clientWidth) > tol;
     let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
     
-    // במצב fitW רוצים רק גלילה אנכית אם צריך
     if(mode==='fitW'){
       needX = false;
       if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)) needY = false;
@@ -585,6 +554,11 @@
     viewport.style.overflowX = needX ? 'auto' : 'hidden';
     viewport.style.overflowY = needY ? 'auto' : 'hidden';
     viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
+    
+    // אם יש צורך בגלילה אופקית (NeedX), גלול אוטומטית לימין (בגלל RTL)
+    if(FLOW==='rtl' && needX && !isPanning && scroller.scrollWidth > viewport.clientWidth){
+      viewport.scrollLeft = scroller.scrollWidth; // גלילה אוטומטית לימין
+    }
   }
 
   const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
@@ -593,7 +567,7 @@
   document.getElementById('zoomIn').addEventListener('click', ()=>{
     const base = (mode==='fitW') ? lockedFit : userScale;
     mode='free'; userScale = clamp(base + 0.10, 0.2, 3);
-    zoomFrozen = true; // נשארים על free ומקבעים את הזום החדש
+    zoomFrozen = true; 
     applyZoom();
   });
   document.getElementById('zoomOut').addEventListener('click', ()=>{
@@ -606,13 +580,11 @@
     mode='free'; userScale=1; zoomFrozen = true; applyZoom();
   });
   document.getElementById('fitW').addEventListener('click', ()=>{
-    // התאמה מחודשת: מתירים ל-layout לחשב fit חדש ואז "מקבעים" אותו שוב
     zoomFrozen = false;     
     mode='fitW';
-    layout();               // יחשב lockedFit -> יקבע userScale -> יעבור ל-free
+    layout();               
   });
 
-  // אל תתחיל PAN בלחיצה על קפסולה/טוגל
   function canPan(){
     const tol = 2;
     let needX = (scroller.offsetWidth - viewport.clientWidth) > tol;
@@ -668,7 +640,7 @@
   }, {passive:false});
 
   document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
-  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; zoomFrozen = true; /* השאר על הזום הנוכחי */ layout(); });
+  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; zoomFrozen = true; layout(); });
 
   /* ----- גודל הבמה ----- */
   function sizeViewport(){ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; }
