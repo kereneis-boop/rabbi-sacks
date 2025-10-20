@@ -31,17 +31,17 @@
       box-shadow: 0 6px 16px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(0,0,0,.04);
     }
 
-    /* כותרת במרכז – שבירה עד שתי שורות */
+    /* כותרת במרכז – שבירה עד שתי שורות (צפוף יותר) */
     .vbt-terms .vbt-title{
       flex: 1 1 auto;
       text-align: center;
-      line-height: 1.2;
+      line-height: 1.1;              /* פחות רווח בין שורות */
       white-space: normal;           /* מאפשר שבירה */
       overflow: hidden;              /* מסתיר עודפים */
       display: -webkit-box;          /* תומך ב־line-clamp */
       -webkit-line-clamp: 2;         /* עד 2 שורות */
       -webkit-box-orient: vertical;
-      max-height: calc(1.2em * 2);   /* גובה מדויק לשתי שורות */
+      max-height: calc(1.1em * 2);   /* גובה מדויק לשתי שורות */
     }
 
     /* i – בימין: אדום בסגור, ירוק + סיבוב בפתוח */
@@ -115,7 +115,8 @@
       <input class="vbt-toggle" type="checkbox" id="vbt-t3" />
       <label class="vbt-summary" for="vbt-t3" role="button" tabindex="0">
         <span class="vbt-icon">i</span>
-        <span class="vbt-title">קיום קהילתי לעומת קיום פרטי</span>
+        <!-- שבירת שורה מכוונת אחרי "קהילתי" -->
+        <span class="vbt-title">קיום קהילתי<br>לעומת קיום פרטי</span>
         <span class="vbt-pm" aria-hidden="true"></span>
       </label>
       <div class="vbt-panel">
