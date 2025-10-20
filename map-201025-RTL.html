@@ -315,7 +315,7 @@
   function measure(node){
     node.el.style.left = '-10000px';
     node.el.style.top = '-10000px';
-    const natural = Math.max(140, node.el.offsetWidth);
+    const natural = Math.max(0, node.el.offsetWidth);
     node.naturalWidth = natural;
     node.width = natural;
     node.children.forEach(measure);
@@ -386,7 +386,7 @@
 
     // 3) רוחב מקסימלי לכל עומק
     const depthMaxW = new Map();
-    nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140)); });
+    nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140));});
 
     // 4) חישוב עוגנים סופיים
     DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
@@ -439,7 +439,7 @@
       const top = n.y - n.height/2;
       const rightUnits = offsetX + n.x;            // עוגן ימין של העמודה (RTL)
       const leftUnits  = (FLOW==='rtl') ? (rightUnits - n.width) : rightUnits;
-      n.el.style.left  = leftUnits + 'px';
+      n.el.style.left  = leftUnits  + 'px';
       n.el.style.top   = top + 'px';
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
