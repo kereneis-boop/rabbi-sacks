@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>הרב זקס - חלון להגות יהודית - Mind-Map Standalone (RTL)</title>
+<link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gap-between-mods-d2:40px;
+    --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --bg:#ffffff; --ink:#0f172a;
+
+    --chip-h:48px; 
+    --gap-x:36px;           
+    --gap-x-d01:100px;      
+    --gap-y:40px; 
+    --gap-rootcat:22px;     
+    --gap-d3:22px;          
+    --gap-d4:22px;          
+    --gap-cat:22px;         
+    --gap-item:6px;         
+
+    --r:9999px; 
+    --shadow:0 8px 22px rgba(0,0,0,.10);
+    --edge:#C5CBD8; 
+    --toggle:#fe0100;
+
+    --anim-dur:.60s; 
+    --anim-ease:ease-in-out;
+    --fit-margin:32;
+  }
+
+  *{box-sizing:border-box}
+  html, body, button, input, select, textarea, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
+  html,body{height:auto;min-height:100%; overflow-x:hidden}
+  body{margin:0;background:var(--bg);color:var(--ink);} 
+  .wrap{padding:12px; width:100%; max-width:none; margin:0 auto; overflow:visible}
+
+  .zoombar{
+    position:sticky; top:8px; inset-inline:0; display:flex; justify-content:center; align-items:center; gap:6px; z-index:3;
+    background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(10px);
+    padding:10px 12px; margin:0 auto 16px; width:max-content; border-radius:14px; 
+    border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
+  }
+  .zoombar button{
+    border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer; 
+    background:linear-gradient(180deg,#ffffff,#f7f7f9); box-shadow:0 4px 12px rgba(0,0,0,.08);
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; 
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease
+  }
+  .zoombar button:hover{box-shadow:0 8px 18px rgba(0,0,0,.12)}
+  .zoombar button:active{transform:translateY(1px)}
+  .zoombar button:focus-visible{outline:3px solid rgba(59,130,246,.5); outline-offset:2px}
+  .zoombar .pct{
+    min-width:72px; text-align:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08); 
+    height:36px; display:inline-flex; align-items:center; justify-content:center
+  }
+  #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
+  #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
+  @media (max-width:680px){.zoombar{width:calc(100% - 24px); justify-content:space-between}}
+  .zoombar .pct{min-width:68px; text-align:center}
+
+  .viewport{position:relative; width:100%; height:auto; overflow:hidden; touch-action:none; cursor:grab}
+  .scroller{position:relative;}
+  .stage{position:relative; min-height:380px; min-width:0; transform-origin: top right; opacity:0}
+  .chips{position:absolute; inset:0; z-index:1}
+  svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
+
+  .chip{
+    position:absolute; display:flex; align-items:center;
+    height:var(--chip-h); padding:0 16px; border-radius:var(--r);
+    line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
+    direction: rtl; text-align:right; font-weight:700; gap:14px;
+    background: var(--chip-bg, #ffffff); color:#0f172a; cursor:pointer;
+  }
+  .chip[data-kind="root"]{font-weight:800}
+
+  .label{pointer-events:none; direction: rtl; text-align:right}
+  a.label{pointer-events:auto; color:inherit; text-decoration:none}
+  a.label:hover{text-decoration:underline}
+
+  .toggle{position:relative; width:28px;height:28px;border-radius:50%;flex:0 0 auto;background:var(--toggle); cursor:pointer; border:0}
+  .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition: opacity var(--anim-dur) var(--anim-ease)}
+  .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg)}
+  .chip[aria-expanded="true"] .toggle .bar.v{opacity:0}
+
+  .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
+
+  .fade-enter{ opacity:0.001 }
+  .fade-enter.fade-active{ opacity:1; transition: opacity var(--anim-dur) var(--anim-ease) }
+  .fade-exit{ opacity:1 }
+  .fade-exit.fade-active{ opacity:0; transition: opacity var(--anim-dur) var(--anim-ease) }
+
+  @media (prefers-reduced-motion: reduce){
+    .fade-enter.fade-active,.fade-exit.fade-active{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="zoombar" aria-label="Zoom controls">
+    <button id="fitW" title="התאם לרוחב">↔︎ התאמה</button>
+    <button id="zoomOut" title="Zoom out">−</button>
+    <button id="zoomPct" class="pct" title="100%">100%</button>
+    <button id="zoomIn" title="Zoom in">+</button>
+    <button id="expandAll" title="פתח הכל">פתח־הכל</button>
+    <button id="collapseAll" title="סגור הכל">סגור־הכל</button>
+  </div>
+
+  <div id="viewport" class="viewport">
+    <div id="scroller" class="scroller">
+      <div id="app" class="stage">
+        <svg id="edges" aria-hidden="true"></svg>
+        <div id="chips" class="chips"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script id="mindmap-data" type="application/json">
+{
+  "dir": "rtl",
+  "flow": "rtl",
+  "root": {
+    "label": "הרב זקס - חלון להגות יהודית",
+    "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html",
+    "children": [
+      {
+        "label": "0 - ברוכים הבאים",
+        "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html",
+        "children": [
+          { "label": "# הקדמה", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" },
+          { "label": "1. למה הרב זקס, למה עכשיו?\n2. מפת הקורס\n3. סילבוס", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" },
+          { "label": "כיצד לסיים את הקורס בהצלחה?", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" },
+          { "label": "ערכים, זהות וחינוך יהודי במאה ה־21", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" }
+        ]
+      },
+      {
+        "label": "1 - ביוגרפיה",
+        "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html",
+        "children": [
+          { "label": "#01 יסודות ביוגרפיים בהגות הרב זקס", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" },
+          { "label": "גילה זקס - מבט אישי על התפתחות הרב זקס כפילוסוף והוגה יהודי", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" },
+          { "label": "הרב דיין בינשטוק - מן הדרשה המקומית אל המורשת ההגותית", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" },
+          {
+            "label": "מה נלמד?",
+            "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html",
+            "children": [
+              { "label": "1. חקר ביוגרפי", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" },
+              { "label": "2. עיצוב תפיסת עולם", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" },
+              { "label": "3. מודל מנהיגותי", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" },
+              { "label": "4. התבוננות מחודשת בזהות יהודית ומנהיגות במאה ה-21", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "2 - יסודות פילוסופיים",
+        "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html",
+        "children": [
+          { "label": "#02 יסודות פילוסופיים בהגות היהודית", "href": "https://kereneis-boop.github.io/rabbi-sacks/index.html" },
