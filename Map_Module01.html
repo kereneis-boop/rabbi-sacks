@@ -7,20 +7,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* ↑ ריווחים שניתנים לכוונון */
-    --zoombar-gap: 35px;          /* רווח בין סרגל הכפתורים לתחילת המפה */
-    --map-pad-top: 35px;          /* ריווח פנימי עליון באזור המפה (לא תלוי זום) */
-    --map-pad-bottom: 60px;       /* ריווח פנימי תחתון באזור המפה (לא תלוי זום) */
-    --gap-between-groups: 40px;   /* רווח נוסף בין שיעור לשיעור (מקבצים, עומק 1) */
+    /* ריווחים שניתנים לכוונון */
+    --zoombar-gap: 35px;          /* רווח בין סרגל הכפתורים למפה */
+    --map-pad-top: 35px;          /* ריווח פנימי עליון של אזור המפה (נספר בחישוב fit) */
+    --map-pad-bottom: 60px;       /* ריווח פנימי תחתון של אזור המפה (נספר בחישוב fit) */
+    --gap-between-groups: 40px;   /* רווח נוסף בין שיעור לשיעור (ילדי השורש) */
 
     /* מרווחים כלליים */
     --gap-x:36px;
     --gap-x-d01:100px;            /* רווח אופקי בין עומק 0 לעומק 1 */
-    --gap-rootcat:22px;           /* רווח אנכי בעומק 1 */
-    --gap-cat:22px;               /* רווח אנכי בעומק 2 */
-    --gap-d3:22px;                /* רווח אנכי בעומק 3 */
-    --gap-d4:22px;                /* רווח אנכי בעומק 4 */
-    --gap-item:6px;               /* רווח אנכי בעלים */
+    --gap-rootcat:22px;
+    --gap-cat:22px;
+    --gap-d3:22px;
+    --gap-d4:22px;
+    --gap-item:6px;
     --chip-h:48px;
 
     /* עיצוב */
@@ -197,6 +197,10 @@
   const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
   const GAP_GROUPS = parseFloat(CSS.getPropertyValue('--gap-between-groups')) || 0;
 
+  /* נלקח בחשבון ב-fit כך שלא תהיה גלילה */
+  const PAD_TOP    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 0;
+  const PAD_BOTTOM = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 0;
+
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
   /* ----- Build tree ----- */
@@ -257,8 +261,7 @@
       subHeight(c);
       total += c._subH;
       if(i>0){ total += (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth); }
-      /* רווח נוסף בין מקבצים (ילדי השורש) */
-      if(node.depth===0 && i<node.children.length){ total += GAP_GROUPS; }
+      if(node.depth===0 && i<node.children.length-1){ total += GAP_GROUPS; } /* רווח בין שיעורים */
     });
     node._subH = Math.max(node.height, total); return node._subH;
   }
@@ -274,7 +277,7 @@
       node.children.forEach((c,i)=>{
         position(c, depth+1, cursor);
         cursor += c._subH + gapForDepth(c.depth);
-        if(node.depth===0){ cursor += GAP_GROUPS; } /* רווח בין שיעורים */
+        if(node.depth===0 && i<node.children.length-1){ cursor += GAP_GROUPS; } /* רווח בין שיעורים */
       });
     }
   }
@@ -319,13 +322,16 @@
     const nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
 
-    /* Fit */
+    /* Fit – ללא גלילה, לוקח בחשבון padding עליון/תחתון */
     const vpW = viewport.getBoundingClientRect().width;
     const vpH = viewport.clientHeight || window.innerHeight;
     const FIT_MARGIN = parseFloat(CSS.getPropertyValue('--fit-margin')) || 24;
 
-    const fitW = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
-    const fitH = Math.min(1.0, (vpH - 24) / Math.max(1, h));
+    const innerW = Math.max(1, vpW - FIT_MARGIN);
+    const innerH = Math.max(1, vpH - PAD_TOP - PAD_BOTTOM);
+
+    const fitW = innerW / Math.max(1, w);
+    const fitH = innerH / Math.max(1, h);
     const baseFit = Math.min(fitW, fitH);
 
     const maxDepthNow = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
@@ -378,7 +384,6 @@
       path.setAttribute('class','edge');
       path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
       edgeLayer.appendChild(path);
-      edgeOf.set(ch.id, path);
       draw(ch);
     }); })(root);
 
@@ -394,7 +399,8 @@
     const dur = parseFloat(CSS.getPropertyValue('--anim-dur'))*1000+20;
     list.forEach(n=>{
       if(n.el){ n.el.classList.add('fade-exit'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur); }
-      const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-exit'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-exit','fade-active'), dur); }
+      const edge = document.querySelector(`[data-edge="${n.id}"]`);
+      if(edge){ edge.classList.add('fade-exit'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-exit','fade-active'), dur); }
     });
     setTimeout(done, dur);
   }
@@ -404,34 +410,33 @@
     else { if(n.el) n.el.setAttribute('aria-expanded','false'); animateClose(n, ()=>{ collapseDeep(n); layout(); }); }
   }
 
-  /* ----- Zoom & Scroll (height כולל padding) ----- */
+  /* ----- Zoom & Scroll: במצב התאמה אין גלילה ----- */
   function applyZoom(){
     const s = (mode==='fitW') ? lockedFit : userScale;
     stage.style.transform = `scale(${s})`;
 
     const pct = document.getElementById('zoomPct');
-    if(pct) pct.textContent = Math.round(s*100)+"%";
+    if(pct) pct.textContent = Math.round(s*100) + "%";
 
-    if(lastW && lastH){
-      const wpx = (mode==='fitW') ? Math.floor(viewport.clientWidth) : Math.ceil(lastW * s);
-      scroller.style.width  = wpx + 'px';
-
-      const padTop    = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--map-pad-top'))    || 0;
-      const padBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--map-pad-bottom')) || 0;
-      scroller.style.height = Math.ceil(lastH * s + padTop + padBottom) + 'px';
+    if (mode === 'fitW') {
+      scroller.style.width  = viewport.clientWidth + 'px';
+      scroller.style.height = viewport.clientHeight + 'px'; /* כולל padding בגלל border-box */
+      viewport.style.overflowX = 'hidden';
+      viewport.style.overflowY = 'hidden';
+      viewport.style.cursor    = 'auto';
+    } else {
+      if(lastW && lastH){
+        const wpx = Math.ceil(lastW * s);
+        scroller.style.width  = wpx + 'px';
+        scroller.style.height = Math.ceil(lastH * s + PAD_TOP + PAD_BOTTOM) + 'px';
+      }
+      const tol = 2;
+      const needX = (scroller.offsetWidth  - viewport.clientWidth)  > tol;
+      const needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
+      viewport.style.overflowX = needX ? 'auto' : 'hidden';
+      viewport.style.overflowY = needY ? 'auto' : 'hidden';
+      viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
     }
-
-    const tol = 2;
-    let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
-    let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
-
-    if(mode==='fitW'){
-      needX = false;
-      if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)) needY = false;
-    }
-    viewport.style.overflowX = needX ? 'auto' : 'hidden';
-    viewport.style.overflowY = needY ? 'auto' : 'hidden';
-    viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
   }
 
   /* ===== Drag-to-pan ===== */
@@ -445,6 +450,7 @@
   }, true);
 
   function onPointerDown(e){
+    if(mode==='fitW') return; /* במצב התאמה אין גרירה */
     isDown = true; isPanning=false; movedPx=0;
     activePointerId = e.pointerId;
     panStartX = e.clientX; panStartY = e.clientY;
@@ -452,6 +458,7 @@
     startScrollT = viewport.scrollTop;
   }
   function onPointerMove(e){
+    if(mode==='fitW') return;
     if(!isDown || e.pointerId !== activePointerId) return;
     const dx = e.clientX - panStartX;
     const dy = e.clientY - panStartY;
@@ -467,6 +474,7 @@
     }
   }
   function endPan(e){
+    if(mode==='fitW') return;
     if(e.pointerId !== activePointerId) return;
     isDown = false;
     if(isPanning){
