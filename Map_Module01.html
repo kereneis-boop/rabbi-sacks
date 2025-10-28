@@ -48,7 +48,8 @@
     border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer; 
     background:linear-gradient(180deg,#ffffff,#f7f7f9); box-shadow:0 4px 12px rgba(0,0,0,.08);
     display:inline-flex; align-items:center; justify-content:center; gap:8px; 
-    transition:transform .12s ease, box-shadow .12s ease, background .12s ease
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    touch-action:manipulation;
   }
   .zoombar button:hover{box-shadow:0 8px 18px rgba(0,0,0,.12)}
   .zoombar button:active{transform:translateY(1px)}
@@ -64,8 +65,7 @@
 
   /* במה + גרירה */
   .viewport{
-    position:relative; width:100%; height:auto; overflow:hidden;
-    /* לא חוסמים קליקים כברירת מחדל; נשתמש בסף תנועה בקוד */
+    position:relative; width:100%; height:auto; overflow:hidden; 
     touch-action:none; cursor:grab; 
     scrollbar-gutter: stable both-edges;
   }
@@ -191,7 +191,6 @@
   let mode = 'fitW';         // zoom mode: fitW | free
   let userScale = 1;
   let lockedFit = 1;         // scale שנקבע אוטומטית ב-fit
-  let pinchStartDist = 0, pinchStartScale = 1;
 
   let zoomFrozen = false;
   let didInitialFitAll = false;
@@ -456,16 +455,15 @@
   let panStartX=0, panStartY=0, startScrollL=0, startScrollT=0, activePointerId=null;
   const START_THRESHOLD = 6; // px
 
-  // מבטל קליק אחרי גרירה משמעותית (בשלב הלכידה, לפני יעד ה-click)
+  // לוכד קליק בתוך ה־viewport כדי לבטל אותו אם הייתה גרירה אמיתית
   viewport.addEventListener('click', function(e){
     if(movedPx >= START_THRESHOLD){
       e.stopPropagation(); e.preventDefault();
     }
-    movedPx = 0; // reset אחרי כל click
+    movedPx = 0; // reset אחרי כל click בתוך ה־viewport
   }, true); // capture
 
   function onPointerDown(e){
-    // לא מבטלים ברירת מחדל כאן, כדי לא לשבור click על קפסולות
     isDown = true; isPanning=false; movedPx=0;
     activePointerId = e.pointerId;
     panStartX = e.clientX; panStartY = e.clientY;
@@ -485,7 +483,6 @@
       viewport.setPointerCapture?.(activePointerId);
     }
     if(isPanning){
-      // כאן כן מונעים ברירת מחדל כדי לא לגרום ל־text selection וקליקים
       e.preventDefault();
       viewport.scrollLeft = startScrollL - dx;
       viewport.scrollTop  = startScrollT  - dy;
@@ -501,7 +498,7 @@
     }
     isPanning = false;
     activePointerId = null;
-    // movedPx נשאר עד אירוע ה-click (הלכוד) כדי לדעת אם לבטל אותו
+    movedPx = 0; // <<< חשוב: מאפס גם כשעוזבים מחוץ ל־viewport
   }
 
   viewport.addEventListener('pointerdown', onPointerDown, {passive:true});
@@ -509,6 +506,44 @@
   viewport.addEventListener('pointerup', endPan, {passive:true});
   viewport.addEventListener('pointercancel', endPan, {passive:true});
   viewport.addEventListener('pointerleave', (e)=>{ if(isDown) endPan(e); }, {passive:true});
+
+  /* ===== כפתורי הבקרה – קשירה עמידה ===== */
+  function killPanIfAny(){
+    // מפסיק כל מצב גרירה פעיל כדי שלא "ייבלעו" קליקים
+    isDown = false;
+    if(isPanning){
+      viewport.classList.remove('panning');
+      try{ viewport.releasePointerCapture?.(activePointerId); }catch(_){}
+    }
+    isPanning = false; activePointerId = null; movedPx = 0;
+  }
+  function bindControl(el, handler){
+    if(!el) return;
+    const run = (e)=>{ killPanIfAny(); e && e.preventDefault(); handler(); };
+    el.addEventListener('click', run);
+    el.addEventListener('pointerup', run, {passive:false});
+    el.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ run(e); }});
+  }
+
+  bindControl(document.getElementById('zoomIn'), ()=>{
+    mode='free'; userScale = Math.min((userScale||lockedFit) + 0.10, 3); applyZoom();
+  });
+  bindControl(document.getElementById('zoomOut'), ()=>{
+    mode='free'; userScale = Math.max((userScale||lockedFit) - 0.10, 0.2); applyZoom();
+  });
+  bindControl(document.getElementById('zoomPct'), ()=>{
+    mode='free'; userScale=1; applyZoom();
+  });
+  bindControl(document.getElementById('fitW'), ()=>{
+    zoomFrozen = false; mode='fitW'; layout();
+  });
+  bindControl(document.getElementById('expandAll'), ()=>{
+    (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout();
+  });
+  bindControl(document.getElementById('collapseAll'), ()=>{
+    (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root);
+    mode='free'; layout();
+  });
 
   /* ----- גודל הבמה ----- */
   function sizeViewport(){
