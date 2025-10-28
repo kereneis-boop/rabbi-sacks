@@ -3,49 +3,51 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>ביוגרפיה – Mind-Map Standalone (RTL)</title>
+<title>ביוגרפיה – Mind-Map (RTL)</title>
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --gap-between-mods-d2:40px;
+    /* ↑ ריווחים שניתנים לכוונון */
+    --zoombar-gap: 35px;          /* רווח בין סרגל הכפתורים לתחילת המפה */
+    --map-pad-top: 35px;          /* ריווח פנימי עליון באזור המפה (לא תלוי זום) */
+    --map-pad-bottom: 60px;       /* ריווח פנימי תחתון באזור המפה (לא תלוי זום) */
+    --gap-between-groups: 40px;   /* רווח נוסף בין שיעור לשיעור (מקבצים, עומק 1) */
+
+    /* מרווחים כלליים */
+    --gap-x:36px;
+    --gap-x-d01:100px;            /* רווח אופקי בין עומק 0 לעומק 1 */
+    --gap-rootcat:22px;           /* רווח אנכי בעומק 1 */
+    --gap-cat:22px;               /* רווח אנכי בעומק 2 */
+    --gap-d3:22px;                /* רווח אנכי בעומק 3 */
+    --gap-d4:22px;                /* רווח אנכי בעומק 4 */
+    --gap-item:6px;               /* רווח אנכי בעלים */
+    --chip-h:48px;
+
+    /* עיצוב */
     --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     --bg:#ffffff; --ink:#0f172a;
-
-    --chip-h:48px; 
-    --gap-x:36px;           
-    --gap-x-d01:100px;
-    --gap-y:40px; 
-    --gap-rootcat:22px;
-    --gap-d3:22px;
-    --gap-d4:22px;
-    --gap-cat:22px;
-    --gap-item:6px;
-
-    --r:9999px; 
+    --edge:#C5CBD8; --toggle:#fe0100;
     --shadow:0 8px 22px rgba(0,0,0,.10);
-    --edge:#C5CBD8; 
-    --toggle:#fe0100;
+    --r:9999px;
 
+    /* אנימציה והתאמה */
     --anim-dur:.60s; 
     --anim-ease:ease-in-out;
     --fit-margin:32;
-
-    /* ריווחים סביב המפה */
-    --map-pad-top: 60px;     /* ריווח בין הכפתורים למפה (עודכן ל-60px) */
-    --map-pad-bottom: 56px;  /* ריווח בתחתית המפה */
   }
 
   *{box-sizing:border-box}
-  html, body, button, input, select, textarea, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
+  html, body, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
   html,body{height:auto;min-height:100%; overflow-x:hidden}
   body{margin:0;background:var(--bg);color:var(--ink);} 
-  .wrap{padding:12px; width:100%; max-width:none; margin:0 auto; overflow:visible}
+  .wrap{padding:12px; width:100%; margin:0 auto; overflow:visible}
 
-  /* זום־בר */
+  /* סרגל כפתורים */
   .zoombar{
-    position:sticky; top:8px; inset-inline:0; display:flex; justify-content:center; align-items:center; gap:6px; z-index:3;
+    position:sticky; top:8px; inset-inline:0;
+    display:flex; justify-content:center; align-items:center; gap:6px; z-index:3;
     background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(10px);
-    padding:10px 12px; margin:0 auto 22px;
+    padding:10px 12px; margin:0 auto var(--zoombar-gap);
     width:max-content; border-radius:14px; 
     border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
   }
@@ -58,60 +60,41 @@
   }
   .zoombar button:hover{box-shadow:0 8px 18px rgba(0,0,0,.12)}
   .zoombar button:active{transform:translateY(1px)}
-  .zoombar button:focus-visible{outline:3px solid rgba(59,130,246,.5); outline-offset:2px}
-  .zoombar .pct{
-    min-width:72px; text-align:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08); 
-    height:36px; display:inline-flex; align-items:center; justify-content:center
-  }
+  .zoombar .pct{min-width:68px; height:36px; display:inline-flex; align-items:center; justify-content:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08)}
   #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
   #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
-  @media (max-width:680px){.zoombar{width:calc(100% - 24px); justify-content:space-between}}
-  .zoombar .pct{min-width:68px; text-align:center}
 
   /* במה + גרירה */
-  .viewport{
-    position:relative; width:100%; height:auto; overflow:hidden; 
-    touch-action:none; cursor:grab; 
-    scrollbar-gutter: stable both-edges;
-  }
+  .viewport{position:relative; width:100%; overflow:hidden; touch-action:none; cursor:grab; scrollbar-gutter:stable both-edges; direction:ltr;}
   .viewport.panning{ cursor:grabbing; }
-  .scroller{
-    position:relative;
-    padding: var(--map-pad-top) 0 var(--map-pad-bottom);
-  }
-  .stage{position:relative; min-height:380px; min-width:0; transform-origin: top right; opacity:0}
-  .chips{position:absolute; inset:0; z-index:1}
-  svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
+  .scroller{ position:relative; padding: var(--map-pad-top) 0 var(--map-pad-bottom); }
+  .stage{ position:absolute; inset-inline-end:0; top:0; transform-origin: top right; min-height:380px; min-width:0; opacity:0 }
+  .chips{ position:absolute; inset:0; z-index:1 }
+  svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
 
-  /* Capsules */
+  /* קפסולות */
   .chip{
     position:absolute; display:flex; align-items:center;
     height:var(--chip-h); padding:0 16px; border-radius:var(--r);
-    line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
-    direction: rtl; text-align:right; font-weight:700; gap:14px;
+    line-height:1; white-space:nowrap; box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.6);
+    direction:rtl; text-align:right; font-weight:700; gap:14px;
     background: var(--chip-bg, #ffffff); color:#0f172a; cursor:pointer;
   }
   .chip[data-kind="root"]{font-weight:800}
-  .label{pointer-events:none; direction: rtl; text-align: right}
+  .label{pointer-events:none; direction:rtl; text-align:right}
   .chip .toggle{margin-inline-start:auto}
-
-  /* Toggle */
-  .toggle{position:relative; width:28px;height:28px;border-radius:50%;flex:0 0 auto;background:var(--toggle); cursor:pointer; border:0}
-  .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition: opacity var(--anim-dur) var(--anim-ease)}
+  .toggle{position:relative; width:28px; height:28px; border:0; border-radius:50%; background:var(--toggle); cursor:pointer}
+  .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition:opacity var(--anim-dur) var(--anim-ease)}
   .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg)}
   .chip[aria-expanded="true"] .toggle .bar.v{opacity:0}
 
   .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
 
-  /* Fades */
+  /* אנימציות כניסה/יציאה */
   .fade-enter{ opacity:0.001 }
   .fade-enter.fade-active{ opacity:1; transition: opacity var(--anim-dur) var(--anim-ease) }
   .fade-exit{ opacity:1 }
   .fade-exit.fade-active{ opacity:0; transition: opacity var(--anim-dur) var(--anim-ease) }
-
-  @media (prefers-reduced-motion: reduce){
-    .fade-enter.fade-active,.fade-exit.fade-active{transition:none}
-  }
 </style>
 </head>
 <body>
@@ -122,7 +105,7 @@
     <button id="zoomPct" class="pct" title="100%">100%</button>
     <button id="zoomIn" title="Zoom in">+</button>
     <button id="expandAll" title="פתח הכל">פתח־הכל</button>
-    <button id="collapseAll" title="סגור־הכל">סגור־הכל</button>
+    <button id="collapseAll" title="סגור הכל">סגור־הכל</button>
   </div>
 
   <div id="viewport" class="viewport">
@@ -135,7 +118,7 @@
   </div>
 </div>
 
-<!-- === DATA (ביוגרפיה) === -->
+<!-- === DATA: ביוגרפיה === -->
 <script id="mindmap-data" type="application/json">
 {
   "dir": "rtl",
@@ -180,79 +163,71 @@
 
 <script>
 (function(){
-  /* ----- נתונים ----- */
+  /* ----- Parse & setup ----- */
   let data; 
   try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
   catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים - נא לבדוק JSON","children":[]}}; }
 
-  const DIR = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
-  const FLOW = (data.flow||'rtl'); // RTL
+  const DIR  = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
+  const FLOW = (data.flow||'rtl');
 
-  const viewport = document.getElementById('viewport');
-  if(viewport) viewport.style.direction = 'ltr'; // גלילה עקבית
-  const stage = document.getElementById('app');
-  const scroller = document.getElementById('scroller');
+  const viewport  = document.getElementById('viewport');
+  const scroller  = document.getElementById('scroller');
+  const stage     = document.getElementById('app');
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
 
-  /* ----- מצב זום ו-Fit ----- */
-  let mode = 'fitW';         // zoom mode: fitW | free
-  let userScale = 1;
-  let lockedFit = 1;         // scale שנקבע אוטומטית ב-fit
-  let zoomFrozen = false;
-  let didInitialFitAll = false;
+  /* Zoom state */
+  let mode='fitW', userScale=1, lockedFit=1, zoomFrozen=false, didInitialFitAll=false;
 
-  // עוגן במה לפי זרימה
-  if(FLOW==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; stage.style.right=''; }
-  else { stage.style.transformOrigin = 'top right'; stage.style.right='0'; stage.style.left=''; }
+  /* Stage origin by flow */
+  if(FLOW==='ltr'){ stage.style.transformOrigin='top left'; stage.style.left='0'; stage.style.right=''; }
+  else { stage.style.transformOrigin='top right'; stage.style.right='0'; stage.style.left=''; }
   stage.style.top='0'; stage.style.position='absolute';
 
-  /* ----- קבועים מ-CSS ----- */
+  /* CSS constants */
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
   const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36; 
-  const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;
-  const GAP_BETWEEN_MODS_D2 = parseFloat(CSS.getPropertyValue('--gap-between-mods-d2')) || 20;
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
   const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
   const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
   const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
   const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
+  const GAP_GROUPS = parseFloat(CSS.getPropertyValue('--gap-between-groups')) || 0;
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
-  /* ----- בניית עץ ----- */
-  function build(raw, depth=0, parent=null, idxInParent=0){
-    const defaultCollapsed = depth === 0 ? false : true;
+  /* ----- Build tree ----- */
+  function build(raw, depth=0, parent=null, idx=0){
     const node = { 
-      label: raw.label, depth, parent, 
-      collapsed: (typeof raw.collapsed==='boolean' ? raw.collapsed : defaultCollapsed),
-      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0, 
-      children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null),
-      idx: idxInParent
+      label: raw.label, depth, parent, idx,
+      collapsed: (typeof raw.collapsed==='boolean') ? raw.collapsed : (depth!==0),
+      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2),
+      _subH:0, children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null)
     };
     (raw.children||[]).forEach((ch,i)=> node.children.push(build(ch, depth+1, node, i)));
     return node;
   }
   const root = build(data.root, 0, null);
 
-  /* ----- DOM לקפסולות ----- */
+  /* ----- Chips DOM ----- */
   function ensureChip(node){
     if(node.el) return;
-    const el = document.createElement('div'); el.className = 'chip';
+    const el = document.createElement('div'); el.className='chip';
     el.dataset.kind = node.depth===0 ? 'root' : (node.children.length? 'cat':'leaf');
     const label = document.createElement('span'); label.className='label'; label.textContent=node.label; el.appendChild(label);
     if(node.children.length){
       const t = document.createElement('button');
-      t.className = 'toggle'; t.setAttribute('aria-label','פתח/סגור'); t.type='button';
+      t.className='toggle'; t.type='button'; t.setAttribute('aria-label','פתח/סגור');
       t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
       el.appendChild(t);
       el.setAttribute('aria-expanded', String(!node.collapsed));
-      t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
-      el.addEventListener('click', ev => { if (ev.target.closest('.toggle')) return; handleToggle(node); });
+      t.addEventListener('click', ev=>{ ev.stopPropagation(); handleToggle(node); });
+      el.addEventListener('click', ev=>{ if(ev.target.closest('.toggle')) return; handleToggle(node); });
       el.setAttribute('tabindex','0'); el.setAttribute('role','button');
-      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); handleToggle(node); } });
+      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); handleToggle(node);} });
     }
     const base = DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4];
     el.style.setProperty('--chip-bg', base);
@@ -260,24 +235,21 @@
   }
   (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
 
-  /* ----- מדידות וגבהים ----- */
+  /* ----- Measurements & heights ----- */
   function measure(node){
     node.el.style.left = '-10000px';
-    node.el.style.top = '-10000px';
+    node.el.style.top  = '-10000px';
     const natural = Math.max(0, node.el.offsetWidth);
-    node.naturalWidth = natural;
-    node.width = natural;
+    node.naturalWidth = natural; node.width = natural;
     node.children.forEach(measure);
   }
-
   function gapForDepth(depth){
     if(depth>=4) return GAP_D4;
     if(depth===3) return GAP_D3;
     if(depth===2) return GAP_CAT;
     if(depth===1) return GAP_ROOTCAT;
-    return GAP_Y;
+    return GAP_CAT;
   }
-
   function subHeight(node){
     if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
     let total = 0;
@@ -285,28 +257,27 @@
       subHeight(c);
       total += c._subH;
       if(i>0){ total += (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth); }
-      if(node.depth===0 && i<node.children.length-1){ total += GAP_BETWEEN_MODS_D2; }
+      /* רווח נוסף בין מקבצים (ילדי השורש) */
+      if(node.depth===0 && i<node.children.length){ total += GAP_GROUPS; }
     });
     node._subH = Math.max(node.height, total); return node._subH;
   }
 
-  /* ----- עוגני עמודות ----- */
+  /* ----- Column anchors & positioning ----- */
   let DEPTH_ANCHORS = new Map();
   function xForDepth(depth){ return DEPTH_ANCHORS.get(depth) || 0; }
-
   function position(node, depth, top){
     node.x = xForDepth(depth);
     node.y = top + node._subH/2;
     if(!(node.collapsed) && node.children.length){
       let cursor = top;
-      node.children.forEach((c,idx)=>{
+      node.children.forEach((c,i)=>{
         position(c, depth+1, cursor);
         cursor += c._subH + gapForDepth(c.depth);
-        if(node.depth===0 && idx < node.children.length-1){ cursor += GAP_BETWEEN_MODS_D2; }
+        if(node.depth===0){ cursor += GAP_GROUPS; } /* רווח בין שיעורים */
       });
     }
   }
-
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
   function computeBounds(nodes){
     let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
@@ -322,7 +293,7 @@
   }
 
   /* ----- Layout ----- */
-  let lastW = 0, lastH = 0, offsetX = 0, stageW = 0;
+  let lastW=0, lastH=0, offsetX=0, stageW=0;
   const edgeOf = new Map();
 
   function layout(){
@@ -330,9 +301,11 @@
     subHeight(root); position(root,0,0);
     let nodesTmp=[]; collectVisible(root, nodesTmp);
 
+    /* רוחב מקס' לכל עומק */
     const depthMaxW = new Map();
     nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140));});
 
+    /* עוגני עמודות */
     DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
     let acc=0; const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
     for(let d=1; d<=maxDepthVis+1; d++){
@@ -341,13 +314,15 @@
       DEPTH_ANCHORS.set(d, (FLOW==='rtl' ? -acc : acc));
     }
 
+    /* מיקום סופי */
     subHeight(root); position(root, 0, 0);
     const nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
 
+    /* Fit */
     const vpW = viewport.getBoundingClientRect().width;
     const vpH = viewport.clientHeight || window.innerHeight;
-    const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
+    const FIT_MARGIN = parseFloat(CSS.getPropertyValue('--fit-margin')) || 24;
 
     const fitW = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
     const fitH = Math.min(1.0, (vpH - 24) / Math.max(1, h));
@@ -376,6 +351,7 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
+    /* קפסולות */
     nodes.forEach(n=>{
       const top = n.y - n.height/2;
       const rightUnits = offsetX + n.x;
@@ -385,6 +361,7 @@
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
+    /* קווים */
     edgeOf.clear(); edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const PAD_PARENT=6, PAD_CHILD=0;
@@ -400,7 +377,8 @@
       const dx=Math.abs(p2x-p1x)*.45, c1x=(FLOW==='rtl'? p1x-dx: p1x+dx), c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
       path.setAttribute('class','edge');
       path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
-      edgeOf.set(ch.id, path); edgeLayer.appendChild(path);
+      edgeLayer.appendChild(path);
+      edgeOf.set(ch.id, path);
       draw(ch);
     }); })(root);
 
@@ -413,7 +391,7 @@
   function animateClose(node, done){
     const list=[]; function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
     node.children.forEach(collectDesc);
-    const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
+    const dur = parseFloat(CSS.getPropertyValue('--anim-dur'))*1000+20;
     list.forEach(n=>{
       if(n.el){ n.el.classList.add('fade-exit'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur); }
       const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-exit'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-exit','fade-active'), dur); }
@@ -426,19 +404,27 @@
     else { if(n.el) n.el.setAttribute('aria-expanded','false'); animateClose(n, ()=>{ collapseDeep(n); layout(); }); }
   }
 
-  /* ----- Zoom & Scroll ----- */
+  /* ----- Zoom & Scroll (height כולל padding) ----- */
   function applyZoom(){
     const s = (mode==='fitW') ? lockedFit : userScale;
     stage.style.transform = `scale(${s})`;
-    const pct = document.getElementById('zoomPct'); if(pct) pct.textContent = Math.round(s*100)+"%";
+
+    const pct = document.getElementById('zoomPct');
+    if(pct) pct.textContent = Math.round(s*100)+"%";
+
     if(lastW && lastH){
       const wpx = (mode==='fitW') ? Math.floor(viewport.clientWidth) : Math.ceil(lastW * s);
       scroller.style.width  = wpx + 'px';
-      scroller.style.height = Math.ceil(lastH * s) + 'px';
+
+      const padTop    = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--map-pad-top'))    || 0;
+      const padBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--map-pad-bottom')) || 0;
+      scroller.style.height = Math.ceil(lastH * s + padTop + padBottom) + 'px';
     }
+
     const tol = 2;
     let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
     let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
+
     if(mode==='fitW'){
       needX = false;
       if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)) needY = false;
@@ -448,15 +434,13 @@
     viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
   }
 
-  /* ===== Drag-to-pan עם סף תנועה ===== */
+  /* ===== Drag-to-pan ===== */
   let isDown=false, isPanning=false, movedPx=0;
   let panStartX=0, panStartY=0, startScrollL=0, startScrollT=0, activePointerId=null;
-  const START_THRESHOLD = 6; // px
+  const START_THRESHOLD = 6;
 
   viewport.addEventListener('click', function(e){
-    if(movedPx >= START_THRESHOLD){
-      e.stopPropagation(); e.preventDefault();
-    }
+    if(movedPx >= START_THRESHOLD){ e.stopPropagation(); e.preventDefault(); }
     movedPx = 0;
   }, true);
 
@@ -467,16 +451,13 @@
     startScrollL = viewport.scrollLeft;
     startScrollT = viewport.scrollTop;
   }
-
   function onPointerMove(e){
     if(!isDown || e.pointerId !== activePointerId) return;
     const dx = e.clientX - panStartX;
     const dy = e.clientY - panStartY;
     movedPx = Math.max(movedPx, Math.hypot(dx, dy));
-
     if(!isPanning && movedPx >= START_THRESHOLD){
-      isPanning = true;
-      viewport.classList.add('panning');
+      isPanning = true; viewport.classList.add('panning');
       viewport.setPointerCapture?.(activePointerId);
     }
     if(isPanning){
@@ -485,7 +466,6 @@
       viewport.scrollTop  = startScrollT  - dy;
     }
   }
-
   function endPan(e){
     if(e.pointerId !== activePointerId) return;
     isDown = false;
@@ -493,60 +473,30 @@
       viewport.classList.remove('panning');
       try{ viewport.releasePointerCapture?.(activePointerId); }catch(_){}
     }
-    isPanning = false;
-    activePointerId = null;
-    movedPx = 0;
+    isPanning = false; activePointerId = null; movedPx = 0;
   }
-
   viewport.addEventListener('pointerdown', onPointerDown, {passive:true});
   viewport.addEventListener('pointermove', onPointerMove, {passive:false});
   viewport.addEventListener('pointerup', endPan, {passive:true});
   viewport.addEventListener('pointercancel', endPan, {passive:true});
   viewport.addEventListener('pointerleave', (e)=>{ if(isDown) endPan(e); }, {passive:true});
 
-  /* ===== כפתורי הבקרה ===== */
-  function killPanIfAny(){
-    isDown = false;
-    if(isPanning){
-      viewport.classList.remove('panning');
-      try{ viewport.releasePointerCapture?.(activePointerId); }catch(_){}
-    }
-    isPanning = false; activePointerId = null; movedPx = 0;
-  }
-  function bindControl(el, handler){
-    if(!el) return;
-    const run = (e)=>{ killPanIfAny(); e && e.preventDefault(); handler(); };
-    el.addEventListener('click', run);
-    el.addEventListener('pointerup', run, {passive:false});
-    el.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ run(e); }});
-  }
+  /* ===== Controls ===== */
+  function bind(id, fn){ const el=document.getElementById(id); if(!el) return; const run=e=>{ e&&e.preventDefault(); fn(); }; el.addEventListener('click',run); el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ run(e); } }); }
+  bind('zoomIn', ()=>{ mode='free'; userScale = Math.min((userScale||lockedFit) + 0.10, 3); applyZoom(); });
+  bind('zoomOut',()=>{ mode='free'; userScale = Math.max((userScale||lockedFit) - 0.10, 0.2); applyZoom(); });
+  bind('zoomPct',()=>{ mode='free'; userScale=1; applyZoom(); });
+  bind('fitW',   ()=>{ zoomFrozen=false; mode='fitW'; layout(); });
+  bind('expandAll', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
+  bind('collapseAll',()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; layout(); });
 
-  bindControl(document.getElementById('zoomIn'), ()=>{
-    mode='free'; userScale = Math.min((userScale||lockedFit) + 0.10, 3); applyZoom();
-  });
-  bindControl(document.getElementById('zoomOut'), ()=>{
-    mode='free'; userScale = Math.max((userScale||lockedFit) - 0.10, 0.2); applyZoom();
-  });
-  bindControl(document.getElementById('zoomPct'), ()=>{
-    mode='free'; userScale=1; applyZoom();
-  });
-  bindControl(document.getElementById('fitW'), ()=>{
-    zoomFrozen = false; mode='fitW'; layout();
-  });
-  bindControl(document.getElementById('expandAll'), ()=>{
-    (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout();
-  });
-  bindControl(document.getElementById('collapseAll'), ()=>{
-    (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root);
-    mode='free'; layout();
-  });
-
-  /* ----- גודל הבמה ----- */
+  /* ----- Viewport size ----- */
   function sizeViewport(){
     const rect = viewport.getBoundingClientRect();
     const avail = window.innerHeight - rect.top - 16;
     viewport.style.height = Math.max(320, Math.floor(avail)) + 'px';
   }
+
   sizeViewport(); 
   layout();
 
