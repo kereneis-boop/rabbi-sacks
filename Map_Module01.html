@@ -29,6 +29,10 @@
     --anim-dur:.60s; 
     --anim-ease:ease-in-out;
     --fit-margin:32;
+
+    /* ריווחים סביב המפה */
+    --map-pad-top: 60px;     /* ריווח בין הכפתורים למפה (עודכן ל-60px) */
+    --map-pad-bottom: 56px;  /* ריווח בתחתית המפה */
   }
 
   *{box-sizing:border-box}
@@ -41,7 +45,8 @@
   .zoombar{
     position:sticky; top:8px; inset-inline:0; display:flex; justify-content:center; align-items:center; gap:6px; z-index:3;
     background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(10px);
-    padding:10px 12px; margin:0 auto 16px; width:max-content; border-radius:14px; 
+    padding:10px 12px; margin:0 auto 22px;
+    width:max-content; border-radius:14px; 
     border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
   }
   .zoombar button{
@@ -70,7 +75,10 @@
     scrollbar-gutter: stable both-edges;
   }
   .viewport.panning{ cursor:grabbing; }
-  .scroller{position:relative;}
+  .scroller{
+    position:relative;
+    padding: var(--map-pad-top) 0 var(--map-pad-bottom);
+  }
   .stage{position:relative; min-height:380px; min-width:0; transform-origin: top right; opacity:0}
   .chips{position:absolute; inset:0; z-index:1}
   svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
@@ -114,7 +122,7 @@
     <button id="zoomPct" class="pct" title="100%">100%</button>
     <button id="zoomIn" title="Zoom in">+</button>
     <button id="expandAll" title="פתח הכל">פתח־הכל</button>
-    <button id="collapseAll" title="סגור הכל">סגור־הכל</button>
+    <button id="collapseAll" title="סגור־הכל">סגור־הכל</button>
   </div>
 
   <div id="viewport" class="viewport">
@@ -191,7 +199,6 @@
   let mode = 'fitW';         // zoom mode: fitW | free
   let userScale = 1;
   let lockedFit = 1;         // scale שנקבע אוטומטית ב-fit
-
   let zoomFrozen = false;
   let didInitialFitAll = false;
 
@@ -319,18 +326,13 @@
   const edgeOf = new Map();
 
   function layout(){
-    // 1) מדידה
     measure(root);
-
-    // 2) עוגנים זמניים
     subHeight(root); position(root,0,0);
     let nodesTmp=[]; collectVisible(root, nodesTmp);
 
-    // 3) רוחב מקסימלי לכל עומק
     const depthMaxW = new Map();
     nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140));});
 
-    // 4) חישוב עוגנים סופיים
     DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
     let acc=0; const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
     for(let d=1; d<=maxDepthVis+1; d++){
@@ -339,12 +341,10 @@
       DEPTH_ANCHORS.set(d, (FLOW==='rtl' ? -acc : acc));
     }
 
-    // 5) מיקום סופי
     subHeight(root); position(root, 0, 0);
     const nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
 
-    // 6) Fit וקיבוע זום
     const vpW = viewport.getBoundingClientRect().width;
     const vpH = viewport.clientHeight || window.innerHeight;
     const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
@@ -376,7 +376,6 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    /* ---- 7) מיקום קפסולות ---- */
     nodes.forEach(n=>{
       const top = n.y - n.height/2;
       const rightUnits = offsetX + n.x;
@@ -386,7 +385,6 @@
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
-    /* ---- 8) קווים ---- */
     edgeOf.clear(); edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const PAD_PARENT=6, PAD_CHILD=0;
@@ -455,13 +453,12 @@
   let panStartX=0, panStartY=0, startScrollL=0, startScrollT=0, activePointerId=null;
   const START_THRESHOLD = 6; // px
 
-  // לוכד קליק בתוך ה־viewport כדי לבטל אותו אם הייתה גרירה אמיתית
   viewport.addEventListener('click', function(e){
     if(movedPx >= START_THRESHOLD){
       e.stopPropagation(); e.preventDefault();
     }
-    movedPx = 0; // reset אחרי כל click בתוך ה־viewport
-  }, true); // capture
+    movedPx = 0;
+  }, true);
 
   function onPointerDown(e){
     isDown = true; isPanning=false; movedPx=0;
@@ -498,7 +495,7 @@
     }
     isPanning = false;
     activePointerId = null;
-    movedPx = 0; // <<< חשוב: מאפס גם כשעוזבים מחוץ ל־viewport
+    movedPx = 0;
   }
 
   viewport.addEventListener('pointerdown', onPointerDown, {passive:true});
@@ -507,9 +504,8 @@
   viewport.addEventListener('pointercancel', endPan, {passive:true});
   viewport.addEventListener('pointerleave', (e)=>{ if(isDown) endPan(e); }, {passive:true});
 
-  /* ===== כפתורי הבקרה – קשירה עמידה ===== */
+  /* ===== כפתורי הבקרה ===== */
   function killPanIfAny(){
-    // מפסיק כל מצב גרירה פעיל כדי שלא "ייבלעו" קליקים
     isDown = false;
     if(isPanning){
       viewport.classList.remove('panning');
