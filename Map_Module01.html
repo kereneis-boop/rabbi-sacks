@@ -13,13 +13,13 @@
 
     --chip-h:48px; 
     --gap-x:36px;           
-    --gap-x-d01:100px;      /* רווח אופקי מיוחד בין עומק 0 לעומק 1 */
+    --gap-x-d01:100px;
     --gap-y:40px; 
-    --gap-rootcat:22px;     /* עומק 1 */
-    --gap-d3:22px;          /* עומק 3 */
-    --gap-d4:22px;          /* עומק 4 */
-    --gap-cat:22px;         /* עומק 2 */
-    --gap-item:6px;         /* עומק 3+ */
+    --gap-rootcat:22px;
+    --gap-d3:22px;
+    --gap-d4:22px;
+    --gap-cat:22px;
+    --gap-item:6px;
 
     --r:9999px; 
     --shadow:0 8px 22px rgba(0,0,0,.10);
@@ -62,8 +62,14 @@
   @media (max-width:680px){.zoombar{width:calc(100% - 24px); justify-content:space-between}}
   .zoombar .pct{min-width:68px; text-align:center}
 
-  /* במה */
-  .viewport{position:relative; width:100%; height:auto; overflow:hidden; touch-action:none; cursor:grab}
+  /* במה + גרירה */
+  .viewport{
+    position:relative; width:100%; height:auto; overflow:hidden;
+    /* לא חוסמים קליקים כברירת מחדל; נשתמש בסף תנועה בקוד */
+    touch-action:none; cursor:grab; 
+    scrollbar-gutter: stable both-edges;
+  }
+  .viewport.panning{ cursor:grabbing; }
   .scroller{position:relative;}
   .stage{position:relative; min-height:380px; min-width:0; transform-origin: top right; opacity:0}
   .chips{position:absolute; inset:0; z-index:1}
@@ -79,7 +85,6 @@
   }
   .chip[data-kind="root"]{font-weight:800}
   .label{pointer-events:none; direction: rtl; text-align: right}
-  /* הכפתור בסוף הקפסולה (ב-RTL = שמאל) */
   .chip .toggle{margin-inline-start:auto}
 
   /* Toggle */
@@ -205,7 +210,7 @@
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
   const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
-  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X; // רווח 0↔1
+  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
   const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
   const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
 
@@ -274,6 +279,7 @@
       subHeight(c);
       total += c._subH;
       if(i>0){ total += (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth); }
+      if(node.depth===0 && i<node.children.length-1){ total += GAP_BETWEEN_MODS_D2; }
     });
     node._subH = Math.max(node.height, total); return node._subH;
   }
@@ -284,10 +290,14 @@
 
   function position(node, depth, top){
     node.x = xForDepth(depth);
-    node.y = top + node._subH/2;  // ממורכז ביחס לתת-העץ
+    node.y = top + node._subH/2;
     if(!(node.collapsed) && node.children.length){
       let cursor = top;
-      node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + gapForDepth(c.depth); });
+      node.children.forEach((c,idx)=>{
+        position(c, depth+1, cursor);
+        cursor += c._subH + gapForDepth(c.depth);
+        if(node.depth===0 && idx < node.children.length-1){ cursor += GAP_BETWEEN_MODS_D2; }
+      });
     }
   }
 
@@ -367,25 +377,23 @@
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    /* ---- 7) מיקום קפסולות: יישור לימין עמודה, ללא snapping ---- */
+    /* ---- 7) מיקום קפסולות ---- */
     nodes.forEach(n=>{
       const top = n.y - n.height/2;
-      const rightUnits = offsetX + n.x;            // עוגן ימין של העמודה (RTL)
+      const rightUnits = offsetX + n.x;
       const leftUnits  = (FLOW==='rtl') ? (rightUnits - n.width) : rightUnits;
       n.el.style.left  = leftUnits  + 'px';
       n.el.style.top   = top + 'px';
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
-    /* ---- 8) קווים: משתמשים באותן קואורדינטות בדיוק כמו הקפסולות ---- */
+    /* ---- 8) קווים ---- */
     edgeOf.clear(); edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const PAD_PARENT=6, PAD_CHILD=0;
-
-      // אותם עוגנים כמו במיקום הקפסולות:
-      const parentRight = offsetX + n.x;                  // קצה ימין של ההורה (RTL)
-      const childRight  = offsetX + ch.x;                 // קצה ימין של הילד
-      const parentLeft  = parentRight - n.width;          // קצה שמאל של ההורה
+      const parentRight = offsetX + n.x;
+      const childRight  = offsetX + ch.x;
+      const parentLeft  = parentRight - n.width;
 
       const p1x = (FLOW==='rtl') ? (parentLeft + PAD_PARENT) : (parentRight - PAD_PARENT);
       const p2x = (FLOW==='rtl') ? (childRight - PAD_CHILD)  : (childRight + ch.width + PAD_CHILD);
@@ -443,16 +451,71 @@
     viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
   }
 
-  document.getElementById('zoomIn').addEventListener('click', ()=>{ mode='free'; userScale = Math.min((userScale||lockedFit) + 0.10, 3); applyZoom(); });
-  document.getElementById('zoomOut').addEventListener('click', ()=>{ mode='free'; userScale = Math.max((userScale||lockedFit) - 0.10, 0.2); applyZoom(); });
-  document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
-  document.getElementById('fitW').addEventListener('click', ()=>{ zoomFrozen = false; mode='fitW'; layout(); });
+  /* ===== Drag-to-pan עם סף תנועה ===== */
+  let isDown=false, isPanning=false, movedPx=0;
+  let panStartX=0, panStartY=0, startScrollL=0, startScrollT=0, activePointerId=null;
+  const START_THRESHOLD = 6; // px
 
-  document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
-  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; layout(); });
+  // מבטל קליק אחרי גרירה משמעותית (בשלב הלכידה, לפני יעד ה-click)
+  viewport.addEventListener('click', function(e){
+    if(movedPx >= START_THRESHOLD){
+      e.stopPropagation(); e.preventDefault();
+    }
+    movedPx = 0; // reset אחרי כל click
+  }, true); // capture
+
+  function onPointerDown(e){
+    // לא מבטלים ברירת מחדל כאן, כדי לא לשבור click על קפסולות
+    isDown = true; isPanning=false; movedPx=0;
+    activePointerId = e.pointerId;
+    panStartX = e.clientX; panStartY = e.clientY;
+    startScrollL = viewport.scrollLeft;
+    startScrollT = viewport.scrollTop;
+  }
+
+  function onPointerMove(e){
+    if(!isDown || e.pointerId !== activePointerId) return;
+    const dx = e.clientX - panStartX;
+    const dy = e.clientY - panStartY;
+    movedPx = Math.max(movedPx, Math.hypot(dx, dy));
+
+    if(!isPanning && movedPx >= START_THRESHOLD){
+      isPanning = true;
+      viewport.classList.add('panning');
+      viewport.setPointerCapture?.(activePointerId);
+    }
+    if(isPanning){
+      // כאן כן מונעים ברירת מחדל כדי לא לגרום ל־text selection וקליקים
+      e.preventDefault();
+      viewport.scrollLeft = startScrollL - dx;
+      viewport.scrollTop  = startScrollT  - dy;
+    }
+  }
+
+  function endPan(e){
+    if(e.pointerId !== activePointerId) return;
+    isDown = false;
+    if(isPanning){
+      viewport.classList.remove('panning');
+      try{ viewport.releasePointerCapture?.(activePointerId); }catch(_){}
+    }
+    isPanning = false;
+    activePointerId = null;
+    // movedPx נשאר עד אירוע ה-click (הלכוד) כדי לדעת אם לבטל אותו
+  }
+
+  viewport.addEventListener('pointerdown', onPointerDown, {passive:true});
+  viewport.addEventListener('pointermove', onPointerMove, {passive:false});
+  viewport.addEventListener('pointerup', endPan, {passive:true});
+  viewport.addEventListener('pointercancel', endPan, {passive:true});
+  viewport.addEventListener('pointerleave', (e)=>{ if(isDown) endPan(e); }, {passive:true});
 
   /* ----- גודל הבמה ----- */
-  function sizeViewport(){ const rect = viewport.getBoundingClientRect(); const avail = window.innerHeight - rect.top - 16; viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; }
+  function sizeViewport(){
+    const rect = viewport.getBoundingClientRect();
+    const avail = window.innerHeight - rect.top - 16;
+    viewport.style.height = Math.max(320, Math.floor(avail)) + 'px';
+  }
   sizeViewport(); 
   layout();
 
