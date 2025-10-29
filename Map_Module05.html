@@ -3,79 +3,109 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>מודולה 5 – מדע, מודרניות ומנהיגות — Mind‑Map Standalone</title>
+<title>מודרניות וחברה – Mind-Map (RTL)</title>
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
+    /* ריווחים שניתנים לכוונון */
+    --zoombar-gap: 60px;          /* רווח בין סרגל הכפתורים למפה */
+    --map-pad-top: 35px;          /* ריווח פנימי עליון של אזור המפה (נלקח בחשבון ב-fit) */
+    --map-pad-bottom: 60px;       /* ריווח פנימי תחתון של אזור המפה (נלקח בחשבון ב-fit) */
+    --gap-between-groups: 40px;   /* רווח בין שיעור לשיעור (ילדי השורש) */
+
+    /* מרווחים כלליים */
+    --gap-x:36px;
+    --gap-x-d01:100px;            /* רווח אופקי בין עומק 0 לעומק 1 */
+    --gap-rootcat:22px;
+    --gap-cat:22px;
+    --gap-d3:22px;
+    --gap-d4:22px;
+    --gap-item:6px;
+    --chip-h:48px;
+
+    /* עיצוב */
+    --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     --bg:#ffffff; --ink:#0f172a;
-    --chip-h:48px; 
-    --col-step:400px;       /* מרחק אופקי בין עמודות כלליות */
-    --col-step-d23:280px;   /* מרחק בין עמודות 2↔3 (קטגוריה→פריט) */
-    --gap-x:36px;           /* מרווח אופקי נוסף */
-    --gap-y:40px;           /* מרווח אנכי ברירת־מחדל (שורש) */
-    --gap-cat:110px;        /* מרווח בין קבוצות/קטגוריות (עומק 2) */
-    --gap-item:28px;        /* מרווח בין פריטים באותה קטגוריה (עומק 3) */
-    --r:9999px; --shadow:0 8px 22px rgba(0,0,0,.10);
     --edge:#C5CBD8; --toggle:#fe0100;
-    --anim-dur:.60s; --anim-ease:ease-in-out; /* פתיחה וסגירה זהות */
-    --fit-margin:32;        /* רווח ביטחון לרוחב ב-Fit (px) */
+    --shadow:0 8px 22px rgba(0,0,0,.10);
+    --r:9999px;
+
+    /* אנימציה והתאמה */
+    --anim-dur:.60s; 
+    --anim-ease:ease-in-out;
+    --fit-margin:32;
   }
+
   *{box-sizing:border-box}
+  html, body, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
   html,body{height:auto;min-height:100%; overflow-x:hidden}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif}
-  .wrap{padding:12px; width:100%; max-width:none; margin:0 auto; overflow:visible}
+  body{margin:0;background:var(--bg);color:var(--ink);} 
+  .wrap{padding:12px; width:100%; margin:0 auto; overflow:visible}
 
-  /* שורת כפתורים נפרדת מעל המפה */
-  .zoombar{position:sticky; top:0; display:flex; gap:8px; z-index:3; align-items:center; touch-action:auto; cursor:auto; background:#fff; padding:8px; margin:0 0 16px; border-radius:12px; box-shadow:0 6px 14px rgba(0,0,0,.08)}
-  .zoombar button{border:0; border-radius:10px; padding:8px 10px; font-family:inherit; font-weight:800; cursor:pointer; box-shadow:0 6px 14px rgba(0,0,0,.12); background:#fff}
-  .zoombar .pct{min-width:68px; text-align:center}
+  /* סרגל כפתורים */
+  .zoombar{
+    position:sticky; top:8px; inset-inline:0;
+    display:flex; justify-content:center; align-items:center; gap:6px; z-index:3;
+    background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(10px);
+    padding:10px 12px; margin:0 auto var(--zoombar-gap);
+    width:max-content; border-radius:14px; 
+    border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
+  }
+  .zoombar button{
+    border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer; 
+    background:linear-gradient(180deg,#ffffff,#f7f7f9); box-shadow:0 4px 12px rgba(0,0,0,.08);
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; 
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    touch-action:manipulation;
+  }
+  .zoombar button:hover{box-shadow:0 8px 18px rgba(0,0,0,.12)}
+  .zoombar button:active{transform:translateY(1px)}
+  .zoombar .pct{min-width:68px; height:36px; display:inline-flex; align-items:center; justify-content:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08)}
+  #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
+  #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
 
-  /* במה */
-  .viewport{position:relative; width:100%; height:auto; overflow:hidden; touch-action:none; cursor:grab}
-  .scroller{position:relative;}
-  .stage{position:relative; min-height:380px; min-width:0; transform-origin: top right; opacity:0}
-  .chips{position:absolute; inset:0; z-index:1}
-  svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
+  /* במה + גרירה */
+  .viewport{position:relative; width:100%; overflow:hidden; touch-action:none; cursor:grab; scrollbar-gutter:stable both-edges; direction:ltr;}
+  .viewport.panning{ cursor:grabbing; }
+  .scroller{ position:relative; padding: var(--map-pad-top) 0 var(--map-pad-bottom); }
+  .stage{ position:absolute; inset-inline-end:0; top:0; transform-origin: top right; min-height:380px; min-width:0; opacity:0 }
+  .chips{ position:absolute; inset:0; z-index:1 }
+  svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
 
-  /* Capsules */
-  .chip{position:absolute; display:inline-flex; align-items:center; height:var(--chip-h); padding:0 16px; border-radius:var(--r);
-        line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
-        direction: rtl; text-align:right; font-weight:700; gap:14px;
-        background: var(--chip-bg, #ffffff); color:#0f172a;}
+  /* קפסולות */
+  .chip{
+    position:absolute; display:flex; align-items:center;
+    height:var(--chip-h); padding:0 16px; border-radius:var(--r);
+    line-height:1; white-space:nowrap; box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.6);
+    direction:rtl; text-align:right; font-weight:700; gap:14px;
+    background: var(--chip-bg, #ffffff); color:#0f172a; cursor:pointer;
+  }
   .chip[data-kind="root"]{font-weight:800}
-  .label{pointer-events:none}
-
-  /* Toggle */
-  .toggle{position:relative; width:28px;height:28px;border-radius:50%;flex:0 0 auto;background:var(--toggle); cursor:pointer; border:0}
-  .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition: opacity var(--anim-dur) var(--anim-ease)}
+  .label{pointer-events:none; direction:rtl; text-align:right}
+  .chip .toggle{margin-inline-start:auto}
+  .toggle{position:relative; width:28px; height:28px; border:0; border-radius:50%; background:var(--toggle); cursor:pointer}
+  .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition:opacity var(--anim-dur) var(--anim-ease)}
   .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg)}
   .chip[aria-expanded="true"] .toggle .bar.v{opacity:0}
 
   .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
 
-  /* Fades */
+  /* אנימציות כניסה/יציאה */
   .fade-enter{ opacity:0.001 }
   .fade-enter.fade-active{ opacity:1; transition: opacity var(--anim-dur) var(--anim-ease) }
   .fade-exit{ opacity:1 }
   .fade-exit.fade-active{ opacity:0; transition: opacity var(--anim-dur) var(--anim-ease) }
-
-  @media (prefers-reduced-motion: reduce){
-    .fade-enter.fade-active,.fade-exit.fade-active{transition:none}
-  }
-
-  @media (max-width:900px){:root{--chip-h:44px; --col-step:340px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <!-- שורת הכפתורים מחוץ ל-viewport -->
   <div class="zoombar" aria-label="Zoom controls">
     <button id="fitW" title="התאם לרוחב">↔︎ התאמה</button>
     <button id="zoomOut" title="Zoom out">−</button>
     <button id="zoomPct" class="pct" title="100%">100%</button>
     <button id="zoomIn" title="Zoom in">+</button>
     <button id="expandAll" title="פתח הכל">פתח־הכל</button>
-    <button id="collapseAll" title="סגור הכל">סגור־הכל</button>
+    <button id="collapseAll" title="סגור־הכל">סגור־הכל</button>
   </div>
 
   <div id="viewport" class="viewport">
@@ -88,29 +118,84 @@
   </div>
 </div>
 
-<!-- === DATA (מודולה 5) === -->
+<!-- === DATA: מודולה 5 – מודרניות וחברה (1:1, ללא אימוג'ים) === -->
 <script id="mindmap-data" type="application/json">
 {
   "dir": "rtl",
   "flow": "rtl",
   "root": {
-    "label": "מודולה 5 – מדע, מודרניות ומנהיגות",
+    "label": "מודרניות וחברה",
     "children": [
-      {"label":"ערכים","children":[
-        {"label":"מנהיגות מוסרית","children":[{"label":"מנהיגות יהודית המשלבת מסורת ואתיקה עכשווית"}]},
-        {"label":"משמעות מול עובדות","children":[{"label":"הבחנה בין שאלת הלמה לשאלת המה"}]}
-      ]},
-      {"label":"מושגים","children":[
-        {"label":"ברית אחריות","children":[{"label":"תפיסה מנהיגותית של מחויבות הדדית"}]},
-        {"label":"דת ומדע","children":[{"label":"שני כלים משלימים להבנת העולם"}]}
-      ]},
-      {"label":"השפעות פילוסופיות ואינטלקטואליות","children":[
-        {"label":"אתיקה של מדע וטכנולוגיה","children":[{"label":"מענה לשאלות מוסריות חדשות"}]},
-        {"label":"ביקורת על חילון","children":[{"label":"התמודדות עם ערכי מודרנה ופלורליזם"}]}
-      ]},
-      {"label":"דוגמאות מקראיות","children":[
-        {"label":"בריאת העולם","children":[{"label":"משמעות ותכלית לצד הסברים מדעיים"}]}
-      ]}
+      {
+        "label": "שיעור #01 – בין מסורת למודרנה",
+        "children": [
+          { "label": "הסטודנט יבחן את המתח הפילוסופי בין מחויבות למסורת לבין השתייכות לעולם מודרני ופלורליסטי." },
+          { "label": "הסטודנט ינתח את גישתו של הרב זקס למודרניות כאתגר וכהזדמנות להתחדשות רוחנית." },
+          { "label": "הסטודנט יעמוד על האופן שבו הרב זקס מגדיר את המודרניות לא כאיום אלא כקריאה לדיאלוג מוסרי־ערכי." },
+          { "label": "הסטודנט יבחן את תרומת תפיסת המנהיגות של הרב זקס לעיצוב זהות יהודית בעולם משתנה." },
+          { "label": "הסטודנט יזהה את עקרונות השילוב בין מסורת חיה, זהות לאומית ופתיחות רעיונית." }
+        ]
+      },
+      {
+        "label": "שיעור #02 – בלשון עתיד",
+        "children": [
+          { "label": "הסטודנט ינתח את קריאתו של הרב זקס ליצירת חזון יהודי אקטיבי הפונה אל העתיד ולא רק אל העבר." },
+          { "label": "הסטודנט יבחן את מושג התקווה כיסוד קיומי וקהילתי ביצירת זהות יהודית מודרנית." },
+          { "label": "הסטודנט יסביר כיצד תפיסת העתיד קשורה לאחריות מוסרית, חינוכית וחברתית." },
+          { "label": "הסטודנט ידון באתגר שבין ביקורת המציאות לבין עיצובה המחודש מתוך אמונה." },
+          { "label": "הסטודנט יעמוד על משמעות הרנסנס במחשבת ישראל כקריאה ליצירה רוחנית עכשווית." }
+        ]
+      },
+      {
+        "label": "שיעור #03 – תפקיד הרב הראשי: מנהיגות יהודית בחברה רב־תרבותית",
+        "children": [
+          { "label": "הסטודנט יבחן את ייחודו של מוסד הרב הראשי באנגליה כמוקד למפגש בין דת, מדינה וחברה." },
+          { "label": "הסטודנט ינתח את תפיסת המנהיגות הציבורית של הרב זקס כמודל של ברית חברתית." },
+          { "label": "הסטודנט יזהה כיצד מנהיגות מוסרית יכולה לפעול במרחב חילוני תוך נאמנות לערכים דתיים." },
+          { "label": "הסטודנט יבחן את השפעתו של הרב זקס על השיח הבין־דתי, הפוליטי והתרבותי בבריטניה." },
+          { "label": "הסטודנט ידון במתח שבין זהות יהודית פרטיקולרית לבין תרומה אוניברסלית." }
+        ]
+      },
+      {
+        "label": "שיעור #04 – הרב לורד דוד וולפסון: יהדות, השפעה ומנהיגות בזירה האנגלית",
+        "children": [
+          { "label": "הסטודנט יבחן את דמותו של הרב זקס כדמות מנהיגותית ציבורית בבית הלורדים הבריטי." },
+          { "label": "הסטודנט ינתח את השפעתו על השיח הציבורי בבריטניה בנושאים של דת, מוסר וחינוך." },
+          { "label": "הסטודנט יעמוד על רעיון הברית עם המדינה כמבנה ערכי־אזרחי ליחסי דת וחברה." },
+          { "label": "הסטודנט יבחן את תפיסת השלום אצל הרב זקס כשותפות מוסרית ולא רק פוליטית." },
+          { "label": "הסטודנט יסביר כיצד הרב זקס הפך את היהדות למקור השראה ציבורי לא רק ליהודים אלא לעולם כולו." }
+        ]
+      },
+      {
+        "label": "שיעור #05 – חלומות ומציאות",
+        "children": [
+          { "label": "הסטודנט יבחן את מושג החזון בהגותו של הרב זקס כמנוע מוסרי לשינוי חברתי." },
+          { "label": "הסטודנט ינתח את השאיפה להפוך את החלום למציאות בהקשר של תיקון עולם." },
+          { "label": "הסטודנט יסביר כיצד המנהיגות היהודית משמשת גשר בין האידיאל למציאות הפוליטית־חברתית." },
+          { "label": "הסטודנט יבחן את מקומו של החלום הדתי בעיצוב עתיד החברה הישראלית והיהודית." },
+          { "label": "הסטודנט ידון בהשפעת הדמיון והאמונה על יצירת תרבות מוסרית." }
+        ]
+      },
+      {
+        "label": "שיעור #06 – מדע ודת: ניגוד או השלמה?",
+        "children": [
+          { "label": "הסטודנט יבחן את יחסי הדת והמדע בהגותו של הרב זקס כיחסים של השלמה ולא של סתירה." },
+          { "label": "הסטודנט ינתח את ההבחנה בין שאלת ה'כיצד' של המדע לשאלת ה'למה' של הדת." },
+          { "label": "הסטודנט יזהה כיצד תפיסת הרב זקס מחברת בין ידע מדעי למשמעות מוסרית." },
+          { "label": "הסטודנט יעמוד על חשיבות הפרשנות הדתית להבנת תפקיד האדם בעולם." },
+          { "label": "הסטודנט ידון באחריות האתית של המדע ובתרומת הדת לקידום ערכים של כבוד האדם וקיימות." }
+        ]
+      },
+      {
+        "label": "שיעור #07 – פרופ׳ אריה צבן: מה בין מדע, אמונה וקיימות",
+        "children": [
+          { "label": "הסטודנט יבחן את נקודת המפגש בין מחקר מדעי לאחריות דתית וחברתית." },
+          { "label": "הסטודנט ינתח את עקרון השותפות הגדולה בין מדע לדת בהשראת הרב זקס." },
+          { "label": "הסטודנט יסביר כיצד קיימות מתפרשת לא רק כערך סביבתי אלא כעיקרון מוסרי אוניברסלי." },
+          { "label": "הסטודנט ידון בתפקיד החשיבה המדעית והדתית בקידום עתיד בר־קיימא." },
+          { "label": "הסטודנט יעריך את תרומת השיח בין מדענים לאנשי אמונה לעיצוב אחריות גלובלית משותפת." }
+        ]
+      }
     ]
   }
 }
@@ -118,84 +203,75 @@
 
 <script>
 (function(){
-  let data; try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים – נא לבדוק JSON","children":[]}}; }
+  /* ----- Parse & setup ----- */
+  let data; 
+  try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
+  catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים - נא לבדוק JSON","children":[]}}; }
 
-  const DIR = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
+  const DIR  = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
   const FLOW = (data.flow||'rtl');
-  const viewport = document.getElementById('viewport');
-  const stage = document.getElementById('app');
-  const scroller = document.getElementById('scroller');
+
+  const viewport  = document.getElementById('viewport');
+  const scroller  = document.getElementById('scroller');
+  const stage     = document.getElementById('app');
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
 
-  function updateSafeTop(){ if(viewport) viewport.style.paddingTop = '0px'; if(scroller) scroller.style.marginTop = '0px'; }
+  /* Zoom state */
+  let mode='fitW', userScale=1, lockedFit=1, zoomFrozen=false, didInitialFitAll=false;
 
-  if(DIR==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; }
-  else { stage.style.transformOrigin = 'top right'; stage.style.right='0'; }
+  /* Stage origin by flow */
+  if(FLOW==='ltr'){ stage.style.transformOrigin='top left'; stage.style.left='0'; stage.style.right=''; }
+  else { stage.style.transformOrigin='top right'; stage.style.right='0'; stage.style.left=''; }
   stage.style.top='0'; stage.style.position='absolute';
 
+  /* CSS constants */
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
-  const COL_STEP= parseFloat(CSS.getPropertyValue('--col-step')) || 400;
-  const COL_STEP_D23 = parseFloat(CSS.getPropertyValue('--col-step-d23')) || (COL_STEP*0.75);
   const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36; 
-  const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;  // root / כלליים
-  const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 110; // בין קטגוריות (depth 2)
-  const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 36;  // בין פריטים (depth 3)
+  const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
+  const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
+  const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
+  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
+  const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
+  const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
+  const GAP_GROUPS = parseFloat(CSS.getPropertyValue('--gap-between-groups')) || 0;
+
+  /* נלקח בחשבון ב-fit כך שלא תהיה גלילה */
+  const PAD_TOP    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 0;
+  const PAD_BOTTOM = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 0;
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
-  function build(raw, depth=0, parent=null){
-    const node = { label: raw.label, depth, parent, collapsed: !!raw.collapsed, x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0, children: [] };
-    (raw.children||[]).forEach(ch=> node.children.push(build(ch, depth+1, node)));
+  /* ----- Build tree ----- */
+  function build(raw, depth=0, parent=null, idx=0){
+    const node = { 
+      label: raw.label, depth, parent, idx,
+      collapsed: (typeof raw.collapsed==='boolean') ? raw.collapsed : (depth!==0),
+      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2),
+      _subH:0, children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null)
+    };
+    (raw.children||[]).forEach((ch,i)=> node.children.push(build(ch, depth+1, node, i)));
     return node;
   }
   const root = build(data.root, 0, null);
 
-  function gapForDepth(depth){
-    if(depth>=3) return GAP_ITEM; // פריטים
-    if(depth===2) return GAP_CAT; // קטגוריות
-    return GAP_Y;                 // ברירת מחדל
-  }
-
-  function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
-
-  let openingNode = null;
-  let edgeOf = new Map();
-  let prevVisibleIds = new Set();
-  let lastW = 0, lastH = 0;
-  let offsetX = 0, stageW = 0; // למניעת ReferenceError
-
-  // פאנינג/פינץ'
-  let isPanning=false, panPending=false, startX=0, startY=0, startScrollL=0, startScrollT=0; const DRAG_T=4;
-  let pinchStartDist=0, pinchStartScale=1;
-
-  function sizeViewport(){
-    const rect = viewport.getBoundingClientRect();
-    const avail = window.innerHeight - rect.top - 16;
-    viewport.style.height = Math.max(320, Math.floor(avail)) + 'px';
-  }
-
-  function isDescendant(node, anc){ let p=node.parent; while(p){ if(p===anc) return true; p=p.parent; } return false; }
-
-  function makeToggle(){
-    const btn = document.createElement('button');
-    btn.className = 'toggle'; btn.setAttribute('aria-label','פתח/סגור');
-    btn.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
-    return btn;
-  }
-
+  /* ----- Chips DOM ----- */
   function ensureChip(node){
     if(node.el) return;
-    const el = document.createElement('div'); el.className = 'chip';
+    const el = document.createElement('div'); el.className='chip';
     el.dataset.kind = node.depth===0 ? 'root' : (node.children.length? 'cat':'leaf');
     const label = document.createElement('span'); label.className='label'; label.textContent=node.label; el.appendChild(label);
     if(node.children.length){
-      const t = makeToggle(); el.appendChild(t);
+      const t = document.createElement('button');
+      t.className='toggle'; t.type='button'; t.setAttribute('aria-label','פתח/סגור');
+      t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
+      el.appendChild(t);
       el.setAttribute('aria-expanded', String(!node.collapsed));
-      t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
+      t.addEventListener('click', ev=>{ ev.stopPropagation(); handleToggle(node); });
+      el.addEventListener('click', ev=>{ if(ev.target.closest('.toggle')) return; handleToggle(node); });
       el.setAttribute('tabindex','0'); el.setAttribute('role','button');
-      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); handleToggle(node); } });
+      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); handleToggle(node);} });
     }
     const base = DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4];
     el.style.setProperty('--chip-bg', base);
@@ -203,266 +279,281 @@
   }
   (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
 
-  function measure(node){ node.el.style.left = '-10000px'; node.el.style.top = '-10000px'; node.width = Math.max(140, node.el.offsetWidth); node.children.forEach(measure); }
+  /* ----- Measurements & heights ----- */
+  function measure(node){
+    node.el.style.left = '-10000px';
+    node.el.style.top  = '-10000px';
+    const natural = Math.max(0, node.el.offsetWidth);
+    node.naturalWidth = natural; node.width = natural;
+    node.children.forEach(measure);
+  }
+  function gapForDepth(depth){
+    if(depth>=4) return GAP_D4;
+    if(depth===3) return GAP_D3;
+    if(depth===2) return GAP_CAT;
+    if(depth===1) return GAP_ROOTCAT;
+    return GAP_CAT;
+  }
   function subHeight(node){
     if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
-    let total = 0; node.children.forEach((c,i)=>{ subHeight(c); total += c._subH; if(i>0) total += gapForDepth(c.depth); });
+    let total = 0;
+    node.children.forEach((c,i)=>{
+      subHeight(c);
+      total += c._subH;
+      if(i>0){ total += (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth); }
+      if(node.depth===0 && i<node.children.length-1){ total += GAP_GROUPS; } /* רווח בין שיעורים */
+    });
     node._subH = Math.max(node.height, total); return node._subH;
   }
 
-  function xForDepth(depth){
-    let acc = 0;
-    for(let i=0;i<depth;i++){
-      const step = (i===2 ? COL_STEP_D23 : COL_STEP);
-      acc += (step + GAP_X);
-    }
-    return acc * (FLOW==='rtl' ? -1 : 1);
-  }
-
+  /* ----- Column anchors & positioning ----- */
+  let DEPTH_ANCHORS = new Map();
+  function xForDepth(depth){ return DEPTH_ANCHORS.get(depth) || 0; }
   function position(node, depth, top){
     node.x = xForDepth(depth);
     node.y = top + node._subH/2;
-    if(!(node.collapsed) && node.children.length){ let cursor = top; node.children.forEach((c)=>{ position(c, depth+1, cursor); cursor += c._subH + gapForDepth(c.depth); }); }
+    if(!(node.collapsed) && node.children.length){
+      let cursor = top;
+      node.children.forEach((c,i)=>{
+        position(c, depth+1, cursor);
+        cursor += c._subH + gapForDepth(c.depth);
+        if(node.depth===0 && i<node.children.length-1){ cursor += GAP_GROUPS; } /* רווח בין שיעורים */
+      });
+    }
   }
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
-  function computeBounds(nodes){ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity; nodes.forEach(n=>{ minX = Math.min(minX, (FLOW==='rtl'? n.x - n.width : n.x)); maxX = Math.max(maxX, (FLOW==='rtl'? n.x : n.x + n.width)); minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2); }); const MARG = 0; return { w: (maxX - minX) + MARG, h: (maxY - minY) + MARG, minX }; }
-
-  // Zoom state
-  let mode = 'fitW'; let userScale = 1; let lockedFit = 1;
-  var requiredFit; // guard
-  function applyZoom(){
-    const s = (mode==='fitW') ? lockedFit : userScale;
-    stage.style.transform = `scale(${s})`;
-    const pct = document.getElementById('zoomPct');
-    if(pct) pct.textContent = Math.round(s*100) + '%';
-
-    if(lastW && lastH){
-      const wpx = (mode==='fitW') ? Math.floor(viewport.clientWidth) : Math.ceil(lastW * s);
-      scroller.style.width  = wpx + 'px';
-      scroller.style.height = Math.ceil(lastH * s) + 'px';
-    }
-
-    const tol = 2;
-    let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
-    let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
-    if(mode==='fitW'){
-      needX = false;
-      if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)){
-        needY = false;
-      }
-    }
-    viewport.style.overflowX = needX ? 'auto' : 'hidden';
-    viewport.style.overflowY = needY ? 'auto' : 'hidden';
-    viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
+  function computeBounds(nodes){
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+    nodes.forEach(n=>{
+      const left  = (FLOW==='rtl' ? n.x - n.width : n.x);
+      const right = (FLOW==='rtl' ? n.x : n.x + n.width);
+      minX = Math.min(minX, left);
+      maxX = Math.max(maxX, right);
+      minY = Math.min(minY, n.y - n.height/2);
+      maxY = Math.max(maxY, n.y + n.height/2);
+    });
+    return { w:(maxX-minX), h:(maxY-minY), minX };
   }
 
-  function layout(animate=false){
-    const beforeIds = new Set(prevVisibleIds);
+  /* ----- Layout ----- */
+  let lastW=0, lastH=0, offsetX=0, stageW=0;
+  const edgeOf = new Map();
 
-    measure(root); subHeight(root); position(root, 0, 0);
+  function layout(){
+    measure(root);
+    subHeight(root); position(root,0,0);
+    let nodesTmp=[]; collectVisible(root, nodesTmp);
 
-    let nodes=[]; collectVisible(root, nodes);
+    /* רוחב מקס' לכל עומק */
+    const depthMaxW = new Map();
+    nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140));});
+
+    /* עוגני עמודות */
+    DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
+    let acc=0; const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
+    for(let d=1; d<=maxDepthVis+1; d++){
+      const addGap = (d===1 ? GAP_X_D01 : GAP_X);
+      acc += (depthMaxW.get(d-1)||140) + addGap;
+      DEPTH_ANCHORS.set(d, (FLOW==='rtl' ? -acc : acc));
+    }
+
+    /* מיקום סופי */
+    subHeight(root); position(root, 0, 0);
+    const nodes=[]; collectVisible(root, nodes);
     const { w, h, minX } = computeBounds(nodes);
 
+    /* Fit – ללא גלילה, לוקח בחשבון padding עליון/תחתון */
     const vpW = viewport.getBoundingClientRect().width;
-    const FIT_MARGIN = parseFloat(CSS.getPropertyValue('--fit-margin')) || 32;
-    const baseFit = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
-    const maxDepthVis = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
-    let compactCap = 1.0;
-    if (maxDepthVis <= 1) compactCap = 0.75;       // שורש בלבד
-    else if (maxDepthVis === 2) compactCap = 0.88;  // שורש+קטגוריות
-    const requiredFit = Math.max(0.2, Math.min(baseFit, compactCap));
+    const vpH = viewport.clientHeight || window.innerHeight;
+    const FIT_MARGIN = parseFloat(CSS.getPropertyValue('--fit-margin')) || 24;
+
+    const innerW = Math.max(1, vpW - FIT_MARGIN);
+    const innerH = Math.max(1, vpH - PAD_TOP - PAD_BOTTOM);
+
+    const fitW = innerW / Math.max(1, w);
+    const fitH = innerH / Math.max(1, h);
+    const baseFit = Math.min(fitW, fitH);
+
+    const maxDepthNow = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
+    let compactCap = 1.0; if(maxDepthNow<=1) compactCap=0.75; else if(maxDepthNow===2) compactCap=0.88;
+
+    if (!didInitialFitAll){ lockedFit = Math.max(0.2, Math.min(baseFit, compactCap)); didInitialFitAll = true; }
+    else { lockedFit = Math.max(0.2, Math.min(fitW, compactCap)); }
+
+    if (!zoomFrozen){ userScale = lockedFit; mode='free'; zoomFrozen = true; }
+
     if(mode==='fitW'){
-      lockedFit = requiredFit;
-      const RIGHT_PAD_PX = 24;
-      const LEFT_PAD_PX  = 24;
-      const rightPadUnits = RIGHT_PAD_PX / Math.max(lockedFit, 0.0001);
-      const leftPadUnits  = LEFT_PAD_PX  / Math.max(lockedFit, 0.0001);
-      offsetX = -minX + leftPadUnits;
-      stageW  = w + leftPadUnits + rightPadUnits;
+      const RIGHT_PAD = 24, LEFT_PAD = 24;
+      offsetX = -minX + (LEFT_PAD/lockedFit);
+      stageW  = w + (LEFT_PAD+RIGHT_PAD)/lockedFit;
     } else {
-      const padSide = 60;
-      offsetX = -minX + padSide;
-      stageW  = w + padSide*2;
+      const sNow = Math.max(userScale, 0.0001);
+      const desiredPad = Math.max(60, Math.floor((viewport.clientWidth/sNow - w)/2) + 40);
+      offsetX = -minX + desiredPad;
+      stageW  = w + desiredPad*2;
     }
 
     lastW = stageW; lastH = h;
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
+    /* קפסולות */
     nodes.forEach(n=>{
-      const left = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
-      const top  = n.y - n.height/2;
-      n.el.style.left = left + 'px';
-      n.el.style.top  = top + 'px';
+      const top = n.y - n.height/2;
+      const rightUnits = offsetX + n.x;
+      const leftUnits  = (FLOW==='rtl') ? (rightUnits - n.width) : rightUnits;
+      n.el.style.left  = leftUnits  + 'px';
+      n.el.style.top   = top + 'px';
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
+    /* קווים */
     edgeOf.clear(); edgeLayer.textContent='';
-    (function drawEdges(n){ if(n.collapsed) return; n.children.forEach(ch=>{
-      const PAD = 14; // ריווח בין הקו לצ'יפים
-      const parentLeft  = offsetX + (FLOW==='rtl' ? (n.x - n.width) : n.x);
-      const parentRight = offsetX + (FLOW==='rtl' ? n.x : (n.x + n.width));
-      const childEdge   = offsetX + ch.x;
+    (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
+      const PAD_PARENT=6, PAD_CHILD=0;
+      const parentRight = offsetX + n.x;
+      const childRight  = offsetX + ch.x;
+      const parentLeft  = parentRight - n.width;
 
-      const p1x = (FLOW==='rtl' ? parentLeft  + PAD : parentRight - PAD);
-      const p2x = (FLOW==='rtl' ? childEdge   - PAD : childEdge   + PAD);
-      const p1y = n.y; const p2y = ch.y;
+      const p1x = (FLOW==='rtl') ? (parentLeft + PAD_PARENT) : (parentRight - PAD_PARENT);
+      const p2x = (FLOW==='rtl') ? (childRight - PAD_CHILD)  : (childRight + ch.width + PAD_CHILD);
+      const p1y = n.y, p2y = ch.y;
 
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-      const dx=Math.abs(p2x-p1x)*.45; const c1x=(FLOW==='rtl'? p1x-dx: p1x+dx); const c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
-      path.setAttribute('class','edge'); path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
-      edgeOf.set(ch.id, path);
+      const dx=Math.abs(p2x-p1x)*.45, c1x=(FLOW==='rtl'? p1x-dx: p1x+dx), c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
+      path.setAttribute('class','edge');
+      path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
       edgeLayer.appendChild(path);
-      drawEdges(ch);
+      edgeOf.set(ch.id, path);
+      draw(ch);
     }); })(root);
 
     applyZoom();
-
-    if(animate && openingNode){
-      const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
-      nodes.forEach(n=>{
-        if(!beforeIds.has(n.id) && isDescendant(n, openingNode)){
-          n.el.classList.add('fade-enter');
-          requestAnimationFrame(()=> n.el.classList.add('fade-active'));
-          setTimeout(()=> n.el.classList.remove('fade-enter','fade-active'), dur);
-          const edge = edgeOf.get(n.id);
-          if(edge){ edge.classList.add('fade-enter'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-enter','fade-active'), dur); }
-        }
-      });
-    }
-
-    prevVisibleIds = new Set(nodes.map(n=>n.id));
-
     stage.style.opacity='1';
-    openingNode = null;
   }
 
+  /* ----- Toggle ----- */
+  function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
   function animateClose(node, done){
-    const list=[];
-    function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
+    const list=[]; function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
     node.children.forEach(collectDesc);
-
-    const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
+    const dur = parseFloat(CSS.getPropertyValue('--anim-dur'))*1000+20;
     list.forEach(n=>{
       if(n.el){ n.el.classList.add('fade-exit'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur); }
-      const edge = edgeOf.get(n.id); if(edge){ edge.classList.add('fade-exit'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-exit','fade-active'), dur); }
+      const edge = edgeOf.get(n.id);
+      if(edge){ edge.classList.add('fade-exit'); requestAnimationFrame(()=> edge.classList.add('fade-active')); setTimeout(()=> edge.classList.remove('fade-exit','fade-active'), dur); }
     });
     setTimeout(done, dur);
   }
+  function handleToggle(n){ 
+    if(!n.children.length) return;
+    if(n.collapsed){ n.collapsed=false; if(n.el) n.el.setAttribute('aria-expanded','true'); layout(); }
+    else { if(n.el) n.el.setAttribute('aria-expanded','false'); animateClose(n, ()=>{ collapseDeep(n); layout(); }); }
+  }
 
-  function handleToggle(n){
-    if(n.collapsed){
-      if(n.el) n.el.setAttribute('aria-expanded','true');
-      openingNode = n;
-      n.collapsed = false;
-      layout(true);
+  /* ----- Zoom & Scroll: במצב התאמה אין גלילה ----- */
+  function applyZoom(){
+    const s = (mode==='fitW') ? lockedFit : userScale;
+    stage.style.transform = `scale(${s})`;
+
+    const pct = document.getElementById('zoomPct');
+    if(pct) pct.textContent = Math.round(s*100) + "%";
+
+    if (mode === 'fitW') {
+      scroller.style.width  = viewport.clientWidth + 'px';
+      scroller.style.height = viewport.clientHeight + 'px'; /* כולל padding בגלל border-box */
+      viewport.style.overflowX = 'hidden';
+      viewport.style.overflowY = 'hidden';
+      viewport.style.cursor    = 'auto';
     } else {
-      if(n.el) n.el.setAttribute('aria-expanded','false');
-      animateClose(n, ()=>{ collapseDeep(n); layout(false); });
-    }
-  }
-
-  // Zoom & actions
-  const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
-  const currentScale = ()=> (mode==='fitW' ? lockedFit : userScale);
-
-  document.getElementById('zoomIn').addEventListener('click', ()=>{
-    const base = (mode==='fitW') ? lockedFit : userScale;
-    mode='free';
-    userScale = clamp(base + 0.10, 0.2, 3);
-    applyZoom();
-  });
-  document.getElementById('zoomOut').addEventListener('click', ()=>{
-    const base = (mode==='fitW') ? lockedFit : userScale;
-    mode='free';
-    userScale = clamp(base - 0.10, 0.2, 3);
-    applyZoom();
-  });
-  document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
-  document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; layout(false); });
-
-  function canPan(){
-    const tol = 2;
-    let needX = (mode!=='fitW') && ((scroller.offsetWidth - viewport.clientWidth) > tol);
-    let needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
-    if(mode==='fitW'){
-      needX = false;
-      if(lastH && (lastH * Math.max(lockedFit, 0.0001) <= viewport.clientHeight - tol)){
-        needY = false;
+      if(lastW && lastH){
+        const wpx = Math.ceil(lastW * s);
+        scroller.style.width  = wpx + 'px';
+        scroller.style.height = Math.ceil(lastH * s + PAD_TOP + PAD_BOTTOM) + 'px';
       }
+      const tol = 2;
+      const needX = (scroller.offsetWidth  - viewport.clientWidth)  > tol;
+      const needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
+      viewport.style.overflowX = needX ? 'auto' : 'hidden';
+      viewport.style.overflowY = needY ? 'auto' : 'hidden';
+      viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
     }
-    return needX || needY;
   }
-  viewport.addEventListener('pointerdown', e=>{
-    if(e.button!==0) return;
-    if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
-    if(!canPan()) return;
-    panPending = true;
-    isPanning = false;
-    startX = e.clientX; startY = e.clientY;
-    startScrollL = viewport.scrollLeft; startScrollT = viewport.scrollTop;
-  });
-  viewport.addEventListener('pointermove', e=>{
-    if(!(panPending || isPanning)) return;
-    const dx = e.clientX - startX; const dy = e.clientY - startY;
-    if(!isPanning){
-      if(Math.abs(dx) + Math.abs(dy) < DRAG_T) return;
-      isPanning = true;
-      try{ viewport.setPointerCapture(e.pointerId);}catch(_){ }
-      viewport.style.cursor = 'grabbing';
-    }
-    viewport.scrollLeft = startScrollL - dx;
-    viewport.scrollTop = startScrollT - dy;
-  });
-  function endPan(){ panPending=false; isPanning=false; viewport.style.cursor = (canPan()? 'grab':'auto'); }
-  viewport.addEventListener('pointerup', endPan);
-  viewport.addEventListener('pointercancel', endPan);
-  viewport.addEventListener('pointerleave', endPan);
 
-  viewport.addEventListener('touchstart', e=>{
-    if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
-    if(e.touches.length===2){
-      pinchStartDist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      pinchStartScale = currentScale();
-      mode='free';
+  /* ===== Drag-to-pan ===== */
+  let isDown=false, isPanning=false, movedPx=0;
+  let panStartX=0, panStartY=0, startScrollL=0, startScrollT=0, activePointerId=null;
+  const START_THRESHOLD = 6;
+
+  viewport.addEventListener('click', function(e){
+    if(movedPx >= START_THRESHOLD){ e.stopPropagation(); e.preventDefault(); }
+    movedPx = 0;
+  }, true);
+
+  function onPointerDown(e){
+    if(mode==='fitW') return; /* במצב התאמה אין גרירה */
+    isDown = true; isPanning=false; movedPx=0;
+    activePointerId = e.pointerId;
+    panStartX = e.clientX; panStartY = e.clientY;
+    startScrollL = viewport.scrollLeft;
+    startScrollT = viewport.scrollTop;
+  }
+  function onPointerMove(e){
+    if(mode==='fitW') return;
+    if(!isDown || e.pointerId !== activePointerId) return;
+    const dx = e.clientX - panStartX;
+    const dy = e.clientY - panStartY;
+    movedPx = Math.max(movedPx, Math.hypot(dx, dy));
+    if(!isPanning && movedPx >= START_THRESHOLD){
+      isPanning = true; viewport.classList.add('panning');
+      viewport.setPointerCapture?.(activePointerId);
     }
-  }, {passive:true});
-  viewport.addEventListener('touchmove', e=>{
-    if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
-    if(e.touches.length===2 && pinchStartDist>0){
+    if(isPanning){
       e.preventDefault();
-      const dist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      userScale = clamp(pinchStartScale * (dist / pinchStartDist), 0.2, 3);
-      applyZoom();
+      viewport.scrollLeft = startScrollL - dx;
+      viewport.scrollTop  = startScrollT  - dy;
     }
-  }, {passive:false});
-  viewport.addEventListener('touchend', e=>{ if(e.touches.length<2){ pinchStartDist=0; } });
+  }
+  function endPan(e){
+    if(mode==='fitW') return;
+    if(e.pointerId !== activePointerId) return;
+    isDown = false;
+    if(isPanning){
+      viewport.classList.remove('panning');
+      try{ viewport.releasePointerCapture?.(activePointerId); }catch(_){}
+    }
+    isPanning = false; activePointerId = null; movedPx = 0;
+  }
+  viewport.addEventListener('pointerdown', onPointerDown, {passive:true});
+  viewport.addEventListener('pointermove', onPointerMove, {passive:false});
+  viewport.addEventListener('pointerup', endPan, {passive:true});
+  viewport.addEventListener('pointercancel', endPan, {passive:true});
+  viewport.addEventListener('pointerleave', (e)=>{ if(isDown) endPan(e); }, {passive:true});
 
-  viewport.addEventListener('wheel', e=>{
-    if(e.target && e.target.closest && (e.target.closest('.zoombar') || e.target.closest('.toggle'))) return;
-    if(!e.ctrlKey) return; // Pinch on trackpad
-    e.preventDefault();
-    mode='free';
-    const s = currentScale();
-    userScale = clamp(s * Math.exp(-e.deltaY/500), 0.2, 3);
-    applyZoom();
-  }, {passive:false});
+  /* ===== Controls ===== */
+  function bind(id, fn){ const el=document.getElementById(id); if(!el) return; const run=e=>{ e&&e.preventDefault(); fn(); }; el.addEventListener('click',run); el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ run(e); } }); }
+  bind('zoomIn', ()=>{ mode='free'; userScale = Math.min((userScale||lockedFit) + 0.10, 3); applyZoom(); });
+  bind('zoomOut',()=>{ mode='free'; userScale = Math.max((userScale||lockedFit) - 0.10, 0.2); applyZoom(); });
+  bind('zoomPct',()=>{ mode='free'; userScale=1; applyZoom(); });
+  bind('fitW',   ()=>{ zoomFrozen=false; mode='fitW'; layout(); });
+  bind('expandAll', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
+  bind('collapseAll',()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; layout(); });
 
-  document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(true); });
-  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); layout(true); });
+  /* ----- Viewport size ----- */
+  function sizeViewport(){
+    const rect = viewport.getBoundingClientRect();
+    const avail = window.innerHeight - rect.top - 16;
+    viewport.style.height = Math.max(320, Math.floor(avail)) + 'px';
+  }
 
-  // Initial layout
-  updateSafeTop();
-  sizeViewport();
-  layout(false);
-  window.addEventListener('resize', ()=>{ updateSafeTop(); sizeViewport(); layout(false); });
+  sizeViewport(); 
+  layout();
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(()=>{ layout(); });
+    document.fonts.addEventListener?.('loadingdone', ()=> { layout(); });
+  }
+  window.addEventListener('resize', ()=>{ sizeViewport(); layout(); });
 })();
 </script>
 </body>
