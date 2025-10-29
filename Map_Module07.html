@@ -7,34 +7,31 @@
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* ריווחים ניתנים לכוונון */
-    --zoombar-gap: 60px;          /* רווח בין סרגל הכפתורים למפה */
-    --map-pad-top: 35px;          /* ריווח פנימי עליון של אזור המפה */
-    --map-pad-bottom: 35px;       /* ריווח קבוע בין המפה לפס הגלילה האופקי */
-    --gap-between-groups: 40px;   /* רווח בין מודולות (ילדי השורש) */
-
-    /* מיפוי למשתנה שהלוגיקה כבר משתמשת בו */
+    --zoombar-gap: 60px;
+    --map-pad-top: 35px;
+    --map-pad-bottom: 35px;          /* רווח קבוע בין המפה לפס הגלילה */
+    --gap-between-groups: 40px;
     --gap-between-mods-d2: var(--gap-between-groups);
 
     --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     --bg:#ffffff; --ink:#0f172a;
 
-    --chip-h:48px; 
-    --gap-x:36px;           
-    --gap-x-d01:100px;      /* רווח אופקי מיוחד בין עומק 0 לעומק 1 */
-    --gap-y:40px; 
-    --gap-rootcat:22px;     /* עומק 1 */
-    --gap-d3:22px;          /* עומק 3 */
-    --gap-d4:22px;          /* עומק 4 */
-    --gap-cat:22px;         /* עומק 2 */
-    --gap-item:6px;         /* עומק 3+ */
+    --chip-h:48px;
+    --gap-x:36px;
+    --gap-x-d01:100px;               /* רווח אופקי בין עומק 0 לעומק 1 */
+    --gap-y:40px;
+    --gap-rootcat:22px;              /* עומק 1 */
+    --gap-d3:22px;                   /* עומק 3 */
+    --gap-d4:22px;                   /* עומק 4 */
+    --gap-cat:22px;                  /* עומק 2 */
+    --gap-item:6px;                  /* עומק 3+ */
 
-    --r:9999px; 
+    --r:9999px;
     --shadow:0 8px 22px rgba(0,0,0,.10);
-    --edge:#C5CBD8; 
+    --edge:#C5CBD8;
     --toggle:#fe0100;
 
-    --anim-dur:.60s; 
+    --anim-dur:.60s;
     --anim-ease:ease-in-out;
     --fit-margin:32;
   }
@@ -42,29 +39,26 @@
   *{box-sizing:border-box}
   html, body, button, input, select, textarea, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
   html,body{height:auto;min-height:100%; overflow-x:hidden}
-  body{margin:0;background:var(--bg);color:var(--ink);} 
+  body{margin:0;background:var(--bg);color:var(--ink);}
   .wrap{padding:12px; width:100%; max-width:none; margin:0 auto; overflow:visible}
 
   /* זום־בר */
   .zoombar{
     position:sticky; top:8px; inset-inline:0; display:flex; justify-content:center; align-items:center; gap:6px; z-index:3;
     background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(10px);
-    padding:10px 12px; margin:0 auto var(--zoombar-gap); width:max-content; border-radius:14px; 
+    padding:10px 12px; margin:0 auto var(--zoombar-gap); width:max-content; border-radius:14px;
     border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
   }
   .zoombar button{
-    border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer; 
+    border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer;
     background:linear-gradient(180deg,#ffffff,#f7f7f9); box-shadow:0 4px 12px rgba(0,0,0,.08);
-    display:inline-flex; align-items:center; justify-content:center; gap:8px; 
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
     transition:transform .12s ease, box-shadow .12s ease, background .12s ease
   }
   .zoombar button:hover{box-shadow:0 8px 18px rgba(0,0,0,.12)}
   .zoombar button:active{transform:translateY(1px)}
   .zoombar button:focus-visible{outline:3px solid rgba(59,130,246,.5); outline-offset:2px}
-  .zoombar .pct{
-    min-width:72px; text-align:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08); 
-    height:36px; display:inline-flex; align-items:center; justify-content:center
-  }
+  .zoombar .pct{min-width:72px; text-align:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08); height:36px; display:inline-flex; align-items:center; justify-content:center}
   #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
   #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
   @media (max-width:680px){.zoombar{width:calc(100% - 24px); justify-content:space-between}}
@@ -72,17 +66,26 @@
 
   /* במה */
   .viewport{
-    position:relative; width:100%; height:auto; overflow:hidden; 
+    position:relative; width:100%; height:auto; overflow:hidden;
     touch-action:none; cursor:grab;
-    padding-bottom: var(--map-pad-bottom); /* 👈 מבטיח רווח קבוע מעל פס הגלילה */
+    padding-bottom: var(--map-pad-bottom);  /* כרית קבועה מתחת למפה */
     box-sizing: border-box;
-    scrollbar-gutter: stable both-edges;   /* מקום יציב לגלילות */
+    scrollbar-gutter: stable both-edges;
   }
 
-  /* padding-bottom ירד; התחתון מטופל ב־viewport */
-  .scroller{position:relative; padding: var(--map-pad-top) 0 0;}
+  /* מרכזים את המפה באמצעות Flex */
+  .scroller{
+    position:relative;
+    display:flex; justify-content:center; align-items:flex-start;
+    padding: var(--map-pad-top) 0 0;
+    min-width:100%;
+  }
 
-  .stage{position:relative; min-height:380px; min-width:0; transform-origin: top right; opacity:0}
+  .stage{
+    position:relative; min-height:380px; min-width:0;
+    transform-origin: top center;   /* זום סביב המרכז */
+    opacity:0
+  }
   .chips{position:absolute; inset:0; z-index:1}
   svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
 
@@ -98,7 +101,6 @@
   .label{pointer-events:none; direction: rtl; text-align: right}
   .chip .toggle{margin-inline-start:auto}
 
-  /* Toggle */
   .toggle{position:relative; width:28px;height:28px;border-radius:50%;flex:0 0 auto;background:var(--toggle); cursor:pointer; border:0}
   .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition: opacity var(--anim-dur) var(--anim-ease)}
   .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg)}
@@ -106,7 +108,6 @@
 
   .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
 
-  /* Fades */
   .fade-enter{ opacity:0.001 }
   .fade-enter.fade-active{ opacity:1; transition: opacity var(--anim-dur) var(--anim-ease) }
   .fade-exit{ opacity:1 }
@@ -138,7 +139,7 @@
   </div>
 </div>
 
-<!-- === DATA (סיכום הקורס) === -->
+<!-- === DATA === -->
 <script id="mindmap-data" type="application/json">
 {
   "dir": "rtl",
@@ -149,62 +150,217 @@
       {
         "label": "מודולה 1 – ביוגרפיה",
         "children": [
-          { "label": "יסודות ביוגרפיים בהגות הרב זקס", "children": [ { "label": "סיפור חייו של הרב זקס כבסיס להבנת עולמו הרוחני והאינטלקטואלי." } ] },
-          { "label": "גילה זקס – מבט אישי על התפתחות הרב זקס כפילוסוף והוגה יהודי", "children": [ { "label": "עיצוב עולמו הערכי של הרב זקס דרך עדות אישית ומשפחתית." } ] },
-          { "label": "הרב דיין בינשטוק – מן הדרשה המקומית אל המורשת ההגותית", "children": [ { "label": "מעבר מסמכות רבנית מקומית למנהיג רוחני בעל חזון עולמי." } ] }
+          {
+            "label": "יסודות ביוגרפיים בהגות הרב זקס",
+            "children": [
+              { "label": "סיפור חייו של הרב זקס כבסיס להבנת עולמו הרוחני והאינטלקטואלי." }
+            ]
+          },
+          {
+            "label": "גילה זקס – מבט אישי על התפתחות הרב זקס כפילוסוף והוגה יהודי",
+            "children": [
+              { "label": "עיצוב עולמו הערכי של הרב זקס דרך עדות אישית ומשפחתית." }
+            ]
+          },
+          {
+            "label": "הרב דיין בינשטוק – מן הדרשה המקומית אל המורשת ההגותית",
+            "children": [
+              { "label": "מעבר מסמכות רבנית מקומית למנהיג רוחני בעל חזון עולמי." }
+            ]
+          }
         ]
       },
       {
         "label": "מודולה 2 – יסודות פילוסופיים בהגות היהודית",
         "children": [
-          { "label": "יסודות פילוסופיים בהגות היהודית", "children": [ { "label": "תשתית פילוסופית של ההגות היהודית כגשר בין אמונה לתבונה." } ] },
-          { "label": "פרופ׳ חנוך בן־פזי – דיאלוגים פילוסופיים: חקר האחריות והמחשבה היהודית", "children": [ { "label": "מושג האחריות כמפתח להבנת האתיקה בהגות הרב זקס." } ] },
-          { "label": "מרציונליזם אוניברסלי לברית חברתית: ביקורת הנאורות עפ״י הרב זקס", "children": [ { "label": "ביקורת הנאורות ומושג הברית כיסוד מוסרי חדשני." } ] },
-          { "label": "הרב ד״ר רפאל זארום – חקר המחשבה וההשפעה היהודית", "children": [ { "label": "מה בין רציונליזם למיסטיקה כיסוד לחשיבה מוסרית יצירתית?" } ] },
-          { "label": "מסורת בעידן לא מסורתי – הרב זקס: ללא מורא", "children": [ { "label": "תפיסת הרב זקס את העתיד כאתגר וכהזדמנות מוסרית בעולם משתנה." } ] }
+          {
+            "label": "יסודות פילוסופיים בהגות היהודית",
+            "children": [
+              { "label": "תשתית פילוסופית של ההגות היהודית כגשר בין אמונה לתבונה." }
+            ]
+          },
+          {
+            "label": "פרופ׳ חנוך בן־פזי – דיאלוגים פילוסופיים: חקר האחריות והמחשבה היהודית",
+            "children": [
+              { "label": "מושג האחריות כמפתח להבנת האתיקה בהגות הרב זקס." }
+            ]
+          },
+          {
+            "label": "מרציונליזם אוניברסלי לברית חברתית: ביקורת הנאורות עפ״י הרב זקס",
+            "children": [
+              { "label": "ביקורת הנאורות ומושג הברית כיסוד מוסרי חדשני." }
+            ]
+          },
+          {
+            "label": "הרב ד״ר רפאל זארום – חקר המחשבה וההשפעה היהודית",
+            "children": [
+              { "label": "מה בין רציונליזם למיסטיקה כיסוד לחשיבה מוסרית יצירתית?" }
+            ]
+          },
+          {
+            "label": "מסורת בעידן לא מסורתי – הרב זקס: ללא מורא",
+            "children": [
+              { "label": "תפיסת הרב זקס את העתיד כאתגר וכהזדמנות מוסרית בעולם משתנה." }
+            ]
+          }
         ]
       },
       {
         "label": "מודולה 3 – המתודה הפרשנית",
         "children": [
-          { "label": "המתודה הפרשנית בהגות הרב זקס", "children": [ { "label": "הפרשנות כתהליך מוסרי וקהילתי המגשר בין טקסט לחיים." } ] },
-          { "label": "הרב ד״ר מייקל האריס – בין רבנות לפילוסופיה: מסעו של הרב זקס", "children": [ { "label": "דמותו של הרב זקס כמי שמחבר בין מסורת לפילוסופיה עכשווית." } ] },
-          { "label": "פרופ׳ חנוך בן־פזי – עיקרון הפרשנות כמעשה מוסרי בהגות הרב זקס", "children": [ { "label": "פרשנות כפעולה מוסרית המפגישה את האדם עם הזולת." } ] },
-          { "label": "פרשנות טקסטים קשים בתורה כאתגר מוסרי ותיאולוגי", "children": [ { "label": "כיצד להתמודד עם טקסטים קשים כקריאה מוסרית לאדם בן זמננו." } ] },
-          { "label": "לא בשם האל", "children": [ { "label": "בחינת קריאתו של הרב זקס לחדש את הדתיות מתוך אחריות וחמלה." } ] }
+          {
+            "label": "המתודה הפרשנית בהגות הרב זקס",
+            "children": [
+              { "label": "הפרשנות כתהליך מוסרי וקהילתי המגשר בין טקסט לחיים." }
+            ]
+          },
+          {
+            "label": "הרב ד״ר מייקל האריס – בין רבנות לפילוסופיה: מסעו של הרב זקס",
+            "children": [
+              { "label": "דמותו של הרב זקס כמי שמחבר בין מסורת לפילוסופיה עכשווית." }
+            ]
+          },
+          {
+            "label": "פרופ׳ חנוך בן־פזי – עיקרון הפרשנות כמעשה מוסרי בהגות הרב זקס",
+            "children": [
+              { "label": "פרשנות כפעולה מוסרית המפגישה את האדם עם הזולת." }
+            ]
+          },
+          {
+            "label": "פרשנות טקסטים קשים בתורה כאתגר מוסרי ותיאולוגי",
+            "children": [
+              { "label": "כיצד להתמודד עם טקסטים קשים כקריאה מוסרית לאדם בן זמננו." }
+            ]
+          },
+          {
+            "label": "לא בשם האל",
+            "children": [
+              { "label": "בחינת קריאתו של הרב זקס לחדש את הדתיות מתוך אחריות וחמלה." }
+            ]
+          }
         ]
       },
       {
         "label": "מודולה 4 – מטקסט לדיאלוג",
         "children": [
-          { "label": "דיאלוג בחברה מגוונת בעידן רב־תרבותי", "children": [ { "label": "יסודות ההגות הדיאלוגית והבין את הדיאלוג כמעשה מוסרי." } ] },
-          { "label": "פרופ׳ ג׳ונתן ריינהולד – ברית, שיח ומדינה בהגות הרב זקס", "children": [ { "label": "הדיאלוג כיסוד לפוליטיקה של ברית ואחריות אזרחית." } ] },
-          { "label": "הפילוסופיה של הדיאלוג: בין רוזנצווייג לרב זקס", "children": [ { "label": "העמקה בהבנת הדיאלוג כמודל לקיום מוסרי וחברתי בעולם פלורליסטי." } ] },
-          { "label": "מסורת בעידן לא מסורתי", "children": [ { "label": "כיצד הדיאלוג מאפשר למסורת להתחדש בעולם מודרני." } ] }
+          {
+            "label": "דיאלוג בחברה מגוונת בעידן רב־תרבותי",
+            "children": [
+              { "label": "יסודות ההגות הדיאלוגית והבין את הדיאלוג כמעשה מוסרי." }
+            ]
+          },
+          {
+            "label": "פרופ׳ ג׳ונתן ריינהולד – ברית, שיח ומדינה בהגות הרב זקס",
+            "children": [
+              { "label": "הדיאלוג כיסוד לפוליטיקה של ברית ואחריות אזרחית." }
+            ]
+          },
+          {
+            "label": "הפילוסופיה של הדיאלוג: בין רוזנצווייג לרב זקס",
+            "children": [
+              { "label": "העמקה בהבנת הדיאלוג כמודל לקיום מוסרי וחברתי בעולם פלורליסטי." }
+            ]
+          },
+          {
+            "label": "מסורת בעידן לא מסורתי",
+            "children": [
+              { "label": "כיצד הדיאלוג מאפשר למסורת להתחדש בעולם מודרני." }
+            ]
+          }
         ]
       },
       {
         "label": "מודולה 5 – מודרניות וחברה",
         "children": [
-          { "label": "בין מסורת למודרנה", "children": [ { "label": "האיזון בין מחויבות למסורת לבין פתיחות למודרנה." } ] },
-          { "label": "בלשון עתיד", "children": [ { "label": "תפיסת התקווה כיסוד ליצירה מוסרית וחזון חברתי." } ] },
-          { "label": "תפקיד הרב הראשי – מנהיגות יהודית בחברה רב־תרבותית", "children": [ { "label": "העמקה במודל המנהיגות הציבורית של הרב זקס כגשר בין זהויות." } ] },
-          { "label": "הרב לורד דוד וולפסון – יהדות, השפעה ומנהיגות בזירה האנגלית", "children": [ { "label": "דמותו של הרב זקס כמנהיג מוסרי בזירה הציבורית הבריטית." } ] },
-          { "label": "חלומות ומציאות", "children": [ { "label": "חזונו של הרב זקס להפוך חלום יהודי למציאות מוסרית." } ] },
-          { "label": "מדע ודת – ניגוד או השלמה?", "children": [ { "label": "ההשלמה בין המדע לדת כשני ממדים של משמעות." } ] },
-          { "label": "פרופ׳ אריה צבן – מה בין מדע, אמונה וקיימות", "children": [ { "label": "הדיאלוג בין מדע, אמונה ואחריות סביבתית." } ] }
+          {
+            "label": "בין מסורת למודרנה",
+            "children": [
+              { "label": "האיזון בין מחויבות למסורת לבין פתיחות למודרנה." }
+            ]
+          },
+          {
+            "label": "בלשון עתיד",
+            "children": [
+              { "label": "תפיסת התקווה כיסוד ליצירה מוסרית וחזון חברתי." }
+            ]
+          },
+          {
+            "label": "תפקיד הרב הראשי – מנהיגות יהודית בחברה רב־תרבותית",
+            "children": [
+              { "label": "העמקה במודל המנהיגות הציבורית של הרב זקס כגשר בין זהויות." }
+            ]
+          },
+          {
+            "label": "הרב לורד דוד וולפסון – יהדות, השפעה ומנהיגות בזירה האנגלית",
+            "children": [
+              { "label": "דמותו של הרב זקס כמנהיג מוסרי בזירה הציבורית הבריטית." }
+            ]
+          },
+          {
+            "label": "חלומות ומציאות",
+            "children": [
+              { "label": "חזונו של הרב זקס להפוך חלום יהודי למציאות מוסרית." }
+            ]
+          },
+          {
+            "label": "מדע ודת – ניגוד או השלמה?",
+            "children": [
+              { "label": "ההשלמה בין המדע לדת כשני ממדים של משמעות." }
+            ]
+          },
+          {
+            "label": "פרופ׳ אריה צבן – מה בין מדע, אמונה וקיימות",
+            "children": [
+              { "label": "הדיאלוג בין מדע, אמונה ואחריות סביבתית." }
+            ]
+          }
         ]
       },
       {
         "label": "מודולה 6 – מורשת חיה",
         "children": [
-          { "label": "הגותו של הרב זקס – בין זיכרון ציבורי להשראה", "children": [ { "label": "כיצד הגותו של הרב זקס ממשיכה להשפיע כחלק מהזיכרון הציבורי והחינוכי." } ] },
-          { "label": "פרופ׳ אדם פרזיגר – כיצד הפך הרב זקס לתופעה תרבותית בישראל?", "children": [ { "label": "הדרך שבה הפך הרב זקס לדמות רוחנית־תרבותית במרחב הישראלי." } ] },
-          { "label": "הרב דניאל אפשטיין – מציטוטים על הקיר למדף הספרים", "children": [ { "label": "הפיכתו של הרב זקס מסמל אישי למורשת קהילתית חיה." } ] },
-          { "label": "ד״ר חיים נריה – הארכיון כבסיס להבנת מורשת הרב זקס", "children": [ { "label": "תפקיד הארכיון בהבנת תהליך היצירה של הרב זקס." } ] },
-          { "label": "ג׳ואנה בנהרוש – אתגרי המודרניות, האחריות הציבורית והזהות היהודית", "children": [ { "label": "תפיסת האחריות הציבורית והזהות היהודית במציאות משתנה." } ] },
-          { "label": "ג׳ואן גרינאוויי – מורשת חינוכית כיסוד למנהיגות יהודית מתחדשת", "children": [ { "label": "חזונו החינוכי של הרב זקס כמנוע למנהיגות מוסרית." } ] },
-          { "label": "רדיקלית אז, רדיקלית עכשיו", "children": [ { "label": "הקריאה של הרב זקס לפעולה מוסרית נועזת ואמיצה בזמננו." } ] }
+          {
+            "label": "הגותו של הרב זקס – בין זיכרון ציבורי להשראה",
+            "children": [
+              { "label": "כיצד הגותו של הרב זקס ממשיכה להשפיע כחלק מהזיכרון הציבורי והחינוכי." }
+            ]
+          },
+          {
+            "label": "פרופ׳ אדם פרזיגר – כיצד הפך הרב זקס לתופעה תרבותית בישראל?",
+            "children": [
+              { "label": "הדרך שבה הפך הרב זקס לדמות רוחנית־תרבותית במרחב הישראלי." }
+            ]
+          },
+          {
+            "label": "הרב דניאל אפשטיין – מציטוטים על הקיר למדף הספרים",
+            "children": [
+              { "label": "הפיכתו של הרב זקס מסמל אישי למורשת קהילתית חיה." }
+            ]
+          },
+          {
+            "label": "ד״ר חיים נריה – הארכיון כבסיס להבנת מורשת הרב זקס",
+            "children": [
+              { "label": "תפקיד הארכיון בהבנת תהליך היצירה של הרב זקס." }
+            ]
+          },
+          {
+            "label": "ג׳ואנה בנהרוש – אתגרי המודרניות, האחריות הציבורית והזהות היהודית",
+            "children": [
+              { "label": "תפיסת האחריות הציבורית והזהות היהודית במציאות משתנה." }
+            ]
+          },
+          {
+            "label": "ג׳ואן גרינאוויי – מורשת חינוכית כיסוד למנהיגות יהודית מתחדשת",
+            "children": [
+              { "label": "חזונו החינוכי של הרב זקס כמנוע למנהיגות מוסרית." }
+            ]
+          },
+          {
+            "label": "רדיקלית אז, רדיקלית עכשיו",
+            "children": [
+              { "label": "הקריאה של הרב זקס לפעולה מוסרית נועזת ואמיצה בזמננו." }
+            ]
+          }
         ]
       }
     ]
@@ -214,7 +370,7 @@
 
 <script>
 (function(){
-  let data; 
+  let data;
   try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
   catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים - נא לבדוק JSON","children":[]}}; }
 
@@ -222,21 +378,17 @@
   const FLOW = (data.flow||'rtl');
 
   const viewport = document.getElementById('viewport');
-  if(viewport) viewport.style.direction = 'ltr';
   const stage = document.getElementById('app');
   const scroller = document.getElementById('scroller');
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
 
-  let mode = 'fitW', userScale = 1, lockedFit = 1, zoomFrozen = false, didInitialFitAll = false;
-
-  if(FLOW==='ltr'){ stage.style.transformOrigin = 'top left'; stage.style.left='0'; stage.style.right=''; }
-  else { stage.style.transformOrigin = 'top right'; stage.style.right='0'; stage.style.left=''; }
-  stage.style.top='0'; stage.style.position='absolute';
+  /* מצב פתיחה: התאמה לרוחב */
+  let mode = 'fitW', userScale = 1, lockedFit = 1, didInitialFitAll = false;
 
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
-  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36; 
+  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36;
   const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;
   const GAP_BETWEEN_MODS_D2 = parseFloat(CSS.getPropertyValue('--gap-between-mods-d2')) || 20;
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
@@ -246,7 +398,6 @@
   const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
   const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
 
-  /* ריווחי עליון/תחתון לשימוש בלוגיקה */
   const MAP_PAD_TOP_PX    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 0;
   const MAP_PAD_BOTTOM_PX = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 35;
 
@@ -254,10 +405,10 @@
 
   function build(raw, depth=0, parent=null, idxInParent=0){
     const defaultCollapsed = depth === 0 ? false : true;
-    const node = { 
-      label: raw.label, depth, parent, 
+    const node = {
+      label: raw.label, depth, parent,
       collapsed: (typeof raw.collapsed==='boolean' ? raw.collapsed : defaultCollapsed),
-      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0, 
+      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0,
       children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null),
       idx: idxInParent
     };
@@ -348,6 +499,7 @@
   }
 
   let lastW = 0, lastH = 0, offsetX = 0, stageW = 0;
+  let lastContentW = 0;  /* לשימור מרכז בצמצום/הגדלה */
 
   function layout(){
     measure(root);
@@ -370,28 +522,20 @@
     const { w, h, minX } = computeBounds(nodes);
 
     const vpW = viewport.getBoundingClientRect().width;
-    const vpH = viewport.clientHeight || window.innerHeight;
     const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
 
+    /* התאמה לרוחב בלבד */
     const fitW = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
-    const fitH = Math.min(1.0, (vpH - 24) / Math.max(1, h));
-    const baseFit = Math.min(fitW, fitH);
-
-    const maxDepthNow = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
-    let compactCap = 1.0; if(maxDepthNow<=1) compactCap=0.75; else if(maxDepthNow===2) compactCap=0.88;
-
-    if (!didInitialFitAll){ lockedFit = Math.max(0.2, Math.min(baseFit, compactCap)); didInitialFitAll = true; }
-    else { lockedFit = Math.max(0.2, Math.min(fitW, compactCap)); }
-
-    if (!zoomFrozen){ userScale = lockedFit; mode='free'; zoomFrozen = true; }
+    if (!didInitialFitAll){ lockedFit = Math.max(0.2, fitW); didInitialFitAll = true; }
+    else { lockedFit = Math.max(0.2, fitW); }
 
     if(mode==='fitW'){
-      const RIGHT_PAD = 24, LEFT_PAD = 24;
-      offsetX = -minX + (LEFT_PAD/lockedFit);
-      stageW  = w + (LEFT_PAD+RIGHT_PAD)/lockedFit;
+      const PAD = Math.max(16, 24/lockedFit);             /* פדינג סימטרי */
+      offsetX = -minX + PAD;
+      stageW  = w + PAD*2;
     } else {
       const sNow = Math.max(userScale, 0.0001);
-      const desiredPad = Math.max(60, Math.floor((viewport.clientWidth/sNow - w)/2) + 40);
+      const desiredPad = Math.max(40, (viewport.clientWidth/sNow - w)/2); /* סימטרי, ללא הטיה */
       offsetX = -minX + desiredPad;
       stageW  = w + desiredPad*2;
     }
@@ -402,7 +546,7 @@
 
     nodes.forEach(n=>{
       const top = n.y - n.height/2;
-      const rightUnits = offsetX + n.x;            
+      const rightUnits = offsetX + n.x;
       const leftUnits  = (FLOW==='rtl') ? (rightUnits - n.width) : rightUnits;
       n.el.style.left  = leftUnits  + 'px';
       n.el.style.top   = top + 'px';
@@ -440,47 +584,47 @@
     });
     setTimeout(done, dur);
   }
-  function handleToggle(n){ 
+  function handleToggle(n){
     if(!n.children.length) return;
     if(n.collapsed){ n.collapsed=false; if(n.el) n.el.setAttribute('aria-expanded','true'); layout(); }
     else { if(n.el) n.el.setAttribute('aria-expanded','false'); animateClose(n, ()=>{ collapseDeep(n); layout(); }); }
   }
 
   function applyZoom(){
+    /* יחס מרכז אופקי לפני שינוי */
+    const oldW = lastContentW || scroller.offsetWidth || 1;
+    const oldCenterRatio = (viewport.scrollLeft + viewport.clientWidth/2) / oldW;
+
     const s = (mode==='fitW') ? lockedFit : userScale;
     stage.style.transform = `scale(${s})`;
     const pct = document.getElementById('zoomPct'); if(pct) pct.textContent = Math.round(s*100)+"%";
 
-    if(lastW && lastH){
-      const wpx = (mode==='fitW') ? Math.floor(viewport.clientWidth) : Math.ceil(lastW * s);
-      const contentH = Math.ceil(lastH * s);
+    /* רוחב/גובה "אפקטיביים" לאחר סקייל – כדי לייצר גלילה מדויקת */
+    const scaledW = Math.ceil(stageW * s);
+    const scaledH = Math.ceil(lastH * s) + MAP_PAD_TOP_PX;
 
-      scroller.style.width  = wpx + 'px';
-      /* הגובה של התוכן בתוך scroller כולל רווח עליון בלבד;
-         הרווח התחתון מגיע מה־padding-bottom של viewport */
-      scroller.style.height = (contentH + MAP_PAD_TOP_PX) + 'px';
-    }
+    scroller.style.width  = Math.max(viewport.clientWidth, scaledW) + 'px';
+    scroller.style.height = scaledH + 'px';
 
     const tol = 2;
-    const contentWNow = scroller.offsetWidth;
-    const contentHNow = scroller.offsetHeight; // כולל top padding
+    let needX = (scaledW - viewport.clientWidth) > tol && (mode!=='fitW');
+    let needY = (scaledH - (viewport.clientHeight - MAP_PAD_BOTTOM_PX)) > tol;
 
-    let needX = (mode!=='fitW') && ((contentWNow - viewport.clientWidth) > tol);
-    /* viewport.clientHeight כולל את ה-padding-bottom, ולכן מחסרים אותו
-       כדי לבדוק צורך בגלילה אנכית אמיתית. */
-    let needY = (contentHNow - (viewport.clientHeight - MAP_PAD_BOTTOM_PX)) > tol;
-
-    if(mode==='fitW'){
-      needX = false;
-      needY = (contentHNow - (viewport.clientHeight - MAP_PAD_BOTTOM_PX)) > tol;
-    }
+    if(mode==='fitW'){ needX = false; }
 
     viewport.style.overflowX = needX ? 'auto' : 'hidden';
     viewport.style.overflowY = needY ? 'auto' : 'hidden';
-    viewport.style.cursor    = (needX || needY) ? (dragStarted ? 'grabbing' : 'grab') : 'auto';
+
+    /* שמירת המרכז בין שינויי זום (לא לקפוץ ימין/שמאל) */
+    const newW = Math.max(viewport.clientWidth, scaledW);
+    const newCenterLeft = Math.max(0, Math.round(newW * oldCenterRatio - viewport.clientWidth/2));
+    viewport.scrollLeft = (mode==='fitW') ? 0 : newCenterLeft;
+
+    lastContentW = newW;
+    viewport.style.cursor = (needX || needY) ? 'grab' : 'auto';
   }
 
-  /* Drag-to-pan עם סף קטן כדי לא לשבור קליקים */
+  /* Pan */
   let isPanning = false, dragStarted = false, panStartX = 0, panStartY = 0, startSL = 0, startST = 0, activePointerId = null;
   function onPointerDown(e){
     if(e.button !== 0) return;
@@ -516,17 +660,17 @@
   document.getElementById('zoomIn').addEventListener('click', ()=>{ mode='free'; userScale = Math.min((userScale||lockedFit) + 0.10, 3); applyZoom(); });
   document.getElementById('zoomOut').addEventListener('click', ()=>{ mode='free'; userScale = Math.max((userScale||lockedFit) - 0.10, 0.2); applyZoom(); });
   document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
-  document.getElementById('fitW').addEventListener('click', ()=>{ zoomFrozen = false; mode='fitW'; layout(); });
+  document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; layout(); });
 
   document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
-  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; layout(); });
+  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); layout(); });
 
-  function sizeViewport(){ 
-    const rect = viewport.getBoundingClientRect(); 
-    const avail = window.innerHeight - rect.top - 16; 
-    viewport.style.height = Math.max(320, Math.floor(avail)) + 'px'; 
+  function sizeViewport(){
+    const rect = viewport.getBoundingClientRect();
+    const avail = window.innerHeight - rect.top - 16;
+    viewport.style.height = Math.max(320, Math.floor(avail)) + 'px';
   }
-  sizeViewport(); 
+  sizeViewport();
   layout();
 
   if (document.fonts && document.fonts.ready) {
