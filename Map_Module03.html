@@ -415,7 +415,8 @@
   /* ----- Toggle ----- */
   function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
   function animateClose(node, done){
-    const list=[]; function collectDesc(n){ if(!נ || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
+    const list=[]; 
+    function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); } /* <-- תוקן כאן */
     node.children.forEach(collectDesc);
     const dur = parseFloat(CSS.getPropertyValue('--anim-dur'))*1000+20;
     list.forEach(n=>{
@@ -441,7 +442,7 @@
 
     if (mode === 'fitW') {
       scroller.style.width  = viewport.clientWidth + 'px';
-      scroller.style.height = viewport.clientHeight + 'px'; /* כולל padding בגלל border-box */
+      scroller.style.height = viewport.clientHeight + 'px';
       viewport.style.overflowX = 'hidden';
       viewport.style.overflowY = 'hidden';
       viewport.style.cursor    = 'auto';
