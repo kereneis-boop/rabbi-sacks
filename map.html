@@ -3,110 +3,118 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<titleהרב זקס - חלון להגות יהודית</title>
+<title>הרב זקס - חלון להגות יהודית — Mind-Map</title>
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
+    /* ריווחים והתאמה */
     --zoombar-gap: 60px;
     --map-pad-top: 35px;
-    --map-pad-bottom: 35px;          /* רווח קבוע בין המפה לפס הגלילה */
-    --gap-between-groups: 40px;
-    --gap-between-mods-d2: var(--gap-between-groups);
+    --map-pad-bottom: 48px;
+    --fit-margin: 28;              /* שוליים פנימיים ב-FIT מכל צד (פיקסלים) */
 
-    --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-    --bg:#ffffff; --ink:#0f172a;
-
+    /* גיאומטריה של המפה */
     --chip-h:48px;
     --gap-x:36px;
-    --gap-x-d01:100px;               /* רווח אופקי בין עומק 0 לעומק 1 */
-    --gap-y:40px;
-    --gap-rootcat:22px;              /* עומק 1 */
-    --gap-d3:22px;                   /* עומק 3 */
-    --gap-d4:22px;                   /* עומק 4 */
-    --gap-cat:22px;                  /* עומק 2 */
-    --gap-item:6px;                  /* עומק 3+ */
+    --gap-x-d01:100px;             /* רווח אופקי בין עומק 0 לעומק 1 */
+    --gap-rootcat:22px;            /* רווח אנכי בין ענפים בעומק 1 */
+    --gap-cat:22px;                /* עומק 2 */
+    --gap-d3:22px;                 /* עומק 3 */
+    --gap-d4:22px;                 /* עומק 4+ */
+    --gap-item:6px;                /* עלים */
+    --gap-between-groups:40px;     /* רווח נוסף בין ילדי השורש (מודולות) */
 
-    --r:9999px;
+    /* עיצוב */
+    --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --bg:#ffffff; --ink:#0f172a;
+    --edge:#C5CBD8; --toggle:#fe0100;
     --shadow:0 8px 22px rgba(0,0,0,.10);
-    --edge:#C5CBD8;
-    --toggle:#fe0100;
+    --r:9999px;
 
     --anim-dur:.60s;
     --anim-ease:ease-in-out;
-
-    /* שוליים סימטריים במצב Fit (פיקסלים למסך) */
-    --fit-edge-pad: 24;   /* שוליים רצויים */
-    --fit-safe: 24;       /* מרווח בטיחות נוסף למניעת חיתוך */
   }
 
   *{box-sizing:border-box}
-  html, body, button, input, select, textarea, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
-  html,body{height:auto;min-height:100%; overflow-x:hidden}
+  html, body, button, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
+  html,body{min-height:100%; overflow-x:hidden}
   body{margin:0;background:var(--bg);color:var(--ink);}
-  .wrap{padding:12px; width:100%; max-width:none; margin:0 auto; overflow:visible}
+  .wrap{padding:12px; width:100%; margin:0 auto; overflow:visible}
 
-  /* זום־בר */
+  /* סרגל כפתורים */
   .zoombar{
-    position:sticky; top:8px; inset-inline:0; display:flex; justify-content:center; align-items:center; gap:6px; z-index:3;
-    background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(10px);
-    padding:10px 12px; margin:0 auto var(--zoombar-gap); width:max-content; border-radius:14px;
+    position:sticky; top:8px; inset-inline:0; z-index:3;
+    display:flex; justify-content:center; align-items:center; gap:6px;
+    background:rgba(255,255,255,.86); backdrop-filter:saturate(180%) blur(10px);
+    padding:10px 12px; margin:0 auto var(--zoombar-gap);
+    width:max-content; border-radius:14px;
     border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
   }
   .zoombar button{
     border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer;
     background:linear-gradient(180deg,#ffffff,#f7f7f9); box-shadow:0 4px 12px rgba(0,0,0,.08);
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    transition:transform .12s ease, box-shadow .12s ease, background .12s ease
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease; touch-action:manipulation;
   }
   .zoombar button:hover{box-shadow:0 8px 18px rgba(0,0,0,.12)}
   .zoombar button:active{transform:translateY(1px)}
-  .zoombar button:focus-visible{outline:3px solid rgba(59,130,246,.5); outline-offset:2px}
-  .zoombar .pct{min-width:72px; text-align:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08); height:36px; display:inline-flex; align-items:center; justify-content:center}
+  .zoombar .pct{min-width:68px; height:36px; display:inline-flex; align-items:center; justify-content:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08)}
   #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
-  #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
-  @media (max-width:680px){.zoombar{width:calc(100% - 24px); justify-content:space-between}}
-  .zoombar .pct{min-width:68px; text-align:center}
+  #fitBtn{background:linear-gradient(180deg,#fafafa,#eeeeff);}
 
-  /* במה */
+  /* במה + מרכוז */
   .viewport{
-    position:relative; width:100%; height:auto; overflow:hidden;
+    position:relative; width:100%;
+    overflow:hidden;                 /* ב-FIT אין גלילה; ב-FREE תופעל בגלגול */
     touch-action:none; cursor:grab;
-    padding-bottom: var(--map-pad-bottom);
-    box-sizing: border-box;
-    scrollbar-gutter: stable;              /* לא both-edges – שלא יוסיף גטר בשמאל */
-    direction: ltr;                         /* נרמול scrollLeft ב-RTL */
+    scrollbar-gutter:stable;         /* לא מוסיף גטר כפול */
+    direction:ltr;                   /* נרמול scrollLeft */
   }
-
-  /* מרכזים את המפה באמצעות Flex */
+  .viewport.panning{ cursor:grabbing; }
   .scroller{
     position:relative;
-    display:flex; justify-content:center; align-items:flex-start;
-    padding: var(--map-pad-top) 0 0;
+    display:flex; justify-content:center; align-items:flex-start; /* מרכז אופקי */
+    padding: var(--map-pad-top) 0 var(--map-pad-bottom);
     min-width:100%;
   }
-
   .stage{
-    position:relative; min-height:380px; min-width:0;
-    transform-origin: top center;   /* זום סביב המרכז */
-    opacity:0
+    position:relative;
+    min-height:380px; min-width:0;
+    transform-origin: top center;    /* זום סביב המרכז האופקי */
+    opacity:0;
   }
-  .chips{position:absolute; inset:0; z-index:1; direction: rtl;}
-  svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
+  .chips{ position:absolute; inset:0; z-index:1; direction:rtl; }
+  svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
 
-  /* Capsules */
+  /* קפסולות – מניעת קיטוע/אליפסות + שמירה מפני כיווץ ע״י flex */
   .chip{
-    position:absolute; display:flex; align-items:center;
+    position:absolute; display:inline-flex; align-items:center;
     height:var(--chip-h); padding:0 16px; border-radius:var(--r);
     line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
-    direction: rtl; text-align:right; font-weight:700; gap:14px;
+    direction:rtl; text-align:right; font-weight:700; gap:14px;
     background: var(--chip-bg, #ffffff); color:#0f172a; cursor:pointer;
+
+    overflow: visible !important;
+    text-overflow: clip !important;
+    max-width: none !important;
+    width: auto !important;
+    min-width: max-content;          /* לא מאפשר כיווץ מתחת לתוכן המלא */
   }
   .chip[data-kind="root"]{font-weight:800}
-  .label{pointer-events:none; direction: rtl; text-align: right}
-  .chip .toggle{margin-inline-start:auto}
+  .label{
+    pointer-events:none; direction:rtl; text-align:right;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+    max-width: none !important;
+    width: auto !important;
+    display:inline-block !important;
+    flex: 0 0 auto;                  /* מונע כיווץ הטקסט ע״י flexbox */
+  }
+  .chip .toggle{margin-inline-start:auto; flex:0 0 auto}
 
-  .toggle{position:relative; width:28px;height:28px;border-radius:50%;flex:0 0 auto;background:var(--toggle); cursor:pointer; border:0}
-  .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition: opacity var(--anim-dur) var(--anim-ease)}
+  .toggle{position:relative; width:28px; height:28px; border:0; border-radius:50%; background:var(--toggle); cursor:pointer}
+  .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition:opacity var(--anim-dur) var(--anim-ease)}
   .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg)}
   .chip[aria-expanded="true"] .toggle .bar.v{opacity:0}
 
@@ -125,7 +133,7 @@
 <body>
 <div class="wrap">
   <div class="zoombar" aria-label="Zoom controls">
-    <button id="fitW" title="התאם לרוחב">↔︎ התאמה</button>
+    <button id="fitBtn" title="התאם למסך">↔︎ התאמה</button>
     <button id="zoomOut" title="Zoom out">−</button>
     <button id="zoomPct" class="pct" title="100%">100%</button>
     <button id="zoomIn" title="Zoom in">+</button>
@@ -143,166 +151,225 @@
   </div>
 </div>
 
-<!-- === DATA (שימי כאן את העץ שלך) === -->
+<!-- === DATA === -->
 <script id="mindmap-data" type="application/json">
-{ "dir":"rtl","flow":"rtl","root":{"label":"הרב זקס - חלון להגות יהודית","children":[
-  {"label":"0 - ברוכים הבאים","children":[
-    {"label":"# הקדמה"},
-    {"label":"1. למה הרב זקס, למה עכשיו? 2. מפת הקורס 3.סילבוס"},
-    {"label":"כיצד לסיים את הקורס בהצלחה?"},
-    {"label":"ערכים, זהות וחינוך יהודי במאה ה־21"}
-  ]},
-  {"label":"1 - ביוגרפיה","children":[
-    {"label":"#01 יסודות ביוגרפיים בהגות הרב זקס"},
-    {"label":"גילה זקס - מבט אישי על התפתחות הרב זקס כפילוסוף והוגה יהודי"},
-    {"label":"הרב דיין בינשטוק - מן הדרשה המקומית אל המורשת ההגותית"},
-    {"label":"מה נלמד?","children":[
-      {"label":"חקר ביוגרפי"},{"label":"עיצוב תפיסת עולם"},{"label":"מודל מנהיגותי"},{"label":"התבוננות מחודשת בזהות יהודית ומנהיגות במאה ה-21"}
-    ]}
-  ]},
-  {"label":"2 - יסודות פילוסופיים","children":[
-    {"label":"#02 יסודות פילוסופיים בהגות היהודית"},
-    {"label":"פרופ׳ חנוך בן פזי - דיאלוגים פילוסופיים: חקר האחריות והמחשבה היהודית"},
-    {"label":"מרציונליזם אוניברסלי לברית חברתית: ביקורת הנאורות עפ\"י הרב זקס"},
-    {"label":"הרב ד\"ר רפאל זארום: חקר המחשבה וההשפעה היהודית"},
-    {"label":"מסורת בעידן לא מסורתי"},
-    {"label":"הרב זקס: ללא מורא - העתיד כאתגר והזדמנות"},
-    {"label":"מה נלמד?","children":[
-      {"label":"הגדרת הפילוסופיה היהודית..."},
-      {"label":"האחריות כמסגרת אתית..."},
-      {"label":"בין מסורת למודרניות..."},
-      {"label":"הביקורת על הנאורות..."},
-      {"label":"המחשבה היהודית ככלי פעיל..."}
-    ]}
-  ]},
-  {"label":"3 - המתודה הפרשנית","children":[
-    {"label":"#03 המתודה הפרשנית בהגות הרב זקס"},
-    {"label":"הרב ד\"ר מייקל האריס - בין רבנות לפילוסופיה: מסעו של הרב זקס"},
-    {"label":"פרופ׳ חנוך בן פזי - עיקרון הפרשנות כמעשה מוסרי בהגות הרב זקס"},
-    {"label":"פרשנות טקסטים קשים בתורה כאתגר מוסרי ותיאולוגי"},
-    {"label":"לא בשם האל"},
-    {"label":"מה נלמד?","children":[
-      {"label":"עקרון הסינתזה הדיסציפלינרית..."},
-      {"label":"עקרון הפרשנות האחראית..."},
-      {"label":"איזון בין נאמנות לרלוונטיות..."},
-      {"label":"בנייה בונה מתוך אתגר..."}
-    ]}
-  ]},
-  {"label":"4 - מטקסט לדיאלוג","children":[
-    {"label":"#04 דיאלוג בחברה מגוונת בעידן רב-תרבותי"},
-    {"label":"פרופ׳ ג׳ונתן ריינהולד - ברית, שיח ומדינה בהגות הרב זקס"},
-    {"label":"הפילוסופיה של הדיאלוג: בין רוזנצווייג לרב זקס"},
-    {"label":"מסורת בעידן לא מסורתי"},
-    {"label":"מה נלמד?","children":[
-      {"label":"דיאלוג בין אמונה לחברה..."},
-      {"label":"שמירת המסורת בעידן מודרני..."},
-      {"label":"תורה וחכמה..."},
-      {"label":"יסודות הדיאלוג והביקורת על הנאורות..."}
-    ]}
-  ]},
-  {"label":"5 - מודרניות וחברה","children":[
-    {"label":"#05 בין מסורת למודרנה"},
-    {"label":"בלשון עתיד"},
-    {"label":"תפקיד הרב הראשי: מנהיגות יהודית בחברה רב־תרבותית"},
-    {"label":"הרב לורד דוד וולפסון: יהדות, השפעה ומנהיגות בזירה האנגלית"},
-    {"label":"חלומות ומציאות"},
-    {"label":"מדע ודת - ניגוד או השלמה?"},
-    {"label":"פרופ׳ אריה צבן - מה בין מדע, אמונה וקיימות?"},
-    {"label":"מה נלמד?","children":[
-      {"label":"יישומי הגות הרב זקס..."},
-      {"label":"השפעה מעשית..."},
-      {"label":"כישורי ניתוח..."},
-      {"label":"הבנה היסטורית ועכשווית..."}
-    ]}
-  ]},
-  {"label":"6 - מורשת חיה","children":[
-    {"label":"#06 הגותו של הרב זקס - בין זיכרון ציבורי להשראה"},
-    {"label":"פרופ׳ אדם פרזיגר - כיצד הפך הרב זקס לתופעה תרבותית בישראל?"},
-    {"label":"הרב דניאל אפשטיין - מציטוטים על הקיר למדף הספרים"},
-    {"label":"ד\"ר חיים נריה - הארכיון כבסיס להבנת מורשת הרב זקס"},
-    {"label":"ג׳ואנה בנהרוש - אתגרי המודרניות..."},
-    {"label":"ג׳ואן גרינאוויי - מורשת חינוכית..."},
-    {"label":"החזון החינוכי עפ״י הרב זקס"},
-    {"label":"רדיקלית אז רדיקלית עכשיו"},
-    {"label":"לצפייה נוספת: דברי הרב מירוויס"},
-    {"label":"מה מגדיר את מורשתו המתמשכת של הרב זקס?"},
-    {"label":"מה נלמד?","children":[
-      {"label":"תהליך הפיכתו לדמות תרבותית..."},
-      {"label":"חדירת רעיונות מן היומיום..."},
-      {"label":"תרומת הארכיון..."},
-      {"label":"השפעת המורשת..."},
-      {"label":"עיון ב'רדיקלית אז, רדיקלית עכשיו'..."}
-    ]}
-  ]},
-  {"label":"7 - סיכום מסע","children":[{"label":"#07 חלון לעתיד: מסורת והתחדשות בהגות יהודית"}]}
-]}}
+{
+  "dir": "rtl",
+  "flow": "rtl",
+  "root": {
+    "label": "הרב זקס - חלון להגות יהודית",
+    "children": [
+      {
+        "label": "0 - ברוכים הבאים",
+        "children": [
+          { "label": "# הקדמה" },
+          { "label": "1. למה הרב זקס, למה עכשיו? 2. מפת הקורס 3. סילבוס" },
+          { "label": "כיצד לסיים את הקורס בהצלחה?" },
+          { "label": "ערכים, זהות וחינוך יהודי במאה ה־21" }
+        ]
+      },
+      {
+        "label": "1 - ביוגרפיה",
+        "children": [
+          { "label": "#01 יסודות ביוגרפיים בהגות הרב זקס" },
+          { "label": "גילה זקס - מבט אישי על התפתחות הרב זקס כפילוסוף והוגה יהודי" },
+          { "label": "הרב דיין בינשטוק - מן הדרשה המקומית אל המורשת ההגותית" },
+          {
+            "label": "מה נלמד?",
+            "children": [
+              { "label": "1. חקר ביוגרפי" },
+              { "label": "2. עיצוב תפיסת עולם" },
+              { "label": "3. מודל מנהיגותי" },
+              { "label": "4. התבוננות מחודשת בזהות יהודית ומנהיגות במאה ה-21" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "2 - יסודות פילוסופיים",
+        "children": [
+          { "label": "#02 יסודות פילוסופיים בהגות היהודית" },
+          { "label": "פרופ׳ חנוך בן פזי - דיאלוגים פילוסופיים: חקר האחריות והמחשבה היהודית" },
+          { "label": "מרציונליזם אוניברסלי לברית חברתית: ביקורת הנאורות עפ״י הרב זקס" },
+          { "label": "הרב ד\"ר רפאל זארום: חקר המחשבה וההשפעה היהודית" },
+          { "label": "מסורת בעידן לא מסורתי" },
+          { "label": "הרב זקס: ללא מורא - העתיד כאתגר והזדמנות" },
+          {
+            "label": "מה נלמד?",
+            "children": [
+              { "label": "הגדרת הפילוסופיה היהודית, התפתחותה ההיסטורית והאינטלקטואלית, ומיקומו של הרב יונתן זקס בהקשר הפילוסופי־יהודי העכשווי" },
+              { "label": "האחריות כמסגרת אתית: מה מציעה הפילוסופיה היהודית להבנת האחריות בעולם המודרני" },
+              { "label": "בין מסורת למודרניות: איך מנהלים דיאלוג פורה בין המסורת היהודית לבין האתגרים של העידן הפוסט-מסורתי" },
+              { "label": "הביקורת על הנאורות: מהן ההשלכות של כישלון פרויקט הנאורות על חקר המחשבה היהודית ועל רלוונטיות המקורות היהודיים" },
+              { "label": "המחשבה היהודית ככלי פעיל: כיצד הופכת המחשבה היהודית מאוסף ידע היסטורי לכלי עכשווי לפתרון דילמות מודרניות" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "3 - המתודה הפרשנית",
+        "children": [
+          { "label": "#03 המתודה הפרשנית בהגות הרב זקס" },
+          { "label": "הרב ד\"ר מייקל האריס - בין רבנות לפילוסופיה: מסעו של הרב זקס" },
+          { "label": "פרופ׳ חנוך בן פזי - עיקרון הפרשנות כמעשה מוסרי בהגות הרב זקס" },
+          { "label": "פרשנות טקסטים קשים בתורה כאתגר מוסרי ותיאולוגי" },
+          { "label": "לא בשם האל" },
+          {
+            "label": "מה נלמד?",
+            "children": [
+              { "label": "עקרון הסינתזה הדיסציפלינרית: איך משלבים רבנות ופילוסופיה בפרשנות טקסט" },
+              { "label": "עקרון הפרשנות האחראית: כיצד נמנעים מפרשנות לא אתית של טקסטים דתיים" },
+              { "label": "עקרון האיזון בין נאמנות לרלוונטיות: איך משמרים אותנטיות תוך יצירת משמעות מודרנית" },
+              { "label": "עקרון הבנייה הבונה מתוך האתגר: כיצד הופכים קושי פרשני לכלי מוסרי" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "4 - מטקסט לדיאלוג",
+        "children": [
+          { "label": "#04 דיאלוג בחברה מגוונת בעידן רב תרבותי" },
+          { "label": "פרופ׳ ג׳ונתן ריינהולד - ברית, שיח ומדינה בהגות הרב זקס" },
+          { "label": "הפילוסופיה של הדיאלוג: בין רוזנצווייג לרב זקס" },
+          { "label": "מסורת בעידן לא מסורתי" },
+          {
+            "label": "מה נלמד?",
+            "children": [
+              { "label": "דיאלוג בין אמונה לחברה – נבחן עקרון יסוד בהגות הרב זקס: דיאלוג בין אמונה דתית לבין חברה פלורליסטית-מודרנית כמסגרת הכרחית לעיצוב חיים מוסריים וחברתיים משותפים" },
+              { "label": "שמירת המסורת בעידן מודרני – נעמיק באתגר שמציבה המודרניות למסורת הדתית, והאופן בו הרב זקס מציע מודל למסורת רלוונטית, מחייבת ויצירתית גם בתקופה המאופיינת בחילון ובשינוי מתמיד" },
+              { "label": "תורה וחכמה – נבחן את עקרון ההפריה ההדדית שבין התורה כקול ייחודי של זהות יהודית פרטיקולרית לבין החכמה האוניברסלית" },
+              { "label": "היסודות הפילוסופיים בהגותו – נעמוד על השפעת פרנץ רוזנצווייג ותרומתו של עקרון הדיאלוג וחיי המפגש לעיצוב ההגות של הרב זקס, ונבחן את הממד הביקורתי כלפי הנאורות כבסיס לחשיבה יהודית מחודשת בעידן המודרני" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "5 - מודרניות וחברה",
+        "children": [
+          { "label": "#05 בין מסורת למודרנה" },
+          { "label": "בלשון עתיד" },
+          { "label": "תפקיד הרב הראשי: מנהיגות יהודית בחברה רב־תרבותית" },
+          { "label": "הרב לורד דוד וולפסון: יהדות, השפעה ומנהיגות בזירה האנגלית" },
+          { "label": "חלומות ומציאות" },
+          { "label": "מדע ודת - ניגוד או השלמה?" },
+          { "label": "פרופ׳ אריה צבן - מה בין מדע, אמונה וקיימות?" },
+          {
+            "label": "מה נלמד?",
+            "children": [
+              { "label": "הבנה מעמיקה של יישומי הגות הרב זקס בתחומי המדע, החברה והמנהיגות, תוך זיהוי הקשרים הרעיוניים בין התחומים השונים" },
+              { "label": "היכרות עם ההשפעה המעשית והיישומית של רעיונותיו על מבנים חברתיים, מוסדות ציבוריים ותהליכי קבלת החלטות במגזרים שונים" },
+              { "label": "כישורי ניתוח וחשיבה ביקורתית של הקשרים המורכבים בין תיאוריה למעשה בהגות הרב זקס, תוך הבחנה בין עקרונות תיאורטיים ליישומיהם המעשיים" },
+              { "label": "הבנה היסטורית ועכשווית: תרומת הרב זקס לשיח העכשווי בנושאי המדע, הדת והחברה, והערכת מקומו בהקשר האינטלקטואלי הרחב יותר" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "6 - מורשת חיה",
+        "children": [
+          { "label": "#06 הגותו של הרב זקס - בין זיכרון ציבורי להשראה" },
+          { "label": "פרופ׳ אדם פרזיגר - כיצד הפך הרב זקס לתופעה תרבותית בישראל?" },
+          { "label": "הרב דניאל אפשטיין - מציטוטים על הקיר למדף הספרים" },
+          { "label": "ד\"ר חיים נריה - הארכיון כבסיס להבנת מורשת הרב זקס" },
+          { "label": "ג׳ואנה בנהרוש - אתגרי המודרניות, האחריות הציבורית והזהות היהודית במציאות משתנה" },
+          { "label": "ג׳ואן גרינאוויי - מורשת חינוכית כיסוד למנהיגות יהודית מתחדשת" },
+          { "label": "החזון החינוכי עפ״י הרב זקס" },
+          { "label": "רדיקלית אז רדיקלית עכשיו" },
+          { "label": "לצפייה נוספת: דברי הרב מירוויס" },
+          { "label": "מה מגדיר את מורשתו המתמשכת של הרב זקס?" },
+          {
+            "label": "מה נלמד?",
+            "children": [
+              { "label": "בחינת תהליך הפיכתו של הרב זקס לדמות תרבותית בעלת השפעה בשיח הציבורי בישראל" },
+              { "label": "ניתוח חדירת רעיונותיו מן ההקשר היומיומי אל השדה ההגותי והספרותי" },
+              { "label": "חקירת תרומתו של הארכיון כמרחב לשימור, המשכיות והנחלת המורשת" },
+              { "label": "דיון בהשלכות מורשתו על עיצוב חינוך, זהות ומנהיגות יהודית בעידן מודרני" },
+              { "label": "עיון במאמר “רדיקלית אז, רדיקלית עכשיו” כהמשגה של המסורת ככוח מתמיד להתחדשות רעיונית וחברתית" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "7 - סיכום מסע",
+        "children": [
+          { "label": "#07 חלון לעתיד: מסורת והתחדשות בהגות יהודית" }
+        ]
+      }
+    ]
+  }
+}
 </script>
 
 <script>
 (function(){
+  /* ---------- Parse ---------- */
   let data;
   try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
   catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים - נא לבדוק JSON","children":[]}}; }
 
-  const DIR = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
+  const DIR  = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
   const FLOW = (data.flow||'rtl');
 
-  const viewport = document.getElementById('viewport');
-  const stage = document.getElementById('app');
-  const scroller = document.getElementById('scroller');
+  const viewport  = document.getElementById('viewport');
+  const scroller  = document.getElementById('scroller');
+  const stage     = document.getElementById('app');
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
 
-  let mode = 'fitW', userScale = 1, lockedFit = 1, didInitialFitAll = false;
+  /* ---------- Zoom state ---------- */
+  let mode = 'fit';                 // 'fit' = הכל נכנס למסך ללא גלילה, 'free' = זום חופשי + גלילה
+  let scale = 1;
+  const SCALE_MIN_FREE = 0.05;      // במצב FREE בלבד
+  const SCALE_MAX      = 3.0;
+  const ZOOM_STEP      = 1.10;      // זום חלק – 10% לכל לחיצה
 
+  /* ---------- CSS ---------- */
   const CSS = getComputedStyle(document.documentElement);
-  const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
-  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36;
-  const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))    || 40;
-  const GAP_BETWEEN_MODS_D2 = parseFloat(CSS.getPropertyValue('--gap-between-mods-d2')) || 20;
-  const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
-  const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
-  const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
-  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
-  const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
-  const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
+  const CHIP_H   = +CSS.getPropertyValue('--chip-h').replace('px','') || 48;
+  const GAP_X    = +CSS.getPropertyValue('--gap-x').replace('px','') || 36;
+  const GAP_X_D01= +CSS.getPropertyValue('--gap-x-d01').replace('px','') || GAP_X;
+  const GAP_ROOTCAT = +CSS.getPropertyValue('--gap-rootcat').replace('px','') || 22;
+  const GAP_CAT  = +CSS.getPropertyValue('--gap-cat').replace('px','')  || 22;
+  const GAP_D3   = +CSS.getPropertyValue('--gap-d3').replace('px','')   || 22;
+  const GAP_D4   = +CSS.getPropertyValue('--gap-d4').replace('px','')   || 22;
+  const GAP_ITEM = +CSS.getPropertyValue('--gap-item').replace('px','') || 6;
+  const GAP_GROUPS = +CSS.getPropertyValue('--gap-between-groups').replace('px','') || 40;
 
-  const MAP_PAD_TOP_PX    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 0;
-  const MAP_PAD_BOTTOM_PX = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 35;
-  const FIT_EDGE_PAD_PX   = parseFloat(CSS.getPropertyValue('--fit-edge-pad'))   || 24;
-  const FIT_SAFE_PX       = parseFloat(CSS.getPropertyValue('--fit-safe'))       || 0;
+  const PAD_TOP    = +CSS.getPropertyValue('--map-pad-top').replace('px','')    || 0;
+  const PAD_BOTTOM = +CSS.getPropertyValue('--map-pad-bottom').replace('px','') || 0;
+  const FIT_MARGIN = +CSS.getPropertyValue('--fit-margin').replace('px','')     || 24;
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
-  function build(raw, depth=0, parent=null, idxInParent=0){
-    const defaultCollapsed = depth === 0 ? false : true;
+  /* ---------- Build tree ---------- */
+  function build(raw, depth=0, parent=null, idx=0){
     const node = {
-      label: raw.label, depth, parent,
-      collapsed: (typeof raw.collapsed==='boolean' ? raw.collapsed : defaultCollapsed),
-      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0,
-      children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null),
-      idx: idxInParent
+      label: raw.label, depth, parent, idx,
+      collapsed: (typeof raw.collapsed==='boolean') ? raw.collapsed : (depth!==0),
+      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2),
+      _subH:0, children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null)
     };
     (raw.children||[]).forEach((ch,i)=> node.children.push(build(ch, depth+1, node, i)));
     return node;
   }
   const root = build(data.root, 0, null);
 
+  /* ---------- DOM chips ---------- */
   function ensureChip(node){
     if(node.el) return;
-    const el = document.createElement('div'); el.className = 'chip';
+    const el = document.createElement('div'); el.className='chip';
     el.dataset.kind = node.depth===0 ? 'root' : (node.children.length? 'cat':'leaf');
     const label = document.createElement('span'); label.className='label'; label.textContent=node.label; el.appendChild(label);
     if(node.children.length){
       const t = document.createElement('button');
-      t.className = 'toggle'; t.setAttribute('aria-label','פתח/סגור'); t.type='button';
+      t.className='toggle'; t.type='button'; t.setAttribute('aria-label','פתח/סגור');
       t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
       el.appendChild(t);
       el.setAttribute('aria-expanded', String(!node.collapsed));
-      t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
-      el.addEventListener('click', ev => { if (ev.target.closest('.toggle')) return; handleToggle(node); });
+      t.addEventListener('click', ev=>{ ev.stopPropagation(); handleToggle(node); });
+      el.addEventListener('click', ev=>{ if (ev.target.closest('.toggle')) return; handleToggle(node); });
       el.setAttribute('tabindex','0'); el.setAttribute('role','button');
-      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); handleToggle(node); } });
+      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); handleToggle(node);} });
     }
     const base = DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4];
     el.style.setProperty('--chip-bg', base);
@@ -310,21 +377,21 @@
   }
   (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
 
+  /* ---------- Metrics ---------- */
   function measure(node){
     node.el.style.left = '-10000px';
-    node.el.style.top = '-10000px';
-    const natural = Math.max(0, node.el.offsetWidth);
-    node.naturalWidth = natural;
-    node.width = natural;
+    node.el.style.top  = '-10000px';
+    const w = Math.max(0, node.el.offsetWidth);  // רוחב הטקסט המלא
+    node.width = node.naturalWidth = w;
     node.children.forEach(measure);
   }
 
-  function gapForDepth(depth){
-    if(depth>=4) return GAP_D4;
-    if(depth===3) return GAP_D3;
-    if(depth===2) return GAP_CAT;
-    if(depth===1) return GAP_ROOTCAT;
-    return GAP_Y;
+  function gapForDepth(d){
+    if(d>=4) return GAP_D4;
+    if(d===3) return GAP_D3;
+    if(d===2) return GAP_CAT;
+    if(d===1) return GAP_ROOTCAT;
+    return GAP_CAT;
   }
 
   function subHeight(node){
@@ -334,7 +401,7 @@
       subHeight(c);
       total += c._subH;
       if(i>0){ total += (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth); }
-      if(node.depth===0 && i<node.children.length-1){ total += GAP_BETWEEN_MODS_D2; }
+      if(node.depth===0 && i<node.children.length-1){ total += GAP_GROUPS; }
     });
     node._subH = Math.max(node.height, total); return node._subH;
   }
@@ -347,16 +414,16 @@
     node.y = top + node._subH/2;
     if(!(node.collapsed) && node.children.length){
       let cursor = top;
-      node.children.forEach((c,idx)=>{
+      node.children.forEach((c,i)=>{
         position(c, depth+1, cursor);
         cursor += c._subH + gapForDepth(c.depth);
-        if(node.depth===0 && idx < node.children.length-1){ cursor += GAP_BETWEEN_MODS_D2; }
+        if(node.depth===0 && i<node.children.length-1){ cursor += GAP_GROUPS; }
       });
     }
   }
 
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
-  function computeBounds(nodes){
+  function bounds(nodes){
     let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
     nodes.forEach(n=>{
       const left  = (FLOW==='rtl' ? n.x - n.width : n.x);
@@ -366,63 +433,56 @@
       minY = Math.min(minY, n.y - n.height/2);
       maxY = Math.max(maxY, n.y + n.height/2);
     });
-    return { w:(maxX-minX), h:(maxY-minY), minX, maxX };
+    return { w:(maxX-minX), h:(maxY-minY), minX, maxX, minY, maxY };
   }
 
-  let lastH = 0, offsetX = 0, stageW = 0;
-  let lastContentW = 0;
-
-  function scrollbarWidth(el){
-    const w = el.offsetWidth - el.clientWidth;
-    return w > 0 ? w : 0; // ב-macOS זה 0 (סקְרוֹלבר חופף)
-  }
+  /* ---------- Layout ---------- */
+  let contentH = 0, contentW = 0, offsetX = 0, stageW = 0;
 
   function layout(){
     measure(root);
     subHeight(root); position(root,0,0);
-    let nodesTmp=[]; collectVisible(root, nodesTmp);
 
+    let vis=[]; collectVisible(root, vis);
+
+    /* עוגני עמודות לפי רוחב מקס' בכל עומק */
     const depthMaxW = new Map();
-    nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140));});
-
+    vis.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140)); });
     DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
-    let acc=0; const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
+    let acc=0; const maxDepthVis = vis.reduce((m,n)=>Math.max(m,n.depth),0);
     for(let d=1; d<=maxDepthVis+1; d++){
       const addGap = (d===1 ? GAP_X_D01 : GAP_X);
       acc += (depthMaxW.get(d-1)||140) + addGap;
       DEPTH_ANCHORS.set(d, (FLOW==='rtl' ? -acc : acc));
     }
 
+    /* מיקום סופי + גבולות */
     subHeight(root); position(root, 0, 0);
-    const nodes=[]; collectVisible(root, nodes);
-    const { w, h, minX } = computeBounds(nodes);
+    vis=[]; collectVisible(root, vis);
+    const { w, h, minX } = bounds(vis);
+    contentW = w; contentH = h;
 
-    const vpW = viewport.getBoundingClientRect().width;
-    const sbw = scrollbarWidth(viewport);
-    const PAD_SCREEN = FIT_EDGE_PAD_PX + FIT_SAFE_PX;   /* הכול בצדדים */
+    /* התאמה למסך: בלי הגבלת מינימום – אם צריך 7% גם זה יתבצע */
+    const vpW = viewport.clientWidth;
+    const vpH = viewport.clientHeight || window.innerHeight;
+    const innerW = Math.max(1, vpW - 2*FIT_MARGIN);
+    const innerH = Math.max(1, vpH - PAD_TOP - PAD_BOTTOM);
+    const sFitW = innerW / Math.max(1, w);
+    const sFitH = innerH / Math.max(1, h);
+    const sFit  = Math.min(sFitW, sFitH);         // בלי clamp תחתון
 
-    /* סקייל שמתחשב בשוליים + סקרול אנכי */
-    const sFit = Math.min(1.0, (vpW - sbw - PAD_SCREEN*2) / Math.max(1, w));
+    if (mode === 'fit') { scale = Math.min(1, sFit); }
 
-    if (!didInitialFitAll){ lockedFit = Math.max(0.2, sFit); didInitialFitAll = true; }
-    else { lockedFit = Math.max(0.2, sFit); }
-
-    if(mode==='fitW'){
-      const PADunits = PAD_SCREEN / lockedFit; /* ממירים פיקסל-מסך ליחידות מפה */
-      offsetX = -minX + PADunits;
-      stageW  = w + PADunits*2;
-    } else {
-      const sNow = Math.max(userScale, 0.0001);
-      const desiredPad = Math.max(40, (viewport.clientWidth/sNow - w)/2);
-      offsetX = -minX + desiredPad;
-      stageW  = w + desiredPad*2;
-    }
+    /* אופסט ימני/שמאלי ביחידות מפה, כדי לשמור רווח מהקצה */
+    const padUnits = FIT_MARGIN / scale;
+    offsetX = -minX + padUnits;
+    stageW  = w + padUnits*2;
 
     stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
-    lastH = h;
 
-    nodes.forEach(n=>{
+    /* מיקום קפסולות */
+    vis.forEach(n=>{
       const top = n.y - n.height/2;
       const rightUnits = offsetX + n.x;
       const leftUnits  = (FLOW==='rtl') ? (rightUnits - n.width) : rightUnits;
@@ -431,6 +491,7 @@
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
+    /* קווים */
     edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const PAD_PARENT=6, PAD_CHILD=0;
@@ -452,11 +513,47 @@
     stage.style.opacity='1';
   }
 
+  /* ---------- Zoom & scroll ---------- */
+  function applyZoom(){
+    const pct = document.getElementById('zoomPct');
+    if(pct) pct.textContent = Math.round(scale*100) + "%";
+    stage.style.transform = `scale(${scale})`;
+
+    const scaledW = Math.ceil(stageW * scale);
+    const scaledH = Math.ceil(contentH * scale) + PAD_TOP;
+
+    if (mode === 'fit'){
+      /* אין גלילה – המפה נכנסת למסך */
+      scroller.style.width  = viewport.clientWidth + 'px';
+      scroller.style.height = viewport.clientHeight + 'px';
+      viewport.style.overflowX = 'hidden';
+      viewport.style.overflowY = 'hidden';
+      viewport.scrollLeft = 0; viewport.scrollTop = 0;
+    } else {
+      scroller.style.width  = Math.max(viewport.clientWidth,  scaledW + 2) + 'px';
+      scroller.style.height = Math.max(viewport.clientHeight, scaledH + PAD_BOTTOM) + 'px';
+      const needX = (scroller.offsetWidth  - viewport.clientWidth)  > 2;
+      const needY = (scroller.offsetHeight - viewport.clientHeight) > 2;
+      viewport.style.overflowX = needX ? 'auto' : 'hidden';
+      viewport.style.overflowY = needY ? 'auto' : 'hidden';
+    }
+  }
+
+  function fitNow(){ mode='fit'; layout(); }
+  function clampFree(v){ return Math.max(SCALE_MIN_FREE, Math.min(SCALE_MAX, v)); }
+  function zoomStep(mult){
+    /* זום רציף מהסקייל הנוכחי (גם אם היינו ב-FIT) */
+    mode='free';
+    scale = clampFree(scale * mult);
+    applyZoom();
+  }
+
+  /* ---------- Toggle ---------- */
   function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
   function animateClose(node, done){
     const list=[]; function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
     node.children.forEach(collectDesc);
-    const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
+    const dur = parseFloat(CSS.getPropertyValue('--anim-dur'))*1000+20;
     list.forEach(n=>{
       if(n.el){ n.el.classList.add('fade-exit'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur); }
     });
@@ -468,91 +565,63 @@
     else { if(n.el) n.el.setAttribute('aria-expanded','false'); animateClose(n, ()=>{ collapseDeep(n); layout(); }); }
   }
 
-  function applyZoom(){
-    const oldW = lastContentW || scroller.offsetWidth || 1;
-    const oldCenterRatio = (viewport.scrollLeft + viewport.clientWidth/2) / oldW;
+  /* ---------- Drag-to-pan (במצב FREE בלבד) ---------- */
+  let isDown=false, isPanning=false, moved=0, startX=0, startY=0, startSL=0, startST=0, pid=null;
+  const START_PX = 6;
 
-    const s = (mode==='fitW') ? lockedFit : userScale;
-    const pct = document.getElementById('zoomPct'); if(pct) pct.textContent = Math.round(s*100)+"%";
-    stage.style.transform = `scale(${s})`;
-
-    const scaledW = Math.ceil(stageW * s);
-    const scaledH = Math.ceil(lastH * s) + MAP_PAD_TOP_PX;
-
-    /* +2 כדי למנוע עיגול שיחתוך פיקסל בקצה הימני */
-    scroller.style.width  = Math.max(viewport.clientWidth, scaledW + 2) + 'px';
-    scroller.style.height = scaledH + 'px';
-
-    const tol = 2;
-    let needX = (scaledW - viewport.clientWidth) > tol && (mode!=='fitW');
-    let needY = (scaledH - (viewport.clientHeight - MAP_PAD_BOTTOM_PX)) > tol;
-    if(mode==='fitW'){ needX = false; }
-
-    viewport.style.overflowX = needX ? 'auto' : 'hidden';
-    viewport.style.overflowY = needY ? 'auto' : 'hidden';
-
-    const newW = Math.max(viewport.clientWidth, scaledW + 2);
-    const newCenterLeft = Math.max(0, Math.round(newW * oldCenterRatio - viewport.clientWidth/2));
-    viewport.scrollLeft = (mode==='fitW') ? 0 : newCenterLeft;
-
-    lastContentW = newW;
-    viewport.style.cursor = (needX || needY) ? 'grab' : 'auto';
+  function onDown(e){
+    if(mode==='fit' || e.button!==0) return;
+    isDown=true; isPanning=false; moved=0; pid=e.pointerId;
+    startX=e.clientX; startY=e.clientY; startSL=viewport.scrollLeft; startST=viewport.scrollTop;
   }
-
-  /* Pan (גרירה) */
-  let isPanning = false, dragStarted = false, panStartX = 0, panStartY = 0, startSL = 0, startST = 0, activePointerId = null;
-  function onPointerDown(e){
-    if(e.button !== 0) return;
-    isPanning = true; dragStarted = false; activePointerId = e.pointerId;
-    panStartX = e.clientX; panStartY = e.clientY;
-    startSL = viewport.scrollLeft; startST = viewport.scrollTop;
-  }
-  function onPointerMove(e){
-    if(!isPanning || e.pointerId !== activePointerId) return;
-    const dx = e.clientX - panStartX, dy = e.clientY - panStartY;
-    if(!dragStarted){
-      if(Math.abs(dx) + Math.abs(dy) > 3){
-        dragStarted = true;
-        try{ viewport.setPointerCapture(activePointerId); }catch(_){}
-        viewport.style.cursor = 'grabbing';
-      } else return;
+  function onMove(e){
+    if(mode==='fit' || !isDown || e.pointerId!==pid) return;
+    const dx=e.clientX-startX, dy=e.clientY-startY;
+    moved = Math.max(moved, Math.hypot(dx,dy));
+    if(!isPanning && moved>=START_PX){
+      isPanning=true; viewport.classList.add('panning'); viewport.setPointerCapture?.(pid);
     }
-    viewport.scrollLeft = startSL - dx; /* LTR מנורמל */
-    viewport.scrollTop  = startST  - dy;
+    if(isPanning){ e.preventDefault(); viewport.scrollLeft=startSL-dx; viewport.scrollTop=startST-dy; }
   }
-  function onPointerUp(e){
-    if(e.pointerId !== activePointerId) return;
-    if(dragStarted){ try{ viewport.releasePointerCapture(activePointerId); }catch(_){ } e.preventDefault(); }
-    isPanning = false; dragStarted = false; activePointerId = null;
-    viewport.style.cursor = (viewport.style.overflowX==='auto' || viewport.style.overflowY==='auto') ? 'grab' : 'auto';
+  function onUp(e){
+    if(mode==='fit' || e.pointerId!==pid) return;
+    if(isPanning){ viewport.classList.remove('panning'); try{ viewport.releasePointerCapture?.(pid);}catch(_){ } }
+    isDown=false; isPanning=false; pid=null; moved=0;
   }
-  viewport.addEventListener('pointerdown', onPointerDown);
-  viewport.addEventListener('pointermove', onPointerMove);
-  viewport.addEventListener('pointerup', onPointerUp);
-  viewport.addEventListener('pointercancel', onPointerUp);
-  viewport.addEventListener('pointerleave', onPointerUp);
+  viewport.addEventListener('pointerdown', onDown, {passive:true});
+  viewport.addEventListener('pointermove', onMove, {passive:false});
+  viewport.addEventListener('pointerup', onUp, {passive:true});
+  viewport.addEventListener('pointercancel', onUp, {passive:true});
+  viewport.addEventListener('pointerleave', (e)=>{ if(isDown) onUp(e); }, {passive:true});
 
-  /* גלגול אופקי/אנכי בעכבר/טראקפד (Shift לגלילה אופקית בכל מקרה) */
+  /* גלילה אופקית בעכבר/טראקפד במצב FREE */
   viewport.addEventListener('wheel', (e)=>{
-    if (viewport.style.overflowX !== 'auto' && viewport.style.overflowY !== 'auto') return;
+    if (mode==='fit') return;
     if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)){
-      e.preventDefault();
-      viewport.scrollLeft += (e.deltaX || e.deltaY);
+      e.preventDefault(); viewport.scrollLeft += (e.deltaX || e.deltaY);
     }
   }, { passive:false });
 
-  document.getElementById('zoomIn').addEventListener('click', ()=>{ mode='free'; userScale = Math.min((userScale||lockedFit) + 0.10, 3); applyZoom(); });
-  document.getElementById('zoomOut').addEventListener('click', ()=>{ mode='free'; userScale = Math.max((userScale||lockedFit) - 0.10, 0.2); applyZoom(); });
-  document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
-  document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; layout(); });
+  /* ---------- Controls ---------- */
+  document.getElementById('fitBtn').addEventListener('click', fitNow);
+  document.getElementById('zoomIn').addEventListener('click', ()=> zoomStep(ZOOM_STEP));
+  document.getElementById('zoomOut').addEventListener('click', ()=> zoomStep(1/ZOOM_STEP));
+  document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; scale=1; applyZoom(); });
 
-  document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
-  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); layout(); });
+  document.getElementById('expandAll').addEventListener('click', ()=>{
+    (function open(n){ n.collapsed=false; n.children.forEach(open); })(root);
+    fitNow();                       // נשאר ב-FIT כך שהכול נכנס למסך ללא גלילה
+  });
+  document.getElementById('collapseAll').addEventListener('click', ()=>{
+    (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root);
+    fitNow();
+  });
 
+  /* ---------- Size & init ---------- */
   function sizeViewport(){
     const rect = viewport.getBoundingClientRect();
     const avail = window.innerHeight - rect.top - 16;
-    viewport.style.height = Math.max(320, Math.floor(avail)) + 'px';
+    viewport.style.height = Math.max(360, Math.floor(avail)) + 'px';
   }
   sizeViewport();
   layout();
