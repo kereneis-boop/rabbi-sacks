@@ -12,7 +12,7 @@
     --map-pad-top: 32px;
     --map-pad-bottom: 40px;
     --fit-margin: 24;              /* שוליים ב-FIT מכל צד (פיקסלים) */
-    --root-gutter: 20px;           /* מרווח מינ' מהשורש לימין */
+    --root-gutter: 20px;           /* מרווח מינ' מהשורש לימין (במצב FREE) */
 
     /* גיאומטריה של המפה */
     --chip-h:48px;
@@ -66,17 +66,16 @@
   /* במה + מרכוז */
   .viewport{
     position:relative; width:100%;
-    overflow:hidden;                 /* ב-FIT אין גלילה, ב-FREE תופעל גלילה */
+    overflow:hidden;                 /* ב-FIT אין גלילה, ב-FREE יש גלילה */
     touch-action:none; cursor:grab;
-    scrollbar-gutter:stable;         /* לא מוסיף גטר כפול */
+    scrollbar-gutter:stable;
     direction:ltr;                   /* נרמול scrollLeft */
   }
   .viewport.panning{ cursor:grabbing; }
 
   .scroller{
-    /* מרכז אופקי אמיתי – גם כשיש מקום עודף */
     position:relative;
-    display:flex; justify-content:center; align-items:flex-start;
+    display:flex; justify-content:center; align-items:flex-start; /* מרכז אופקי */
     padding:0;                       /* נגדיר דינאמי ב-JS */
     min-width:100%;
   }
@@ -91,7 +90,7 @@
   .chips{ position:absolute; inset:0; z-index:1; direction:rtl; }
   svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
 
-  /* קפסולות – לא נחתכות לעולם */
+  /* קפסולות – לא נחתכות */
   .chip{
     position:absolute; display:inline-flex; align-items:center;
     height:var(--chip-h); padding:0 16px; border-radius:var(--r);
@@ -144,7 +143,7 @@
   </div>
 </div>
 
-<!-- === DATA (אותו תוכן כמו בהודעה שלך) === -->
+<!-- === DATA === -->
 <script id="mindmap-data" type="application/json">
 {
   "dir": "rtl",
@@ -413,7 +412,7 @@
     const vpW = viewport.clientWidth;
     const vpH = viewport.clientHeight || window.innerHeight;
 
-    const innerW = Math.max(1, vpW - 2*FIT_MARGIN - ROOT_GUTTER);
+    const innerW = Math.max(1, vpW - 2*FIT_MARGIN);          /* ב-FIT – סימטרי */
     const innerH = Math.max(1, vpH - PAD_TOP - PAD_BOTTOM);
     const sFitW = innerW / Math.max(1, w);
     const sFitH = innerH / Math.max(1, h);
@@ -425,7 +424,7 @@
     const unit = Math.max(scale, 0.0001);
     if (mode === 'fit'){
       const padL = FIT_MARGIN / unit;
-      const padR = (FIT_MARGIN + ROOT_GUTTER) / unit;  /* יותר מימין */
+      const padR = FIT_MARGIN / unit;          /* סימטרי ב-FIT – כדי לא "למשוך" לימין */
       offsetX = -minX + padL;
       stageW  = w + padL + padR;
     } else {
@@ -469,13 +468,13 @@
     stage.style.opacity='1';
   }
 
-  /* ---------- Zoom & scroll (עם מרכוז אמיתי) ---------- */
+  /* ---------- Zoom & scroll (מרכוז אמיתי) ---------- */
   let lastScaledW = 0, lastScaledH = 0;
 
   function centerViewportOnContent(scaledW, scaledH, padLeft, padRight, padTop, padBottom){
     const vpW = viewport.clientWidth, vpH = viewport.clientHeight;
 
-    /* scroller – תמיד מספיק גדול כדי להכיל הכל, אך שומר מרכוז */
+    /* scroller – תמיד מספיק גדול כדי להכיל הכל, שומר מרכוז */
     const paddedContentW = padLeft + scaledW + padRight;
     const paddedContentH = padTop  + scaledH + padBottom;
 
@@ -486,7 +485,6 @@
     scroller.style.width   = scW + 'px';
     scroller.style.height  = scH + 'px';
 
-    /* כמה "פדינג גמיש" נוצר עקב center flex */
     const flexLeft  = Math.max(0, (scW - paddedContentW)/2);
     const flexTop   = Math.max(0, (scH - paddedContentH)/2);
 
@@ -503,7 +501,6 @@
       cyRatio = Math.min(Math.max(cyRatio, 0), 1);
     }
 
-    /* יעד גלילה חדש – מרכז המפה, ממורכז גם עם flex-pad */
     const wantLeft = Math.round(flexLeft + padLeft + scaledW*cxRatio - vpW/2);
     const wantTop  = Math.round(flexTop  + padTop  + scaledH*cyRatio - vpH/2);
 
@@ -530,21 +527,21 @@
     /* פדינג בפועל */
     let padLeft, padRight, padTop, padBottom;
     if(mode==='fit'){
+      /* FIT – סימטרי לחלוטין כדי שלא "יידבק" לימין */
       padLeft  = FIT_MARGIN;
-      padRight = FIT_MARGIN + ROOT_GUTTER; /* שומר 20px מינ' לימין */
+      padRight = FIT_MARGIN;
       padTop   = PAD_TOP;
       padBottom= PAD_BOTTOM;
     } else {
-      /* ב-FREE נשמור שוליים סימטריים + עדיין נוכל להבטיח 20px מימין */
+      /* FREE – שוליים סימטריים גדולים + מבטיחים מרווח ימני מינימלי */
       const vpW = viewport.clientWidth, vpH = viewport.clientHeight;
       const side = Math.max(40, Math.floor((vpW - scaledW)/2));
       padLeft  = Math.max(20, side);
-      padRight = Math.max(20 + ROOT_GUTTER, side);
+      padRight = Math.max(20 + ROOT_GUTTER, side);  /* שומר ≥20px לימין */
       padTop   = Math.max(24, Math.floor((vpH - scaledH)/2));
       padBottom= 32;
     }
 
-    /* חשוב: המרכוז חייב לקרות אחרי שהדפדפן מדד מידות חדשות */
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       centerViewportOnContent(scaledW, scaledH, padLeft, padRight, padTop, padBottom);
     }));
@@ -575,28 +572,39 @@
                 : (n.el.setAttribute('aria-expanded','false'), animateClose(n, ()=>{ collapseDeep(n); layout(); }));
   }
 
-  /* ---------- Drag-to-pan (FREE בלבד) ---------- */
-  let isDown=false, isPanning=false, moved=0, startX=0, startY=0, startSL=0, startST=0, pid=null;
+  /* ---------- Drag-to-pan ---------- */
+  let isDown=false, isPanning=false, moved=0, startX=0, startY=0, startSL=0, startST=0, pid=null, wasFitAtDown=false;
   const START_PX = 6;
 
   function onDown(e){
-    if(mode==='fit' || e.button!==0) return;
+    if(e.button!==0) return;
     isDown=true; isPanning=false; moved=0; pid=e.pointerId;
+    wasFitAtDown = (mode==='fit');            /* מאפשר “שבירת FIT” בגרירה */
     startX=e.clientX; startY=e.clientY; startSL=viewport.scrollLeft; startST=viewport.scrollTop;
   }
   function onMove(e){
-    if(mode==='fit' || !isDown || e.pointerId!==pid) return;
+    if(!isDown || e.pointerId!==pid) return;
     const dx=e.clientX-startX, dy=e.clientY-startY;
     moved = Math.max(moved, Math.hypot(dx,dy));
+
+    /* אם מתחילים לגרור כשהיינו ב-FIT – עוברים אוטומטית ל-FREE באותו זום */
+    if(wasFitAtDown && moved>=START_PX && mode==='fit'){
+      mode='free';
+      applyZoom();                             /* מחשב פדינגים/גלילה ל-FREE */
+      /* מאפס נקודת התחלה לגרירה חלקה */
+      startX=e.clientX; startY=e.clientY; startSL=viewport.scrollLeft; startST=viewport.scrollTop;
+    }
+
+    if(mode!=='free') return;                  /* ב-FIT אין גרירה עד "שבירה" */
     if(!isPanning && moved>=START_PX){
       isPanning=true; viewport.classList.add('panning'); viewport.setPointerCapture?.(pid);
     }
     if(isPanning){ e.preventDefault(); viewport.scrollLeft=startSL-dx; viewport.scrollTop=startST-dy; }
   }
   function onUp(e){
-    if(mode==='fit' || e.pointerId!==pid) return;
+    if(e.pointerId!==pid) return;
     if(isPanning){ viewport.classList.remove('panning'); try{ viewport.releasePointerCapture?.(pid);}catch(_){ } }
-    isDown=false; isPanning=false; pid=null; moved=0;
+    isDown=false; isPanning=false; pid=null; moved=0; wasFitAtDown=false;
   }
   viewport.addEventListener('pointerdown', onDown, {passive:true});
   viewport.addEventListener('pointermove', onMove, {passive:false});
@@ -606,7 +614,7 @@
 
   /* גלילת עכבר אופקית/אנכית (FREE) */
   viewport.addEventListener('wheel', (e)=>{
-    if (mode==='fit') return;
+    if (mode!=='free') return;
     if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)){
       e.preventDefault(); viewport.scrollLeft += (e.deltaX || e.deltaY);
     }
