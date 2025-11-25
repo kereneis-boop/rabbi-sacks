@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Rabbi Sacks – A Window into Jewish Thought — Mind-Map</title>
+
+<style>
+  /* --- Custom font from OpenDrive --- */
+  @font-face {
+    font-family: 'Kav16';
+    src: url('https://od.lk/s/MzVfNjQ4MzIyMTJf/Kav16-Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  :root{
+    /* Spacing & layout */
+    --zoombar-gap: 36px;
+    --map-pad-top: 32px;
+    --map-pad-bottom: 40px;
+    --fit-margin: 24;              /* margin (px) on each side in FIT mode */
+    --root-gutter: 20px;           /* min margin from root in FREE mode */
+
+    /* Map geometry */
+    --chip-h:48px;
+    --gap-x:36px;
+    --gap-x-d01:100px;
+    --gap-rootcat:22px;
+    --gap-cat:22px;
+    --gap-d3:22px;
+    --gap-d4:22px;
+    --gap-item:6px;
+    --gap-between-groups:40px;
+
+    /* Style */
+    --font:'Kav16', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --bg:#ffffff; --ink:#0f172a;
+    --edge:#C5CBD8; --toggle:#fe0100;
+    --shadow:0 8px 22px rgba(0,0,0,.10);
+    --r:9999px;
+
+    --anim-dur:.55s;
+    --anim-ease:ease-in-out;
+  }
+
+  *{box-sizing:border-box}
+  html, body, button, .chip, .zoombar, .zoombar button, .pct, .label {
+    font-family: var(--font) !important;
+  }
+  html,body{min-height:100%; overflow-x:hidden}
+  body{margin:0;background:var(--bg);color:var(--ink);}
+  .wrap{padding:12px; width:100%; margin:0 auto; overflow:visible}
+
+  /* Zoom / control bar */
+  .zoombar{
+    position:sticky; top:8px; inset-inline:0; z-index:3;
+    display:flex; justify-content:center; align-items:center; gap:6px;
+    background:rgba(255,255,255,.86); backdrop-filter:saturate(180%) blur(10px);
+    padding:10px 12px; margin:0 auto var(--zoombar-gap);
+    width:max-content; border-radius:14px;
+    border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
+  }
+  .zoombar button{
+    border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer;
+    background:linear-gradient(180deg,#ffffff,#f7f7f9); box-shadow:0 4px 12px rgba(0,0,0,.08);
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease; touch-action:manipulation;
+  }
+  .zoombar button:hover{box-shadow:0 8px 18px rgba(0,0,0,.12)}
+  .zoombar button:active{transform:translateY(1px)}
+  .zoombar .pct{
+    min-width:68px; height:36px; display:inline-flex; align-items:center; justify-content:center;
+    border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08)
+  }
+  #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
+  #fitBtn{background:linear-gradient(180deg,#fafafa,#eeeeff);}
+
+  /* Viewport + centering */
+  .viewport{
+    position:relative; width:100%;
+    overflow:hidden;
+    touch-action:none; cursor:grab;
+    scrollbar-gutter:stable;
+    direction:ltr;
+  }
+  .viewport.panning{ cursor:grabbing; }
+
+  .scroller{
+    position:relative;
+    display:flex; justify-content:center; align-items:flex-start;
+    padding:0;
+    min-width:100%;
+  }
+
+  .stage{
+    position:relative;
+    min-height:380px; min-width:0;
+    transform-origin: top center;
+    opacity:0;
+  }
+
+  .chips{
+    position:absolute; inset:0; z-index:1;
+    direction:ltr;
+    text-align:left;
+  }
+  svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
+
+  /* Capsules – chips */
+  .chip{
+    position:absolute; display:inline-flex; align-items:center;
+    height:var(--chip-h); padding:0 16px; border-radius:var(--r);
+    line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
+    direction:ltr; text-align:left; font-weight:700; gap:14px;
+    background: var(--chip-bg, #ffffff); color:#0f172a; cursor:pointer;
+
+    overflow:visible !important; text-overflow:clip !important;
+    max-width:none !important; width:auto !important; min-width:max-content;
+  }
+  .chip[data-kind="root"]{font-weight:800}
+  .label{
+    pointer-events:none;
+    direction:ltr;
+    text-align:left;
+    white-space:nowrap !ית;
+    overflow:visible !important;
+  }
+
+  .chip .toggle{margin-inline-start:auto; flex:0 0 auto}
+  .toggle{
+    position:relative; width:28px; height:28px; border:0; border-radius:50%;
+    background:var(--toggle); cursor:pointer
+  }
+  .toggle .bar{
+    position:absolute; left:50%; top:50%; width:14px; height:2px;
+    background:#fff; border-radius:2px; transform:translate(-50%,-50%);
+    transition:opacity var(--anim-dur) var(--anim-ease)
+  }
+  .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg)}
+  .chip[aria-expanded="true"] .toggle .bar.v{opacity:0}
+
+  .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
+
+  .fade-enter{ opacity:0.001 }
+  .fade-enter.fade-active{ opacity:1; transition: opacity var(--anim-dur) var(--anim-ease) }
+  .fade-exit{ opacity:1 }
+  .fade-exit.fade-active{ opacity:0; transition: opacity var(--anim-dur) var(--anim-ease) }
+
+  @media (prefers-reduced-motion: reduce){
+    .fade-enter.fade-active,.fade-exit.fade-active{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="zoombar" aria-label="Zoom controls">
+    <button id="fitBtn" title="Fit to screen">↔︎ Fit</button>
+    <button id="zoomOut" title="Zoom out">−</button>
+    <button id="zoomPct" class="pct" title="Current zoom">100%</button>
+    <button id="zoomIn" title="Zoom in">+</button>
+    <button id="expandAll" title="Expand all">Expand all</button>
+    <button id="collapseAll" title="Collapse all">Collapse all</button>
+  </div>
+
+  <div id="viewport" class="viewport">
+    <div id="scroller" class="scroller">
+      <div id="app" class="stage">
+        <svg id="edges" aria-hidden="true"></svg>
+        <div id="chips" class="chips"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === DATA (EN / LTR) === -->
+<script id="mindmap-data" type="application/json">
+{
+  "dir": "ltr",
+  "flow": "ltr",
+  "root": {
+    "label": "Rabbi Sacks – A Window into Jewish Thought",
+    "children": [
+      {
+        "label": "0 – Welcome",
+        "children": [
+          { "label": "# Introduction" },
+          { "label": "1. Why Rabbi Sacks, why now? 2. Course map 3. Syllabus" },
+          { "label": "How to successfully complete the course?" },
+          { "label": "Values, identity and Jewish education in the 21st century" }
+        ]
+      },
+      {
+        "label": "1 – Biography",
+        "children": [
+          { "label": "#01 Biographical foundations in the thought of Rabbi Sacks" },
+          { "label": "Gila Sacks – a personal look at Rabbi Sacks' development as a philosopher and Jewish thinker" },
+          { "label": "Rabbi Dayan Binstock – from the local sermon to an intellectual legacy" },
+          {
+            "label": "What will we learn?",
+            "children": [
+              { "label": "1. Biographical inquiry" },
+              { "label": "2. Shaping a worldview" },
+              { "label": "3. A model of leadership" },
+              { "label": "4. A renewed look at Jewish identity and leadership in the 21st century" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "2 – Philosophical foundations",
+        "children": [
+          { "label": "#02 Philosophical foundations in Jewish thought" },
+          { "label": "Prof. Hanoch Ben-Pazi – philosophical dialogues: exploring responsibility and Jewish thought" },
+          { "label": "From universal rationalism to social covenant: the Enlightenment in Rabbi Sacks' critique" },
+          { "label": "Rabbi Dr. Raphael Zarum – exploring Jewish thought and influence" },
+          { "label": "Tradition in a non-traditional age" },
+          { "label": "Rabbi Sacks: Without Fear – the future as challenge and opportunity" },
+          {
+            "label": "What will we learn?",
+            "children": [
+              { "label": "Defining Jewish philosophy, its historical and intellectual development, and the place of Rabbi Jonathan Sacks within the contemporary Jewish philosophical context" },
+              { "label": "Responsibility as an ethical framework: what Jewish philosophy offers for understanding responsibility in the modern world" },
+              { "label": "Between tradition and modernity: how to conduct a fruitful dialogue between Jewish tradition and the challenges of the post-traditional age" },
+              { "label": "The critique of the Enlightenment: how the failure of the Enlightenment project affects Jewish thought and the contemporary relevance of Jewish sources" },
+              { "label": "Jewish thought as an active tool: how Jewish thought moves from a body of historical knowledge to a contemporary tool for addressing modern dilemmas" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "3 – The interpretive method",
+        "children": [
+          { "label": "#03 The interpretive method in the thought of Rabbi Sacks" },
+          { "label": "Rabbi Dr. Michael Harris – between rabbinics and philosophy: the journey of Rabbi Sacks" },
+          { "label": "Prof. Hanoch Ben-Pazi – the principle of interpretation as a moral act in the thought of Rabbi Sacks" },
+          { "label": "Interpreting difficult biblical texts as a moral and theological challenge" },
+          { "label": "Not in God's Name" },
+          {
+            "label": "What will we learn?",
+            "children": [
+              { "label": "The principle of disciplinary synthesis: how to integrate rabbinics and philosophy in text interpretation" },
+              { "label": "The principle of responsible interpretation: how to avoid unethical readings of religious texts" },
+              { "label": "The principle of balancing fidelity and relevance: how to preserve authenticity while creating contemporary meaning" },
+              { "label": "The principle of constructive engagement with challenge: how to turn interpretive difficulties into moral resources" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "4 – From text to dialogue",
+        "children": [
+          { "label": "#04 Dialogue in a diverse, multicultural society" },
+          { "label": "Prof. Jonathan Reinhold – covenant, discourse and the state in the thought of Rabbi Sacks" },
+          { "label": "The philosophy of dialogue: from Rosenzweig to Rabbi Sacks" },
+          { "label": "Tradition in a non-traditional age" },
+          {
+            "label": "What will we learn?",
+            "children": [
+              { "label": "Dialogue between faith and society – examining a central principle in Rabbi Sacks' thought: dialogue between religious faith and a pluralist, modern society as a necessary framework for shaping shared moral and social life" },
+              { "label": "Preserving tradition in a modern age – exploring the challenge that modernity poses to religious tradition, and how Rabbi Sacks offers a model of tradition that is relevant, demanding and creative in a secular, constantly changing world" },
+              { "label": "Torah and wisdom – examining the principle of mutual enrichment between Torah as the distinctive voice of particular Jewish identity and universal wisdom" },
+              { "label": "The philosophical foundations of his thought – tracing the influence of Franz Rosenzweig and the role of dialogue and encounter in shaping Rabbi Sacks' work, alongside a critical stance toward the Enlightenment as a basis for renewed Jewish thinking in the modern age" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "5 – Modernity and society",
+        "children": [
+          { "label": "#05 Between tradition and modernity" },
+          { "label": "Future Tense" },
+          { "label": "The role of the Chief Rabbi: Jewish leadership in a multicultural society" },
+          { "label": "Lord David Wolfson – Judaism, influence and leadership in the British public sphere" },
+          { "label": "Dreams and reality" },
+          { "label": "Science and religion – conflict or complementarity?" },
+          { "label": "Prof. Arie Zaban – science, faith and sustainability" },
+          {
+            "label": "What will we learn?",
+            "children": [
+              { "label": "An in-depth understanding of how Rabbi Sacks' thought applies to science, society and leadership, with attention to the conceptual links between these domains" },
+              { "label": "Familiarity with the practical impact of his ideas on social structures, public institutions and decision-making processes in different sectors" },
+              { "label": "Developing analytical and critical thinking skills regarding the complex relations between theory and practice in Rabbi Sacks' work, distinguishing between theoretical principles and their practical applications" },
+              { "label": "Historical and contemporary understanding: assessing Rabbi Sacks' contribution to current debates on science, religion and society, and his place within the wider intellectual landscape" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "6 – Living legacy",
+        "children": [
+          { "label": "#06 The thought of Rabbi Sacks – between public memory and inspiration" },
+          { "label": "Prof. Adam Ferziger – how did Rabbi Sacks become a cultural phenomenon in Israel?" },
+          { "label": "Rabbi Daniel Epstein – from quotes on the wall to the bookshelf" },
+          { "label": "Dr. Chaim Neria – the archive as a key to understanding Rabbi Sacks' legacy" },
+          { "label": "Joanna Benarroche – modernity, public responsibility and Jewish identity in a changing reality" },
+          { "label": "Joan Greenaway – educational legacy as a basis for renewed Jewish leadership" },
+          { "label": "The educational vision of Rabbi Sacks" },
+          { "label": "Radical Then, Radical Now" },
+          { "label": "Additional viewing: Chief Rabbi Mirvis" },
+          { "label": "What defines the ongoing legacy of Rabbi Sacks?" },
+          {
+            "label": "What will we learn?",
+            "children": [
+              { "label": "Examining how Rabbi Sacks became a culturally influential figure in Israeli public discourse" },
+              { "label": "Analyzing how his ideas moved from everyday contexts into the realms of intellectual and literary discourse" },
+              { "label": "Exploring the role of the archive as a space for preserving, continuing and transmitting his legacy" },
+              { "label": "Discussing the implications of his legacy for shaping Jewish education, identity and leadership in the modern age" },
+              { "label": "Reading 'Radical Then, Radical Now' as a way of conceptualizing tradition as a constant force for intellectual and social renewal" }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "7 – Concluding the journey",
+        "children": [
+          { "label": "#07 A window onto the future: tradition and renewal in Jewish thought" }
+        ]
+      }
+    ]
+  }
+}
+</script>
+
+<script>
+(function(){
+  /* ---------- Parse ---------- */
+  let data;
+  try{
+    data = JSON.parse(document.getElementById('mindmap-data').textContent);
+  } catch(e){
+    console.error('Mindmap JSON parse error:', e);
+    data = {
+      "dir":"ltr",
+      "flow":"ltr",
+      "root":{"label":"Data error – please check JSON","children":[]}
+    };
+  }
+
+  const DIR  = (data.dir||'ltr');
+  document.documentElement.setAttribute('dir', DIR);
+  const FLOW = (data.flow||'ltr');
+
+  const viewport  = document.getElementById('viewport');
+  const scroller  = document.getElementById('scroller');
+  const stage     = document.getElementById('app');
+  const chipLayer = document.getElementById('chips');
+  const edgeLayer = document.getElementById('edges');
+
+  /* ---------- Zoom state ---------- */
+  let mode = 'fit';                 // 'fit' = all on screen, 'free' = free zoom
+  let scale = 1;
+  const SCALE_MIN_FREE = 0.05;
+  const SCALE_MAX      = 3.0;
+  const ZOOM_STEP      = 1.10;
+
+  /* recenter control */
+  let forceCenterNext = false;
+
+  /* ---------- CSS ---------- */
+  const CSS = getComputedStyle(document.documentElement);
+  const CHIP_H   = +CSS.getPropertyValue('--chip-h').replace('px','') || 48;
+  const GAP_X    = +CSS.getPropertyValue('--gap-x').replace('px','') || 36;
+  const GAP_X_D01= +CSS.getPropertyValue('--gap-x-d01').replace('px','') || GAP_X;
+  const GAP_ROOTCAT = +CSS.getPropertyValue('--gap-rootcat').replace('px','') || 22;
+  const GAP_CAT  = +CSS.getPropertyValue('--gap-cat').replace('px','')  || 22;
+  const GAP_D3   = +CSS.getPropertyValue('--gap-d3').replace('px','')   || 22;
+  const GAP_D4   = +CSS.getPropertyValue('--gap-d4').replace('px','')   || 22;
+  const GAP_ITEM = +CSS.getPropertyValue('--gap-item').replace('px','') || 6;
+  const GAP_GROUPS = +CSS.getPropertyValue('--gap-between-groups').replace('px','') || 40;
+
+  const PAD_TOP    = +CSS.getPropertyValue('--map-pad-top').replace('px','')    || 0;
+  const PAD_BOTTOM = +CSS.getPropertyValue('--map-pad-bottom').replace('px','') || 0;
+  const FIT_MARGIN = +CSS.getPropertyValue('--fit-margin').replace('px','')     || 24;
+  const ROOT_GUTTER= +CSS.getPropertyValue('--root-gutter').replace('px','')    || 20;
+
+  const DEPTH_COLORS = {
+    0:'#F8E8FF',
+    1:'#EBDCF8',
+    2:'#D4D2E6',
+    3:'#D7F6E4',
+    4:'#50E38A'
+  };
+
+  /* ---------- Build tree ---------- */
+  function build(raw, depth=0, parent=null, idx=0){
+    const node = {
+      label: raw.label,
+      depth,
+      parent,
+      idx,
+      collapsed: (typeof raw.collapsed==='boolean') ? raw.collapsed : (depth!==0),
+      x:0,y:0,width:0,height:CHIP_H, el:null,
+      id: Math.random().toString(36).slice(2),
+      _subH:0, children: [],
+      gapOverride: (typeof raw.gap==='number'? raw.gap : null)
+    };
+    (raw.children||[]).forEach((ch,i)=> node.children.push(build(ch, depth+1, node, i)));
+    return node;
+  }
+  const root = build(data.root, 0, null);
+
+  /* ---------- DOM chips ---------- */
+  function ensureChip(node){
+    if(node.el) return;
+    const el = document.createElement('div'); el.className='chip';
+    el.dataset.kind = node.depth===0 ? 'root' : (node.children.length? 'cat':'leaf');
+    const label = document.createElement('span'); label.className='label'; label.textContent=node.label;
+    el.appendChild(label);
+
+    if(node.children.length){
+      const t = document.createElement('button');
+      t.className='toggle'; t.type='button'; t.setAttribute('aria-label','Expand or collapse');
+      t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
+      el.appendChild(t);
+      el.setAttribute('aria-expanded', String(!node.collapsed));
+
+      t.addEventListener('click', ev=>{
+        ev.stopPropagation();
+        handleToggle(node);
+      });
+
+      el.addEventListener('click', ev=>{
+        if (ev.target.closest('.toggle')) return;
+        handleToggle(node);
+      });
+
+      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
+      el.addEventListener('keydown', ev=>{
+        if(ev.key==='Enter'||ev.key===' '){
+          ev.preventDefault();
+          handleToggle(node);
+        }
+      });
+    }
+
+    const base = DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4];
+    el.style.setProperty('--chip-bg', base);
+    chipLayer.appendChild(el); node.el=el;
+  }
+  (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
+
+  /* ---------- Metrics ---------- */
+  function measure(node){
+    node.el.style.left = '-10000px';
+    node.el.style.top  = '-10000px';
+    const w = Math.max(0, node.el.offsetWidth);
+    node.width = node.naturalWidth = w;
+    node.children.forEach(measure);
+  }
+
+  function gapForDepth(d){
+    if(d>=4) return GAP_D4;
+    if(d===3) return GAP_D3;
+    if(d===2) return GAP_CAT;
+    if(d===1) return GAP_ROOTCAT;
+    return GAP_CAT;
+  }
+
+  function subHeight(node){
+    if(node.collapsed || node.children.length===0){
+      node._subH = node.height;
+      return node._subH;
+    }
+    let total = 0;
+    node.children.forEach((c,i)=>{
+      subHeight(c);
+      total += c._subH;
+      if(i>0){
+        total += (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth);
+      }
+      if(node.depth===0 && i<node.children.length-1){
+        total += GAP_GROUPS;
+      }
+    });
+    node._subH = Math.max(node.height, total);
+    return node._subH;
+  }
+
+  let DEPTH_ANCHORS = new Map();
+  function xForDepth(depth){ return DEPTH_ANCHORS.get(depth) || 0; }
+
+  function position(node, depth, top){
+    node.x = xForDepth(depth);
+    node.y = top + node._subH/2;
+    if(!node.collapsed && node.children.length){
+      let cursor = top;
+      node.children.forEach((c,i)=>{
+        position(c, depth+1, cursor);
+        cursor += c._subH + gapForDepth(c.depth);
+        if(node.depth===0 && i<node.children.length-1){
+          cursor += GAP_GROUPS;
+        }
+      });
+    }
+  }
+
+  function collectVisible(n, arr){
+    arr.push(n);
+    if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr));
+  }
+
+  function bounds(nodes){
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+    nodes.forEach(n=>{
+      const left  = (FLOW==='rtl' ? n.x - n.width : n.x);
+      const right = (FLOW==='rtl' ? n.x : n.x + n.width);
+      minX = Math.min(minX, left);
+      maxX = Math.max(maxX, right);
+      minY = Math.min(minY, n.y - n.height/2);
+      maxY = Math.max(maxY, n.y + n.height/2);
+    });
+    return { w:(maxX-minX), h:(maxY-minY), minX, maxX, minY, maxY };
+  }
+
+  /* ---------- Layout ---------- */
+  let contentH = 0, contentW = 0, offsetX = 0, stageW = 0;
+
+  function layout(){
+    measure(root);
+    subHeight(root); position(root,0,0);
+
+    let vis=[]; collectVisible(root, vis);
+
+    /* max width per depth */
+    const depthMaxW = new Map();
+    vis.forEach(n=>{
+      depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140));
+    });
+
+    DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
+    let acc=0;
+    const maxDepthVis = vis.reduce((m,n)=>Math.max(m,n.depth),0);
+    for(let d=1; d<=maxDepthVis+1; d++){
+      const addGap = (d===1 ? GAP_X_D01 : GAP_X);
+      acc += (depthMaxW.get(d-1)||140) + addGap;
+      DEPTH_ANCHORS.set(d, (FLOW==='rtl' ? -acc : acc));
+    }
+
+    subHeight(root); position(root, 0, 0);
+    vis=[]; collectVisible(root, vis);
+    const { w, h, minX } = bounds(vis);
+    contentW = w; contentH = h;
+
+    const vpW = viewport.clientWidth;
+    const vpH = viewport.clientHeight || window.innerHeight;
+
+    const innerW = Math.max(1, vpW - 2*FIT_MARGIN);
+    const innerH = Math.max(1, vpH - PAD_TOP - PAD_BOTTOM);
+    const sFitW = innerW / Math.max(1, w);
+    const sFitH = innerH / Math.max(1, h);
+    const sFit  = Math.min(sFitW, sFitH);
+
+    if (mode === 'fit') {
+      scale = Math.min(1, sFit);
+    }
+
+    const unit = Math.max(scale, 0.0001);
+    if (mode === 'fit'){
+      const padL = FIT_MARGIN / unit;
+      const padR = FIT_MARGIN / unit;
+      offsetX = -minX + padL;
+      stageW  = w + padL + padR;
+    } else {
+      const desiredPad = Math.max(60, Math.floor((vpW/scale - w)/2) + 40);
+      offsetX = -minX + desiredPad;
+      stageW  = w + desiredPad*2;
+    }
+
+    stage.style.width  = Math.ceil(stageW) + 'px';
+    stage.style.height = Math.ceil(h) + 'px';
+
+    vis.forEach(n=>{
+      const top = n.y - n.height/2;
+      const leftUnits  = offsetX + n.x;
+      n.el.style.left  = leftUnits  + 'px';
+      n.el.style.top   = top + 'px';
+      if(n.children.length){
+        n.el.setAttribute('aria-expanded', String(!n.collapsed));
+      }
+    });
+
+    /* ---- CONNECTORS: from RIGHT of parent to LEFT of child (LTR) ---- */
+    edgeLayer.textContent='';
+    (function draw(n){
+      if(n.collapsed) return;
+      n.children.forEach(ch=>{
+        const PAD_PARENT = 6;
+        const PAD_CHILD  = 6;
+
+        const parentLeft   = offsetX + n.x;
+        const parentRight  = parentLeft + n.width;
+
+        const childLeft    = offsetX + ch.x;
+        const childRight   = childLeft + ch.width;
+
+        const p1x = parentRight - PAD_PARENT;   // start at right of parent
+        const p2x = childLeft + PAD_CHILD;      // end at left of child
+
+        const p1y = n.y;
+        const p2y = ch.y;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+
+        const dx  = Math.abs(p2x - p1x) * 0.45;
+        const c1x = p1x + dx;
+        const c2x = p2x - dx;
+
+        path.setAttribute('class','edge');
+        path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
+        edgeLayer.appendChild(path);
+
+        draw(ch);
+      });
+    })(root);
+
+    applyZoom();
+    stage.style.opacity='1';
+  }
+
+  /* ---------- Zoom & scroll ---------- */
+  let lastScaledW = 0, lastScaledH = 0;
+
+  function centerViewportOnContent(scaledW, scaledH, padLeft, padRight, padTop, padBottom, forceCenter){
+    const vpW = viewport.clientWidth, vpH = viewport.clientHeight;
+
+    const paddedContentW = padLeft + scaledW + padRight;
+    const paddedContentH = padTop  + scaledH + padBottom;
+
+    const scW = Math.max(vpW, Math.ceil(paddedContentW));
+    const scH = Math.max(vpH, Math.ceil(paddedContentH));
+
+    scroller.style.padding = `${padTop}px ${padRight}px ${padBottom}px ${padLeft}px`;
+    scroller.style.width   = scW + 'px';
+    scroller.style.height  = scH + 'px';
+
+    const flexLeft  = Math.max(0, (scW - paddedContentW)/2);
+    const flexTop   = Math.max(0, (scH - paddedContentH)/2);
+
+    let cxRatio = 0.5, cyRatio = 0.5;
+
+    if(!forceCenter && lastScaledW>0 && lastScaledH>0){
+      const oldScW = Math.max(vpW, lastScaledW + parseFloat(scroller.style.paddingLeft||0) + parseFloat(scroller.style.paddingRight||0));
+      const oldFlexLeft = Math.max(0, (oldScW - (lastScaledW + parseFloat(scroller.style.paddingLeft||0) + parseFloat(scroller.style.paddingRight||0)))/2);
+      const centerX = viewport.scrollLeft + vpW/2;
+      const centerY = viewport.scrollTop  + vpH/2;
+      cxRatio = (centerX - oldFlexLeft - parseFloat(scroller.style.paddingLeft||0)) / Math.max(1,lastScaledW);
+      cyRatio = (centerY - 0 - parseFloat(scroller.style.paddingTop||0))    / Math.max(1,lastScaledH);
+      cxRatio = Math.min(Math.max(cxRatio, 0), 1);
+      cyRatio = Math.min(Math.max(cyRatio, 0), 1);
+    }
+
+    const wantLeft = Math.round(flexLeft + padLeft + scaledW*cxRatio - vpW/2);
+    const wantTop  = Math.round(flexTop  + padTop  + scaledH*cyRatio - vpH/2);
+
+    const maxLeft = Math.max(0, scW - vpW);
+    const maxTop  = Math.max(0, scH - vpH);
+
+    viewport.style.overflowX = (maxLeft>0 && mode==='free') ? 'auto' : 'hidden';
+    viewport.style.overflowY = (maxTop >0 && mode==='free') ? 'auto' : 'hidden';
+
+    viewport.scrollLeft = Math.min(Math.max(0, wantLeft), maxLeft);
+    viewport.scrollTop  = Math.min(Math.max(0, wantTop ), maxTop );
+
+    lastScaledW = scaledW; lastScaledH = scaledH;
+  }
+
+  function applyZoom(){
+    const pct = document.getElementById('zoomPct');
+    if(pct) pct.textContent = Math.round(scale*100) + "%";
+    stage.style.transform = `scale(${scale})`;
+
+    const scaledW = Math.ceil(stageW * scale);
+    const scaledH = Math.ceil(contentH * scale);
+
+    let padLeft, padRight, padTop, padBottom;
+    if(mode==='fit'){
+      padLeft  = FIT_MARGIN;
+      padRight = FIT_MARGIN;
+      padTop   = PAD_TOP;
+      padBottom= PAD_BOTTOM;
+    } else {
+      const vpW = viewport.clientWidth, vpH = viewport.clientHeight;
+      const side = Math.max(40, Math.floor((vpW - scaledW)/2));
+      padLeft  = Math.max(20, side);
+      padRight = Math.max(20 + ROOT_GUTTER, side);
+      padTop   = Math.max(24, Math.floor((vpH - scaledH)/2));
+      padBottom= 32;
+    }
+
+    const force = forceCenterNext;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      centerViewportOnContent(scaledW, scaledH, padLeft, padRight, padTop, padBottom, force);
+    }));
+    forceCenterNext = false;
+  }
+
+  function fitNow(){
+    mode='fit';
+    forceCenterNext = true;
+    layout();
+  }
+
+  function clampFree(v){
+    return Math.max(SCALE_MIN_FREE, Math.min(SCALE_MAX, v));
+  }
+
+  function zoomStep(mult){
+    mode='free';
+    scale = clampFree(scale * mult);
+    applyZoom();
+  }
+
+  /* ---------- Toggle ---------- */
+  function collapseDeep(n){
+    n.collapsed = true;
+    n.children.forEach(c=>collapseDeep(c));
+  }
+
+  function animateClose(node, done){
+    const list=[];
+    function collectDesc(n){
+      if(!n || n.collapsed) return;
+      list.push(n);
+      n.children.forEach(collectDesc);
+    }
+    node.children.forEach(collectDesc);
+    const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
+    list.forEach(n=>{
+      if(n.el){
+        n.el.classList.add('fade-exit');
+        requestAnimationFrame(()=> n.el.classList.add('fade-active'));
+        setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur);
+      }
+    });
+    setTimeout(done, dur);
+  }
+
+  function handleToggle(n){
+    if(!n.children.length) return;
+    forceCenterNext = true;
+    if(n.collapsed){
+      n.collapsed=false;
+      n.el.setAttribute('aria-expanded','true');
+      layout();
+    } else {
+      n.el.setAttribute('aria-expanded','false');
+      animateClose(n, ()=>{
+        collapseDeep(n);
+        layout();
+      });
+    }
+  }
+
+  /* ---------- Drag-to-pan ---------- */
+  let isDown=false, isPanning=false, moved=0, startX=0, startY=0, startSL=0, startST=0, pid=null, wasFitAtDown=false;
+  const START_PX = 6;
+
+  function onDown(e){
+    if(e.button!==0) return;
+    isDown=true; isPanning=false; moved=0; pid=e.pointerId;
+    wasFitAtDown = (mode==='fit');
+    startX=e.clientX; startY=e.clientY;
+    startSL=viewport.scrollLeft; startST=viewport.scrollTop;
+  }
+  function onMove(e){
+    if(!isDown || e.pointerId!==pid) return;
+    const dx=e.clientX-startX, dy=e.clientY-startY;
+    moved = Math.max(moved, Math.hypot(dx,dy));
+
+    if(wasFitAtDown && moved>=START_PX && mode==='fit'){
+      mode='free';
+      applyZoom();
+      startX=e.clientX; startY=e.clientY;
+      startSL=viewport.scrollLeft; startST=viewport.scrollTop;
+    }
+
+    if(mode!=='free') return;
+    if(!isPanning && moved>=START_PX){
+      isPanning=true;
+      viewport.classList.add('panning');
+      viewport.setPointerCapture?.(pid);
+    }
+    if(isPanning){
+      e.preventDefault();
+      viewport.scrollLeft=startSL-dx;
+      viewport.scrollTop=startST-dy;
+    }
+  }
+  function onUp(e){
+    if(e.pointerId!==pid) return;
+    if(isPanning){
+      viewport.classList.remove('panning');
+      try{ viewport.releasePointerCapture?.(pid);}catch(_){}
+    }
+    isDown=false; isPanning=false; pid=null; moved=0; wasFitAtDown=false;
+  }
+  viewport.addEventListener('pointerdown', onDown, {passive:true});
+  viewport.addEventListener('pointermove', onMove, {passive:false});
+  viewport.addEventListener('pointerup', onUp, {passive:true});
+  viewport.addEventListener('pointercancel', onUp, {passive:true});
+  viewport.addEventListener('pointerleave', (e)=>{ if(isDown) onUp(e); }, {passive:true});
+
+  /* Wheel scroll in FREE mode */
+  viewport.addEventListener('wheel', (e)=>{
+    if (mode!=='free') return;
+    if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)){
+      e.preventDefault();
+      viewport.scrollLeft += (e.deltaX || e.deltaY);
+    }
+  }, { passive:false });
+
+  /* ---------- Controls ---------- */
+  document.getElementById('fitBtn').addEventListener('click', fitNow);
+  document.getElementById('zoomIn').addEventListener('click', ()=> zoomStep(ZOOM_STEP));
+  document.getElementById('zoomOut').addEventListener('click', ()=> zoomStep(1/ZOOM_STEP));
+  document.getElementById('zoomPct').addEventListener('click', ()=>{
+    mode='free';
+    scale=1;
+    applyZoom();
+  });
+
+  document.getElementById('expandAll').addEventListener('click', ()=>{
+    (function open(n){ n.collapsed=false; n.children.forEach(open); })(root);
+    forceCenterNext = true;
+    fitNow();
+  });
+  document.getElementById('collapseAll').addEventListener('click', ()=>{
+    (function close(n){
+      if(n!==root) n.collapsed=true;
+      n.children.forEach(close);
+    })(root);
+    forceCenterNext = true;
+    fitNow();
+  });
+
+  /* ---------- Size & init ---------- */
+  function sizeViewport(){
+    const rect = viewport.getBoundingClientRect();
+    const avail = window.innerHeight - rect.top - 16;
+    viewport.style.height = Math.max(360, Math.floor(avail)) + 'px';
+  }
+  sizeViewport();
+  forceCenterNext = true;
+  layout();
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(()=>{ forceCenterNext=true; layout(); });
+    document.fonts.addEventListener?.('loadingdone', ()=> { forceCenterNext=true; layout(); });
+  }
+  window.addEventListener('resize', ()=>{
+    sizeViewport();
+    layout();
+  });
+})();
+</script>
+</body>
+</html>
