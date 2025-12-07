@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Interpretation – Mind-Map (Module 3 – LTR)</title>
+
+<style>
+  /* --- Custom font from OpenDrive --- */
+  @font-face {
+    font-family: 'Kav16';
+    src: url('https://od.lk/s/MzVfNjQ4MzIyMTJf/Kav16-Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  :root{
+    /* Spacing & layout */
+    --zoombar-gap: 36px;
+    --map-pad-top: 32px;
+    --map-pad-bottom: 40px;
+    --fit-margin: 32;              /* margin (px) on each side in FIT mode */
+
+    /* Map geometry */
+    --chip-h:48px;
+    --gap-x:80px;                  /* horizontal gap between depth columns */
+    --gap-y-root:24px;             /* vertical gap between lessons (depth 1) */
+    --gap-y-child:10px;            /* vertical gap between bullets (depth 2) */
+
+    /* Style */
+    --font:'Kav16', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --bg:#ffffff; --ink:#0f172a;
+    --edge:#C5CBD8; --toggle:#fe0100;
+    --shadow:0 8px 22px rgba(0,0,0,.10);
+    --r:9999px;
+
+    --anim-dur:.45s;
+    --anim-ease:ease-in-out;
+  }
+
+  *{box-sizing:border-box}
+  html, body, button, .chip, .zoombar, .zoombar button, .pct, .label {
+    font-family: var(--font) !important;
+  }
+  html,body{min-height:100%; overflow-x:hidden}
+  body{margin:0;background:var(--bg);color:var(--ink);} 
+  .wrap{padding:12px; width:100%; margin:0 auto; overflow:visible}
+
+  /* Zoom / control bar */
+  .zoombar{
+    position:sticky; top:8px; inset-inline:0; z-index:3;
+    display:flex; justify-content:center; align-items:center; gap:6px;
+    background:rgba(255,255,255,.86); backdrop-filter:saturate(180%) blur(10px);
+    padding:10px 12px; margin:0 auto var(--zoombar-gap);
+    width:max-content; border-radius:14px;
+    border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
+  }
+  .zoombar button{
+    border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer;
+    background:linear-gradient(180deg,#ffffff,#f7f7f9); box-shadow:0 4px 12px rgba(0,0,0,.08);
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease; touch-action:manipulation;
+  }
+  .zoombar button:hover{box-shadow:0 8px 18px rgba(0,0,0,.12)}
+  .zoombar button:active{transform:translateY(1px)}
+  .zoombar .pct{
+    min-width:68px; height:36px; display:inline-flex; align-items:center; justify-content:center;
+    border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08)
+  }
+  #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
+  #fitBtn{background:linear-gradient(180deg,#fafafa,#eeeeff);}
+
+  /* Viewport */
+  .viewport{
+    position:relative; width:100%;
+    overflow:auto;
+    touch-action:none; cursor:grab;
+    scrollbar-gutter:stable;
+    direction:ltr;
+  }
+  .viewport.panning{ cursor:grabbing; }
+
+  .scroller{
+    position:relative;
+    min-width:100%;
+    padding-top:var(--map-pad-top);
+    padding-bottom:var(--map-pad-bottom);
+  }
+
+  .stage{
+    position:relative;
+    min-height:380px; min-width:0;
+    transform-origin: top center;
+    opacity:0;
+    margin:0 auto;
+  }
+
+  .chips{
+    position:absolute; inset:0; z-index:1;
+    direction:ltr;
+    text-align:left;
+  }
+  svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
+
+  /* Capsules – chips */
+  .chip{
+    position:absolute; display:inline-flex; align-items:center;
+    height:var(--chip-h); padding:0 16px; border-radius:var(--r);
+    line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
+    direction:ltr; text-align:left; font-weight:700; gap:14px;
+    background: var(--chip-bg, #ffffff); color:#0f172a; cursor:pointer;
+
+    overflow:visible !important; text-overflow:clip !important;
+    max-width:none !important; width:auto !important; min-width:max-content;
+  }
+  .chip[data-kind="root"]{font-weight:800}
+  .label{
+    pointer-events:none;
+    direction:ltr;
+    text-align:left;
+    white-space:nowrap;
+    overflow:visible !important;
+  }
+
+  .chip .toggle{margin-inline-start:auto; flex:0 0 auto}
+  .toggle{
+    position:relative; width:28px; height:28px; border:0; border-radius:50%;
+    background:var(--toggle); cursor:pointer
+  }
+  .toggle .bar{
+    position:absolute; left:50%; top:50%; width:14px; height:2px;
+    background:#fff; border-radius:2px; transform:translate(-50%,-50%);
+    transition:opacity var(--anim-dur) var(--anim-ease)
+  }
+  .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg)}
+  .chip[aria-expanded="true"] .toggle .bar.v{opacity:0}
+
+  .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
+
+  .fade-enter{ opacity:0.001 }
+  .fade-enter.fade-active{ opacity:1; transition: opacity var(--anim-dur) var(--anim-ease) }
+  .fade-exit{ opacity:1 }
+  .fade-exit.fade-active{ opacity:0; transition: opacity var(--anim-dur) var(--anim-ease) }
+
+  @media (prefers-reduced-motion: reduce){
+    .fade-enter.fade-active,.fade-exit.fade-active{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="zoombar" aria-label="Zoom controls">
+    <button id="fitBtn" title="Fit to screen">↔︎ Fit</button>
+    <button id="zoomOut" title="Zoom out">−</button>
+    <button id="zoomPct" class="pct" title="Current zoom">100%</button>
+    <button id="zoomIn" title="Zoom in">+</button>
+    <button id="expandAll" title="Expand all">Expand all</button>
+    <button id="collapseAll" title="Collapse all">Collapse all</button>
+  </div>
+
+  <div id="viewport" class="viewport">
+    <div id="scroller" class="scroller">
+      <div id="app" class="stage">
+        <svg id="edges" aria-hidden="true"></svg>
+        <div id="chips" class="chips"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === DATA (Module 3 – Interpretation / LTR) === -->
+<script id="mindmap-data" type="application/json">
+{
+  "dir": "ltr",
+  "flow": "ltr",
+  "root": {
+    "label": "3 – Interpretation",
+    "children": [
+      {
+        "label": "Lesson #01 – The Interpretive Method in the Philosophy of Rabbi Sacks",
+        "children": [
+          { "label": "The student will define the concept of interpretation in Rabbi Sacks' thought as a central axis in the encounter between faith and reason." },
+          { "label": "The student will analyze the principle that interpretation is an expression of moral responsibility and of human partnership with God." },
+          { "label": "The student will examine the idea of the 'ongoing conversation between Heaven and Earth' as a foundation for interpretive thought." },
+          { "label": "The student will discuss the tension between loyalty to tradition and critical interpretation that generates relevant meaning." },
+          { "label": "The student will identify how interpretation serves as a space of identity, responsibility, and faith in a postmodern era." }
+        ]
+      },
+      {
+        "label": "Lesson #02 – Rabbi Dr. Michael Harris: Between Rabbinate and Philosophy – Rabbi Sacks' Journey",
+        "children": [
+          { "label": "The student will examine the relationship between rabbinic identity and philosophical identity in the work of Rabbi Sacks." },
+          { "label": "The student will analyze the discourse between Torah and wisdom as a model of ongoing dialogue between faith and modern thought." },
+          { "label": "The student will explain how Rabbi Sacks' interpretation connects religious ethics with global philosophical discourse." },
+          { "label": "The student will examine the concept of 'religion as moral protest' and the role of hope as a driving force for Tikkun Olam ('repairing the world')." },
+          { "label": "The student will identify Rabbi Sacks' contribution to shaping a universal Jewish consciousness in a multicultural world." }
+        ]
+      },
+      {
+        "label": "Lesson #03 – Prof. Hanoch Ben-Pazi: The Principle of Interpretation as a Moral Act in the Philosophy of Rabbi Sacks",
+        "children": [
+          { "label": "The student will analyze Rabbi Sacks' conception of interpretation as a moral act, inspired by the thought of Emmanuel Levinas." },
+          { "label": "The student will explain the idea that reading a text is not merely an intellectual act but an encounter with the Other." },
+          { "label": "The student will examine the premise that the 'face of the Other' constitutes a moral call that precedes all textual understanding." },
+          { "label": "The student will distinguish between interpretation as understanding and interpretation as responsibility, and examine its ethical significance." },
+          { "label": "The student will discuss the relationship between interpretation, ethics, and Tikkun Olam in modern Jewish thought." }
+        ]
+      },
+      {
+        "label": "Lesson #04 – Interpreting Difficult Texts in the Torah as a Moral and Theological Challenge",
+        "children": [
+          { "label": "The student will examine how Rabbi Sacks engages with texts that raise moral difficulties (violence, the Binding of Isaac, war)." },
+          { "label": "The student will identify the hermeneutical layers in interpretation: moving from literal meaning to moral-ethical message." },
+          { "label": "The student will analyze the contribution of the Sages (Chazal) to the development of mechanisms of moral repair in Jewish tradition." },
+          { "label": "The student will interpret the story of the Binding of Isaac as a continuous tension between faith and moral obedience." },
+          { "label": "The student will examine the role of the contemporary interpreter as a mediator between religion and ethics." }
+        ]
+      },
+      {
+        "label": "Lesson #05 – Not in the Name of God",
+        "children": [
+          { "label": "The student will analyze Rabbi Sacks' critique of the misuse of religion to justify violence." },
+          { "label": "The student will examine the concept of 'religion as moral protest' as a response to modern theodicy." },
+          { "label": "The student will explain the shift from a theology of power to a theology of moral and human responsibility." },
+          { "label": "The student will identify the principle of the covenant as an alternative structure to religious coercion – a model of human and divine partnership." },
+          { "label": "The student will examine the meaning of 'not in the name of God' as a universal call to renew religiosity through compassion." }
+        ]
+      }
+    ]
+  }
+}
+</script>
+
+<script>
+(function(){
+  /* ---------- Parse ---------- */
+  let data;
+  try{
+    data = JSON.parse(document.getElementById('mindmap-data').textContent);
+  } catch(e){
+    console.error('Mindmap JSON parse error:', e);
+    data = {
+      "dir":"ltr",
+      "flow":"ltr",
+      "root":{"label":"Data error – please check JSON","children":[]}
+    };
+  }
+
+  const DIR  = (data.dir||'ltr');
+  document.documentElement.setAttribute('dir', DIR);
+  const FLOW = (data.flow||'ltr');
+
+  const viewport  = document.getElementById('viewport');
+  const scroller  = document.getElementById('scroller');
+  const stage     = document.getElementById('app');
+  const chipLayer = document.getElementById('chips');
+  const edgeLayer = document.getElementById('edges');
+
+  /* ---------- Zoom state ---------- */
+  let mode = 'fit';                 // 'fit' = all on screen, 'free' = free zoom
+  let scale = 1;
+  const SCALE_MIN_FREE = 0.2;
+  const SCALE_MAX      = 3.0;
+
+  /* ---------- CSS ---------- */
+  const CSS = getComputedStyle(document.documentElement);
+  const CHIP_H   = parseFloat(CSS.getPropertyValue('--chip-h')) || 48;
+  const GAP_X    = parseFloat(CSS.getPropertyValue('--gap-x')) || 80;
+  const GAP_Y_ROOT  = parseFloat(CSS.getPropertyValue('--gap-y-root')) || 24;
+  const GAP_Y_CHILD = parseFloat(CSS.getPropertyValue('--gap-y-child')) || 10;
+  const FIT_MARGIN  = parseFloat(CSS.getPropertyValue('--fit-margin')) || 32;
+
+  const DEPTH_COLORS = {
+    0:'#F8E8FF',
+    1:'#EBDCF8',
+    2:'#D7F6E4',
+    3:'#50E38A',
+    4:'#C9F4FF'
+  };
+
+  /* ---------- Build tree ---------- */
+  function build(raw, depth=0, parent=null, idx=0){
+    const node = {
+      label: raw.label,
+      depth,
+      parent,
+      idx,
+      collapsed: (typeof raw.collapsed==='boolean') ? raw.collapsed : (depth!==0),
+      x:0,y:0,width:0,height:CHIP_H, el:null,
+      id: Math.random().toString(36).slice(2),
+      subH:0, children: []
+    };
+    (raw.children||[]).forEach((ch,i)=> node.children.push(build(ch, depth+1, node, i)));
+    return node;
+  }
+  const root = build(data.root, 0, null);
+
+  /* ---------- DOM chips ---------- */
+  function ensureChip(node){
+    if(node.el) return;
+    const el = document.createElement('div'); el.className='chip';
+    el.dataset.kind = node.depth===0 ? 'root' : (node.children.length? 'cat':'leaf');
+    const label = document.createElement('span'); label.className='label'; label.textContent=node.label;
+    el.appendChild(label);
+
+    if(node.children.length){
+      const t = document.createElement('button');
+      t.className='toggle'; t.type='button'; t.setAttribute('aria-label','Expand or collapse');
+      t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
+      el.appendChild(t);
+      el.setAttribute('aria-expanded', String(!node.collapsed));
+
+      t.addEventListener('click', ev=>{
+        ev.stopPropagation();
+        handleToggle(node);
+      });
+
+      el.addEventListener('click', ev=>{
+        if (ev.target.closest('.toggle')) return;
+        handleToggle(node);
+      });
+
+      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
+      el.addEventListener('keydown', ev=>{
+        if(ev.key==='Enter'||ev.key===' '){
+          ev.preventDefault();
+          handleToggle(node);
+        }
+      });
+    }
+
+    const base = DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4];
+    el.style.setProperty('--chip-bg', base);
+    chipLayer.appendChild(el); node.el=el;
+  }
+  (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
+
+  /* ---------- Metrics ---------- */
+  function measure(node){
+    node.el.style.left = '-10000px';
+    node.el.style.top  = '-10000px';
+    const w = Math.max(0, node.el.offsetWidth);
+    node.width = w;
+    node.children.forEach(measure);
+  }
+
+  function subtreeHeight(node){
+    if(node.collapsed || node.children.length===0){
+      node.subH = node.height;
+      return node.subH;
+    }
+    let total = 0;
+    node.children.forEach((c,i)=>{
+      subtreeHeight(c);
+      total += c.subH;
+      if(i>0){
+        total += (c.depth===1 ? GAP_Y_ROOT : GAP_Y_CHILD);
+      }
+    });
+    node.subH = Math.max(node.height, total);
+    return node.subH;
+  }
+
+  function collectVisible(n, arr){
+    arr.push(n);
+    if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr));
+  }
+
+  function position(node, depth, top, colX){
+    node.x = colX[depth];
+    node.y = top + node.subH/2;
+    if(!node.collapsed && node.children.length){
+      let cursor = top;
+      node.children.forEach((c,i)=>{
+        position(c, depth+1, cursor, colX);
+        cursor += c.subH + (c.depth===1 ? GAP_Y_ROOT : GAP_Y_CHILD);
+      });
+    }
+  }
+
+  function computeBounds(nodes){
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+    nodes.forEach(n=>{
+      const left  = n.x;
+      const right = n.x + n.width;
+      minX = Math.min(minX, left);
+      maxX = Math.max(maxX, right);
+      minY = Math.min(minY, n.y - n.height/2);
+      maxY = Math.max(maxY, n.y + n.height/2);
+    });
+    return {minX,maxX,minY,maxY,width:maxX-minX,height:maxY-minY};
+  }
+
+  /* ---------- Layout ---------- */
+  let contentBounds = {minX:0,maxX:0,minY:0,maxY:0,width:0,height:0};
+
+  function layout(){
+    measure(root);
+    subtreeHeight(root);
+
+    const vis = []; collectVisible(root, vis);
+
+    const depthMaxW = new Map();
+    vis.forEach(n=>{
+      depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140));
+    });
+
+    const maxDepth = vis.reduce((m,n)=> Math.max(m,n.depth), 0);
+    const colX = [];
+    let acc = 0;
+    for(let d=0; d<=maxDepth; d++){
+      if(d===0){
+        colX[d] = 0;
+      } else {
+        acc += (depthMaxW.get(d-1)||140) + GAP_X;
+        colX[d] = acc;
+      }
+    }
+
+    position(root, 0, 0, colX);
+
+    const nodes = []; collectVisible(root, nodes);
+    contentBounds = computeBounds(nodes);
+
+    const totalWidth  = contentBounds.width + 80;
+    const totalHeight = contentBounds.height + 80;
+
+    stage.style.width  = totalWidth + 'px';
+    stage.style.height = totalHeight + 'px';
+
+    const offsetY = 40 - contentBounds.minY;
+    const offsetX = 40 - contentBounds.minX;
+
+    nodes.forEach(n=>{
+      const top = n.y + offsetY - n.height/2;
+      const left = n.x + offsetX;
+      n.el.style.top = top + 'px';
+      n.el.style.left = left + 'px';
+      if(n.children.length){
+        n.el.setAttribute('aria-expanded', String(!n.collapsed));
+      }
+    });
+
+    edgeLayer.textContent = '';
+    (function drawEdges(node){
+      if(node.collapsed) return;
+      node.children.forEach(ch=>{
+        const parentRight = parseFloat(node.el.style.left) + node.width;
+        const childLeft   = parseFloat(ch.el.style.left);
+        const p1x = parentRight;
+        const p2x = childLeft;
+        const p1y = parseFloat(node.el.style.top) + node.height/2;
+        const p2y = parseFloat(ch.el.style.top) + ch.height/2;
+        const dx = (p2x - p1x) * 0.45;
+        const c1x = p1x + dx;
+        const c2x = p2x - dx;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('class','edge');
+        path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
+        edgeLayer.appendChild(path);
+
+        drawEdges(ch);
+      });
+    })(root);
+
+    stage.style.opacity='1';
+    applyZoom();
+  }
+
+  /* ---------- Toggle ---------- */
+  function handleToggle(node){
+    if(!node.children.length) return;
+    node.collapsed = !node.collapsed;
+    layout();
+  }
+
+  function expandAll(){
+    (function open(n){ n.collapsed=false; n.children.forEach(open); })(root);
+    layout();
+  }
+
+  function collapseAll(){
+    (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root);
+    layout();
+  }
+
+  /* ---------- Zoom ---------- */
+  function applyZoom(){
+    const pctEl = document.getElementById('zoomPct');
+    stage.style.transform = `scale(${scale})`;
+    if(pctEl) pctEl.textContent = Math.round(scale*100) + '%';
+  }
+
+  function fitToScreen(){
+    const vpRect = viewport.getBoundingClientRect();
+    const availW = vpRect.width - FIT_MARGIN*2;
+    const availH = (window.innerHeight - vpRect.top) - FIT_MARGIN*2;
+
+    const sW = availW / Math.max(1, contentBounds.width + 80);
+    const sH = availH / Math.max(1, contentBounds.height + 80);
+    scale = Math.max(0.2, Math.min(sW, sH, SCALE_MAX));
+    mode = 'fit';
+    applyZoom();
+  }
+
+  function zoom(delta){
+    mode = 'free';
+    scale = Math.max(SCALE_MIN_FREE, Math.min(SCALE_MAX, scale * delta));
+    applyZoom();
+  }
+
+  /* ---------- Bind controls ---------- */
+  function bind(id, fn){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('click', e=>{ e.preventDefault(); fn(); });
+  }
+
+  bind('zoomIn', () => zoom(1.1));
+  bind('zoomOut', () => zoom(1/1.1));
+  bind('fitBtn', () => fitToScreen());
+  bind('expandAll', () => expandAll());
+  bind('collapseAll', () => collapseAll());
+
+  /* ---------- Pointer pan (optional, only when larger than viewport) ---------- */
+  let isDown=false, startX=0, startY=0, startScrollL=0, startScrollT=0;
+
+  viewport.addEventListener('pointerdown', e=>{
+    if(e.button!==0) return;
+    isDown=true;
+    viewport.classList.add('panning');
+    startX=e.clientX; startY=e.clientY;
+    startScrollL=viewport.scrollLeft; startScrollT=viewport.scrollTop;
+  });
+
+  window.addEventListener('pointermove', e=>{
+    if(!isDown) return;
+    const dx=e.clientX-startX;
+    const dy=e.clientY-startY;
+    viewport.scrollLeft=startScrollL-dx;
+    viewport.scrollTop =startScrollT-dy;
+  });
+
+  window.addEventListener('pointerup', ()=>{
+    isDown=false;
+    viewport.classList.remove('panning');
+  });
+
+  /* ---------- Initial layout ---------- */
+  function sizeViewport(){
+    const rect = viewport.getBoundingClientRect();
+    const avail = window.innerHeight - rect.top - 16;
+    viewport.style.height = Math.max(320, Math.floor(avail)) + 'px';
+  }
+
+  sizeViewport();
+  layout();
+  fitToScreen();
+
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(()=>{ layout(); fitToScreen(); });
+  }
+
+  window.addEventListener('resize', ()=>{ sizeViewport(); layout(); fitToScreen(); });
+})();
+</script>
+</body>
+</html>
