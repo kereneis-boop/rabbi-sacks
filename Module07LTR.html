@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Biography and Thought Foundation – Mind-Map (LTR)</title>
+<link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Adjustable spacing */
+    --zoombar-gap: 60px;          /* gap between toolbar and map */
+    --map-pad-top: 35px;          /* top padding of map area (used in fit calc) */
+    --map-pad-bottom: 60px;       /* bottom padding of map area (used in fit calc) */
+    --gap-between-groups: 40px;   /* extra gap between lessons (children of root) */
+
+    /* General gaps */
+    --gap-x:36px;
+    --gap-x-d01:100px;            /* horizontal gap between depth 0 and depth 1 */
+    --gap-rootcat:22px;
+    --gap-cat:22px;
+    --gap-d3:22px;
+    --gap-d4:22px;
+    --gap-item:6px;
+    --chip-h:48px;
+
+    /* Look & feel */
+    --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --bg:#ffffff; --ink:#0f172a;
+    --edge:#C5CBD8; --toggle:#fe0100;
+    --shadow:0 8px 22px rgba(0,0,0,.10);
+    --r:9999px;
+
+    /* Animation & fitting */
+    --anim-dur:.60s;
+    --anim-ease:ease-in-out;
+    --fit-margin:32;
+  }
+
+  *{box-sizing:border-box}
+  html, body, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
+  html,body{height:auto;min-height:100%; overflow-x:hidden}
+  body{margin:0;background:var(--bg);color:var(--ink);}
+  .wrap{padding:12px; width:100%; margin:0 auto; overflow:visible}
+
+  /* Toolbar */
+  .zoombar{
+    position:sticky; top:8px; inset-inline:0;
+    display:flex; justify-content:center; align-items:center; gap:6px; z-index:3;
+    background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(10px);
+    padding:10px 12px; margin:0 auto var(--zoombar-gap);
+    width:max-content; border-radius:14px;
+    border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
+  }
+  .zoombar button{
+    border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer;
+    background:linear-gradient(180deg,#ffffff,#f7f7f9); box-shadow:0 4px 12px rgba(0,0,0,.08);
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    touch-action:manipulation;
+  }
+  .zoombar button:hover{box-shadow:0 8px 18px rgba(0,0,0,.12)}
+  .zoombar button:active{transform:translateY(1px)}
+  .zoombar .pct{min-width:68px; height:36px; display:inline-flex; align-items:center; justify-content:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08)}
+  #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
+  #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
+
+  /* Stage + panning */
+  .viewport{position:relative; width:100%; overflow:hidden; touch-action:none; cursor:grab; scrollbar-gutter:stable both-edges; direction:ltr;}
+  .viewport.panning{ cursor:grabbing; }
+  .scroller{ position:relative; padding: var(--map-pad-top) 0 var(--map-pad-bottom); }
+  .stage{ position:absolute; inset-inline-start:0; top:0; transform-origin: top left; min-height:380px; min-width:0; opacity:0 }
+  .chips{ position:absolute; inset:0; z-index:1 }
+  svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
+
+  /* Nodes */
+  .chip{
+    position:absolute; display:flex; align-items:center;
+    height:var(--chip-h); padding:0 16px; border-radius:var(--r);
+    line-height:1; white-space:nowrap; box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.6);
+    direction:ltr; text-align:left; font-weight:700; gap:14px;
+    background: var(--chip-bg, #ffffff); color:#0f172a; cursor:pointer;
+  }
+  .chip[data-kind="root"]{font-weight:800}
+  .label{pointer-events:none; direction:ltr; text-align:left}
+  .chip .toggle{margin-inline-start:auto}
+  .toggle{position:relative; width:28px; height:28px; border:0; border-radius:50%; background:var(--toggle); cursor:pointer}
+  .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition:opacity var(--anim-dur) var(--anim-ease)}
+  .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg)}
+  .chip[aria-expanded="true"] .toggle .bar.v{opacity:0}
+
+  .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
+
+  /* Fade in/out */
+  .fade-enter{ opacity:0.001 }
+  .fade-enter.fade-active{ opacity:1; transition: opacity var(--anim-dur) var(--anim-ease) }
+  .fade-exit{ opacity:1 }
+  .fade-exit.fade-active{ opacity:0; transition: opacity var(--anim-dur) var(--anim-ease) }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="zoombar" aria-label="Zoom controls">
+    <button id="fitW" title="Fit to view">↔︎ Fit</button>
+    <button id="zoomOut" title="Zoom out">−</button>
+    <button id="zoomPct" class="pct" title="100%">100%</button>
+    <button id="zoomIn" title="Zoom in">+</button>
+    <button id="expandAll" title="Expand all">Expand all</button>
+    <button id="collapseAll" title="Collapse all">Collapse all</button>
+  </div>
+
+  <div id="viewport" class="viewport">
+    <div id="scroller" class="scroller">
+      <div id="app" class="stage">
+        <svg id="edges" aria-hidden="true"></svg>
+        <div id="chips" class="chips"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === DATA: Biography and Thought Foundation Module === -->
+<script id="mindmap-data" type="application/json">
+{
+  "dir": "ltr",
+  "flow": "ltr",
+  "root": {
+    "label": "Rabbi Sacks: Biography and Thought Foundation",
+    "children": [
+      {
+        "label": "Lesson #01 – Biographical Foundations and Leadership Transition",
+        "children": [
+          { "label": "Rabbi Sacks’s life story as a foundation for understanding his spiritual and intellectual world" },
+          { "label": "The shaping of Rabbi Sacks’s moral world through personal and family testimony." },
+          { "label": "The transition from local rabbinic authority to a spiritual leader with a global vision." }
+        ]
+      },
+      {
+        "label": "Lesson #02 – Philosophical and Moral Core Concepts",
+        "children": [
+          { "label": "The philosophical foundations of Jewish thought as a bridge between faith and reason" },
+          { "label": "The concept of responsibility as a key to understanding ethics in the thought of Rabbi Sacks" },
+          { "label": "The critique of the Enlightenment and the concept of covenant as an innovative moral foundation" },
+          { "label": "The relationship between rationalism and mysticism as a basis for creative moral thinking" },
+          { "label": "Rabbi Sacks’s conception of the future as both a challenge and a moral opportunity in a changing world" }
+        ]
+      },
+      {
+        "label": "Lesson #03 – Interpretation, Dialogue, and Engagement with Modernity",
+        "children": [
+          { "label": "Interpretation as a moral and communal process bridging text and life." },
+          { "label": "Rabbi Sacks as a figure who bridges tradition and contemporary philosophy" },
+          { "label": "Interpretation as a moral act that brings the individual into encounter with the other." },
+          { "label": "How to engage with difficult texts as a moral call to the contemporary person." },
+          { "label": "Examining Rabbi Sacks’s call to renew religiosity through responsibility and compassion" }
+        ]
+      },
+      {
+        "label": "Lesson #04 – Dialogue, Covenant, and Pluralism",
+        "children": [
+          { "label": "The foundations of dialogical thought and the understanding of dialogue as a moral" },
+          { "label": "Dialogue as the basis for a politics of covenant and civic responsibility." },
+          { "label": "Deepening the understanding of dialogue as a model for moral and social existence in a pluralist world" },
+          { "label": "How dialogue enables tradition to renew itself in the modern world." },
+          { "label": "Balancing commitment to tradition with openness to modernity" }
+        ]
+      },
+      {
+        "label": "Lesson #05 – Hope, Vision, and Tikkun Olam",
+        "children": [
+          { "label": "The concept of hope as a foundation for moral creativity and social vision." },
+          { "label": "An in-depth study of Rabbi Sacks' model of public leadership as a bridge between identities." },
+          { "label": "Rabbi Sacks as a moral leader in the British public arena." },
+          { "label": "Rabbi Sacks’s vision of transforming a Jewish dream into a moral reality." }
+        ]
+      },
+      {
+        "label": "Lesson #06 – Religion, Science, and Sustainability",
+        "children": [
+          { "label": "The complementarity between science and religion as two dimensions of meaning." },
+          { "label": "The dialogue between science, faith, and environmental responsibility." }
+        ]
+      },
+      {
+        "label": "Lesson #07 – Legacy, Memory, and Educational Vision",
+        "children": [
+          { "label": "How Rabbi Sacks’s thought continues to influence as part of public and educational memory" },
+          { "label": "The way Rabbi Sacks became a spiritual - cultural figure in the Israeli arena" },
+          { "label": "Rabbi Sacks’s transformation from a personal symbol into a living communal legacy" },
+          { "label": "The role of the archive in understanding Rabbi Sacks’s creative process" },
+          { "label": "The concept of public responsibility and Jewish identity in a changing reality" },
+          { "label": "Rabbi Sacks’ educational vision as a driver of moral leadership" },
+          { "label": "Rabbi Sacks’ call for bold and courageous moral action in our time" }
+        ]
+      }
+    ]
+  }
+}
+</script>
+
+<script>
+(function(){
+  /* ----- Parse & setup ----- */
+  let data;
+  try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
+  catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"ltr","flow":"ltr","root":{"label":"Data error – check JSON","children":[]}}; }
+
+  const DIR  = (data.dir||'ltr'); document.documentElement.setAttribute('dir', DIR);
+  const FLOW = (data.flow||'ltr');
+
+  const viewport  = document.getElementById('viewport');
+  const scroller  = document.getElementById('scroller');
+  const stage     = document.getElementById('app');
+  const chipLayer = document.getElementById('chips');
+  const edgeLayer = document.getElementById('edges');
+
+  /* Zoom state */
+  let mode='fitW', userScale=1, lockedFit=1, zoomFrozen=false, didInitialFitAll=false;
+
+  /* Stage origin by flow */
+  if(FLOW==='ltr'){
+    stage.style.transformOrigin='top left';
+    stage.style.left='0';
+    stage.style.right='';
+  } else {
+    stage.style.transformOrigin='top right';
+    stage.style.right='0';
+    stage.style.left='';
+  }
+  stage.style.top='0'; stage.style.position='absolute';
+
+  /* CSS constants */
+  const CSS = getComputedStyle(document.documentElement);
+  const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
+  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36;
+  const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
+  const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
+  const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
+  const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
+  const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
+  const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
+  const GAP_GROUPS = parseFloat(CSS.getPropertyValue('--gap-between-groups')) || 0;
+
+  const PAD_TOP    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 0;
+  const PAD_BOTTOM = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 0;
+
+  const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
+
+  /* ----- Build tree ----- */
+  function build(raw, depth=0, parent=null, idx=0){
+    const node = {
+      label: raw.label, depth, parent, idx,
+      collapsed: (typeof raw.collapsed==='boolean') ? raw.collapsed : (depth!==0),
+      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2),
+      _subH:0, children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null)
+    };
+    (raw.children||[]).forEach((ch,i)=> node.children.push(build(ch, depth+1, node, i)));
+    return node;
+  }
+  const root = build(data.root, 0, null);
+
+  /* ----- Chips DOM ----- */
+  function ensureChip(node){
+    if(node.el) return;
+    const el = document.createElement('div'); el.className='chip';
+    el.dataset.kind = node.depth===0 ? 'root' : (node.children.length? 'cat':'leaf');
+    const label = document.createElement('span'); label.className='label'; label.textContent=node.label; el.appendChild(label);
+    if(node.children.length){
+      const t = document.createElement('button');
+      t.className='toggle'; t.type='button'; t.setAttribute('aria-label','Expand / collapse');
+      t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
+      el.appendChild(t);
+      el.setAttribute('aria-expanded', String(!node.collapsed));
+      t.addEventListener('click', ev=>{ ev.stopPropagation(); handleToggle(node); });
+      el.addEventListener('click', ev=>{ if(ev.target.closest('.toggle')) return; handleToggle(node); });
+      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
+      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); handleToggle(node);} });
+    }
+    const base = DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4];
+    el.style.setProperty('--chip-bg', base);
+    chipLayer.appendChild(el); node.el=el;
+  }
+  (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
+
+  /* ----- Measurements & heights ----- */
+  function measure(node){
+    node.el.style.left = '-10000px';
+    node.el.style.top  = '-10000px';
+    const natural = Math.max(0, node.el.offsetWidth);
+    node.naturalWidth = natural; node.width = natural;
+    node.children.forEach(measure);
+  }
+  function gapForDepth(depth){
+    if(depth>=4) return GAP_D4;
+    if(depth===3) return GAP_D3;
+    if(depth===2) return GAP_CAT;
+    if(depth===1) return GAP_ROOTCAT;
+    return GAP_CAT;
+  }
+  function subHeight(node){
+    if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
+    let total = 0;
+    node.children.forEach((c,i)=>{
+      subHeight(c);
+      total += c._subH;
+      if(i>0){ total += (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth); }
+      if(node.depth===0 && i<node.children.length-1){ total += GAP_GROUPS; }
+    });
+    node._subH = Math.max(node.height, total); return node._subH;
+  }
+
+  /* ----- Column anchors & positioning ----- */
+  let DEPTH_ANCHORS = new Map();
+  function xForDepth(depth){ return DEPTH_ANCHORS.get(depth) || 0; }
+  function position(node, depth, top){
+    node.x = xForDepth(depth);
+    node.y = top + node._subH/2;
+    if(!(node.collapsed) && node.children.length){
+      let cursor = top;
+      node.children.forEach((c,i)=>{
+        position(c, depth+1, cursor);
+        cursor += c._subH + gapForDepth(c.depth);
+        if(node.depth===0 && i<node.children.length-1){ cursor += GAP_GROUPS; }
+      });
+    }
+  }
+  function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
+  function computeBounds(nodes){
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+    nodes.forEach(n=>{
+      const left  = (FLOW==='rtl' ? (n.x - n.width) : n.x);
+      const right = (FLOW==='rtl' ? n.x : n.x + n.width);
+      minX = Math.min(minX, left);
+      maxX = Math.max(maxX, right);
+      minY = Math.min(minY, n.y - n.height/2);
+      maxY = Math.max(maxY, n.y + n.height/2);
+    });
+    return { w:(maxX-minX), h:(maxY-minY), minX };
+  }
+
+  /* ----- Layout ----- */
+  let lastW=0, lastH=0, offsetX=0, stageW=0;
+
+  function layout(){
+    measure(root);
+    subHeight(root); position(root,0,0);
+    let nodesTmp=[]; collectVisible(root, nodesTmp);
+
+    /* max width per depth */
+    const depthMaxW = new Map();
+    nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140));});
+
+    /* depth anchors */
+    DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
+    let acc=0; const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
+    for(let d=1; d<=maxDepthVis+1; d++){
+      const addGap = (d===1 ? GAP_X_D01 : GAP_X);
+      acc += (depthMaxW.get(d-1)||140) + addGap;
+      DEPTH_ANCHORS.set(d, (FLOW==='rtl' ? -acc : acc));
+    }
+
+    subHeight(root); position(root, 0, 0);
+    const nodes=[]; collectVisible(root, nodes);
+    const { w, h, minX } = computeBounds(nodes);
+
+    const vpW = viewport.getBoundingClientRect().width;
+    const vpH = viewport.clientHeight || window.innerHeight;
+    const FIT_MARGIN = parseFloat(CSS.getPropertyValue('--fit-margin')) || 24;
+
+    const innerW = Math.max(1, vpW - FIT_MARGIN);
+    const innerH = Math.max(1, vpH - PAD_TOP - PAD_BOTTOM);
+
+    const fitW = innerW / Math.max(1, w);
+    const fitH = innerH / Math.max(1, h);
+    const baseFit = Math.min(fitW, fitH);
+
+    const maxDepthNow = nodes.reduce((m,n)=> Math.max(m, n.depth), 0);
+    let compactCap = 1.0; if(maxDepthNow<=1) compactCap=0.75; else if(maxDepthNow===2) compactCap=0.88;
+
+    if (!didInitialFitAll){ lockedFit = Math.max(0.2, Math.min(baseFit, compactCap)); didInitialFitAll = true; }
+    else { lockedFit = Math.max(0.2, Math.min(fitW, compactCap)); }
+
+    if (!zoomFrozen){ userScale = lockedFit; mode='free'; zoomFrozen = true; }
+
+    if(mode==='fitW'){
+      const RIGHT_PAD = 24, LEFT_PAD = 24;
+      offsetX = -minX + (LEFT_PAD/lockedFit);
+      stageW  = w + (LEFT_PAD+RIGHT_PAD)/lockedFit;
+    } else {
+      const sNow = Math.max(userScale, 0.0001);
+      const desiredPad = Math.max(60, Math.floor((viewport.clientWidth/sNow - w)/2) + 40);
+      offsetX = -minX + desiredPad;
+      stageW  = w + desiredPad*2;
+    }
+
+    lastW = stageW; lastH = h;
+    stage.style.width  = Math.ceil(stageW) + 'px';
+    stage.style.height = Math.ceil(h) + 'px';
+
+    /* chips */
+    nodes.forEach(n=>{
+      const top = n.y - n.height/2;
+      const xUnits = offsetX + n.x;
+      const leftUnits  = (FLOW==='rtl') ? (xUnits - n.width) : xUnits;
+      n.el.style.left  = leftUnits  + 'px';
+      n.el.style.top   = top + 'px';
+      if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
+    });
+
+    /* edges – FIXED for LTR: parent right → child left */
+    edgeLayer.textContent='';
+    (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
+      const PAD_PARENT=6, PAD_CHILD=6;
+
+      let p1x, p2x;
+      const p1y = n.y;
+      const p2y = ch.y;
+
+      if(FLOW==='ltr'){
+        const parentLeft  = offsetX + n.x;
+        const parentRight = parentLeft + n.width;
+        const childLeft   = offsetX + ch.x;
+        p1x = parentRight - PAD_PARENT;   // right side of parent
+        p2x = childLeft   + PAD_CHILD;    // left side of child
+      } else {
+        const parentRight = offsetX + n.x;
+        const parentLeft  = parentRight - n.width;
+        const childRight  = offsetX + ch.x;
+        p1x = parentLeft  + PAD_PARENT;   // left side of parent (RTL)
+        p2x = childRight  - PAD_CHILD;    // right side of child (RTL)
+      }
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const dx=Math.abs(p2x-p1x)*.45,
+            c1x=(FLOW==='rtl'? p1x-dx: p1x+dx),
+            c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
+      path.setAttribute('class','edge');
+      path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
+      edgeLayer.appendChild(path);
+      draw(ch);
+    }); })(root);
+
+    applyZoom();
+    stage.style.opacity='1';
+  }
+
+  /* ----- Toggle ----- */
+  function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
+  function animateClose(node, done){
+    const list=[]; function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
+    node.children.forEach(collectDesc);
+    const dur = parseFloat(CSS.getPropertyValue('--anim-dur'))*1000+20;
+    list.forEach(n=>{
+      if(n.el){ n.el.classList.add('fade-exit'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur); }
+    });
+    setTimeout(done, dur);
+  }
+  function handleToggle(n){
+    if(!n.children.length) return;
+    if(n.collapsed){ n.collapsed=false; if(n.el) n.el.setAttribute('aria-expanded','true'); layout(); }
+    else { if(n.el) n.el.setAttribute('aria-expanded','false'); animateClose(n, ()=>{ collapseDeep(n); layout(); }); }
+  }
+
+  /* ----- Zoom & Scroll ----- */
+  function applyZoom(){
+    const s = (mode==='fitW') ? lockedFit : userScale;
+    stage.style.transform = `scale(${s})`;
+
+    const pct = document.getElementById('zoomPct');
+    if(pct) pct.textContent = Math.round(s*100) + "%";
+
+    if (mode === 'fitW') {
+      scroller.style.width  = viewport.clientWidth + 'px';
+      scroller.style.height = viewport.clientHeight + 'px';
+      viewport.style.overflowX = 'hidden';
+      viewport.style.overflowY = 'hidden';
+      viewport.style.cursor    = 'auto';
+    } else {
+      if(lastW && lastH){
+        const wpx = Math.ceil(lastW * s);
+        scroller.style.width  = wpx + 'px';
+        scroller.style.height = Math.ceil(lastH * s + PAD_TOP + PAD_BOTTOM) + 'px';
+      }
+      const tol = 2;
+      const needX = (scroller.offsetWidth  - viewport.clientWidth)  > tol;
+      const needY = (scroller.offsetHeight - viewport.clientHeight) > tol;
+      viewport.style.overflowX = needX ? 'auto' : 'hidden';
+      viewport.style.overflowY = needY ? 'auto' : 'hidden';
+      viewport.style.cursor    = (needX || needY) ? 'grab' : 'auto';
+    }
+  }
+
+  /* ===== Drag-to-pan ===== */
+  let isDown=false, isPanning=false, movedPx=0;
+  let panStartX=0, panStartY=0, startScrollL=0, startScrollT=0, activePointerId=null;
+  const START_THRESHOLD = 6;
+
+  viewport.addEventListener('click', function(e){
+    if(movedPx >= START_THRESHOLD){ e.stopPropagation(); e.preventDefault(); }
+    movedPx = 0;
+  }, true);
+
+  function onPointerDown(e){
+    if(mode==='fitW') return;
+    isDown = true; isPanning=false; movedPx=0;
+    activePointerId = e.pointerId;
+    panStartX = e.clientX; panStartY = e.clientY;
+    startScrollL = viewport.scrollLeft;
+    startScrollT = viewport.scrollTop;
+  }
+  function onPointerMove(e){
+    if(mode==='fitW') return;
+    if(!isDown || e.pointerId !== activePointerId) return;
+    const dx = e.clientX - panStartX;
+    const dy = e.clientY - panStartY;
+    movedPx = Math.max(movedPx, Math.hypot(dx, dy));
+    if(!isPanning && movedPx >= START_THRESHOLD){
+      isPanning = true; viewport.classList.add('panning');
+      viewport.setPointerCapture?.(activePointerId);
+    }
+    if(isPanning){
+      e.preventDefault();
+      viewport.scrollLeft = startScrollL - dx;
+      viewport.scrollTop  = startScrollT  - dy;
+    }
+  }
+  function endPan(e){
+    if(mode==='fitW') return;
+    if(e.pointerId !== activePointerId) return;
+    isDown = false;
+    if(isPanning){
+      viewport.classList.remove('panning');
+      try{ viewport.releasePointerCapture?.(activePointerId); }catch(_){}}
+    isPanning = false; activePointerId = null; movedPx = 0;
+  }
+  viewport.addEventListener('pointerdown', onPointerDown, {passive:true});
+  viewport.addEventListener('pointermove', onPointerMove, {passive:false});
+  viewport.addEventListener('pointerup', endPan, {passive:true});
+  viewport.addEventListener('pointercancel', endPan, {passive:true});
+  viewport.addEventListener('pointerleave', (e)=>{ if(isDown) endPan(e); }, {passive:true});
+
+  /* ===== Controls ===== */
+  function bind(id, fn){ const el=document.getElementById(id); if(!el) return; const run=e=>{ e&&e.preventDefault(); fn(); }; el.addEventListener('click',run); el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ run(e); } }); }
+  bind('zoomIn', ()=>{ mode='free'; userScale = Math.min((userScale||lockedFit) + 0.10, 3); applyZoom(); });
+  bind('zoomOut',()=>{ mode='free'; userScale = Math.max((userScale||lockedFit) - 0.10, 0.2); applyZoom(); });
+  bind('zoomPct',()=>{ mode='free'; userScale=1; applyZoom(); });
+  bind('fitW',   ()=>{ zoomFrozen=false; mode='fitW'; layout(); });
+  bind('expandAll', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
+  bind('collapseAll',()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); mode='free'; layout(); });
+
+  /* ----- Viewport size ----- */
+  function sizeViewport(){
+    const rect = viewport.getBoundingClientRect();
+    const avail = window.innerHeight - rect.top - 16;
+    viewport.style.height = Math.max(320, Math.floor(avail)) + 'px';
+  }
+
+  sizeViewport();
+  layout();
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(()=>{ layout(); });
+    document.fonts.addEventListener?.('loadingdone', ()=> { layout(); });
+  }
+  window.addEventListener('resize', ()=>{ sizeViewport(); layout(); });
+})();
+</script>
+</body>
+</html>
