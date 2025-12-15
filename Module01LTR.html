@@ -31,7 +31,7 @@
     --r:9999px;
 
     /* Animation & fitting */
-    --anim-dur:.60s; 
+    --anim-dur:.60s;
     --anim-ease:ease-in-out;
     --fit-margin:32;
   }
@@ -39,7 +39,7 @@
   *{box-sizing:border-box}
   html, body, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
   html,body{height:auto;min-height:100%; overflow-x:hidden}
-  body{margin:0;background:var(--bg);color:var(--ink);} 
+  body{margin:0;background:var(--bg);color:var(--ink);}
   .wrap{padding:12px; width:100%; margin:0 auto; overflow:visible}
 
   /* Toolbar */
@@ -48,13 +48,13 @@
     display:flex; justify-content:center; align-items:center; gap:6px; z-index:3;
     background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(10px);
     padding:10px 12px; margin:0 auto var(--zoombar-gap);
-    width:max-content; border-radius:14px; 
+    width:max-content; border-radius:14px;
     border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
   }
   .zoombar button{
-    border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer; 
+    border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer;
     background:linear-gradient(180deg,#ffffff,#f7f7f9); box-shadow:0 4px 12px rgba(0,0,0,.08);
-    display:inline-flex; align-items:center; justify-content:center; gap:8px; 
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
     transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
     touch-action:manipulation;
   }
@@ -164,7 +164,7 @@
 <script>
 (function(){
   /* ----- Parse & setup ----- */
-  let data; 
+  let data;
   try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
   catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"ltr","flow":"ltr","root":{"label":"Data error – check JSON","children":[]}}; }
 
@@ -195,7 +195,7 @@
   /* CSS constants */
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
-  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36; 
+  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36;
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
   const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
@@ -211,7 +211,7 @@
 
   /* ----- Build tree ----- */
   function build(raw, depth=0, parent=null, idx=0){
-    const node = { 
+    const node = {
       label: raw.label, depth, parent, idx,
       collapsed: (typeof raw.collapsed==='boolean') ? raw.collapsed : (depth!==0),
       x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2),
@@ -394,8 +394,8 @@
       }
 
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-      const dx=Math.abs(p2x-p1x)*.45, 
-            c1x=(FLOW==='rtl'? p1x-dx: p1x+dx), 
+      const dx=Math.abs(p2x-p1x)*.45,
+            c1x=(FLOW==='rtl'? p1x-dx: p1x+dx),
             c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
       path.setAttribute('class','edge');
       path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
@@ -418,7 +418,7 @@
     });
     setTimeout(done, dur);
   }
-  function handleToggle(n){ 
+  function handleToggle(n){
     if(!n.children.length) return;
     if(n.collapsed){ n.collapsed=false; if(n.el) n.el.setAttribute('aria-expanded','true'); layout(); }
     else { if(n.el) n.el.setAttribute('aria-expanded','false'); animateClose(n, ()=>{ collapseDeep(n); layout(); }); }
@@ -518,7 +518,7 @@
     viewport.style.height = Math.max(320, Math.floor(avail)) + 'px';
   }
 
-  sizeViewport(); 
+  sizeViewport();
   layout();
 
   if (document.fonts && document.fonts.ready) {
