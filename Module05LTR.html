@@ -16,10 +16,12 @@
   }
 
   :root{
+    /* Spacing and Gaps */
     --zoombar-gap: 40px;
     --map-pad-top: 35px;
     --map-pad-bottom: 60px;
-    --gap-between-groups: 45px;
+    --gap-between-groups: 50px; /* Increased for readability */
+
     --gap-x:36px;
     --gap-x-d01:100px;
     --gap-rootcat:22px;
@@ -28,11 +30,15 @@
     --gap-d4:18px;
     --gap-item:6px;
     --chip-h:48px;
+
+    /* Theme */
     --font: 'Kav16', 'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     --bg:#ffffff; --ink:#0f172a;
     --edge:#C5CBD8; --toggle:#fe0100;
     --shadow:0 8px 22px rgba(0,0,0,.10);
     --r:9999px;
+
+    /* Animations */
     --anim-dur:.60s;
     --anim-ease:ease-in-out;
     --fit-margin:32;
@@ -44,6 +50,7 @@
   body{margin:0;background:var(--bg);color:var(--ink);}
   .wrap{padding:12px; width:100%; margin:0 auto; overflow:visible}
 
+  /* Toolbar */
   .zoombar{
     position:sticky; top:8px; inset-inline:0;
     display:flex; justify-content:center; align-items:center; gap:6px; z-index:10;
@@ -65,6 +72,7 @@
   #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
   #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
 
+  /* Stage and Viewport */
   .viewport{position:relative; width:100%; overflow:hidden; touch-action:none; cursor:grab; scrollbar-gutter:stable both-edges; direction:ltr;}
   .viewport.panning{ cursor:grabbing; }
   .scroller{ position:relative; padding: var(--map-pad-top) 0 var(--map-pad-bottom); }
@@ -72,6 +80,7 @@
   .chips{ position:absolute; inset:0; z-index:1 }
   svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
 
+  /* Nodes/Chips */
   .chip{
     position:absolute; display:flex; align-items:center;
     height:var(--chip-h); padding:0 16px; border-radius:var(--r);
@@ -89,9 +98,11 @@
 
   .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
 
+  /* Animations */
   .fade-exit{ opacity:1 }
   .fade-exit.fade-active{ opacity:0; transition: opacity var(--anim-dur) var(--anim-ease) }
 
+  /* Responsive Text Wrapping */
   @media (max-width: 600px) {
     .chip { white-space: normal; height: auto; min-height: var(--chip-h); padding: 8px 16px; width: 220px; }
   }
@@ -156,7 +167,7 @@
         ]
       },
       {
-        "label": "Lesson #04 – Rabbi Lord David Wolfson: British Arena",
+        "label": "Lesson #04 – David Wolfson: British Arena",
         "children": [
           { "label": "Examine Rabbi Sacks as a leadership figure in the House of Lords." },
           { "label": "Analyze influence on public discourse regarding religion and morality." },
@@ -202,7 +213,7 @@
 (function(){
   let data;
   try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
-  catch(e){ data = {"dir":"ltr","flow":"ltr","root":{"label":"Data error","children":[]}}; }
+  catch(e){ data = {"dir":"ltr","flow":"ltr","root":{"label":"Data Error","children":[]}}; }
 
   const DIR  = (data.dir||'ltr'); document.documentElement.setAttribute('dir', DIR);
   const FLOW = (data.flow||'ltr');
@@ -226,10 +237,7 @@
   const GAP_X     = parseFloat(CSS.getPropertyValue('--gap-x'))     || 36;
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
-  const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
   const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
-  const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
-  const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
   const GAP_GROUPS = parseFloat(CSS.getPropertyValue('--gap-between-groups')) || 45;
   const PAD_TOP    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 35;
   const PAD_BOTTOM = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 60;
@@ -239,7 +247,8 @@
   function build(raw, depth=0, parent=null, idx=0){
     const node = {
       label: raw.label, depth, parent, idx,
-      collapsed: (typeof raw.collapsed==='boolean') ? raw.collapsed : (depth!==0),
+      // Fix: Initial State - Only Root is open, all Lessons (depth 1+) are collapsed
+      collapsed: (depth !== 0),
       x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2),
       _subH:0, children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null)
     };
@@ -274,11 +283,11 @@
   }
   
   function gapForDepth(depth){
-    if(depth>=4) return GAP_D4;
-    if(depth===3) return GAP_D3;
+    if(depth>=4) return 18;
+    if(depth===3) return 18;
     if(depth===2) return GAP_CAT;
     if(depth===1) return GAP_ROOTCAT;
-    return GAP_CAT;
+    return 20;
   }
   
   function subHeight(node){
@@ -351,9 +360,9 @@
     const fitW = innerW / Math.max(1, w);
     const fitH = innerH / Math.max(1, h);
     const baseFit = Math.min(fitW, fitH);
-    const compactCap = (nodes.reduce((m,n)=> Math.max(m, n.depth), 0) <= 1) ? 0.75 : 0.95;
+    const compactCap = 1.0; // Show slightly larger for "readable" initial state
 
-    if (!didInitialFitAll){ lockedFit = Math.max(0.2, Math.min(baseFit, compactCap)); didInitialFitAll = true; }
+    if (!didInitialFitAll){ lockedFit = Math.max(0.4, Math.min(baseFit, compactCap)); didInitialFitAll = true; }
     else { lockedFit = Math.max(0.2, Math.min(fitW, compactCap)); }
 
     if (!zoomFrozen){ userScale = lockedFit; mode='free'; zoomFrozen = true; }
@@ -370,17 +379,16 @@
     stage.style.width = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
-    // Critical Fix: Explicitly hide all chips first
+    // Cleanup: Hide all chips not in current visible set
     (function hideAll(n){ if(n.el) n.el.style.display='none'; n.children.forEach(hideAll); })(root);
 
     nodes.forEach(n=>{
-      n.el.style.display = 'flex'; // Show only visible chips
+      n.el.style.display = 'flex';
       const top = n.y - n.height/2;
       const xUnits = offsetX + n.x;
       n.el.style.left  = ((FLOW==='rtl') ? (xUnits - n.width) : xUnits) + 'px';
       n.el.style.top   = top + 'px';
       if(n.children.length) n.el.setAttribute('aria-expanded', String(!n.collapsed));
-      // Cleanup animation classes
       n.el.classList.remove('fade-exit', 'fade-active');
     });
 
@@ -410,7 +418,7 @@
     if(n.collapsed){ n.collapsed=false; layout(); }
     else {
       const dur = parseFloat(CSS.getPropertyValue('--anim-dur'))*1000;
-      // Fix: Start animation from children, not the parent itself
+      // Bug Fix: Only children fade out, the node clicked stays visible
       n.children.forEach(function collect(node){
         if(!node || node.collapsed) return;
         if(node.el) {
@@ -470,11 +478,12 @@
     viewport.style.height = Math.max(400, Math.floor(avail)) + 'px';
     layout();
   }
-  
+
+  // Force layout after font load to ensure measurements match the visual style
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(()=>{ layout(); });
-    document.fonts.addEventListener?.('loadingdone', ()=> { layout(); });
   }
+
   window.onresize = size;
   window.onload = size;
 })();
