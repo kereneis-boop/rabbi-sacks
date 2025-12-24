@@ -6,6 +6,15 @@
 <title>Science, Modernity, and Leadership – Mind-Map</title>
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  /* Define the custom font from edX Assets */
+  @font-face {
+    font-family: 'Kav16';
+    src: url('https://courses.edx.org/asset-v1:IsraelX+Rabi_BIU+1T2026+type@asset+block@Kav16-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap; /* Critical for mobile/app performance */
+  }
+
   :root{
     /* Adjustable spacing */
     --zoombar-gap: 40px;          /* gap between toolbar and map */
@@ -23,8 +32,9 @@
     --gap-item:6px;
     --chip-h:48px;
 
-    /* Look & feel */
-    --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    /* Updated Font Stack: Kav16 as primary */
+    --font: 'Kav16', 'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    
     --bg:#ffffff; --ink:#0f172a;
     --edge:#C5CBD8; --toggle:#fe0100;
     --shadow:0 8px 22px rgba(0,0,0,.10);
@@ -484,6 +494,13 @@
     viewport.style.height = Math.max(400, Math.floor(avail)) + 'px';
     layout();
   }
+  
+  // Re-layout when font is ready to ensure chip sizes are accurate
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(()=>{ layout(); });
+    document.fonts.addEventListener?.('loadingdone', ()=> { layout(); });
+  }
+
   window.onresize = size;
   window.onload = size;
 })();
