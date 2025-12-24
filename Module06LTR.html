@@ -16,13 +16,13 @@
   }
 
   :root{
-    /* Adjustable spacing */
-    --zoombar-gap: 40px;
-    --map-pad-top: 35px;
-    --map-pad-bottom: 60px;
-    --gap-between-groups: 45px;
+    /* Spacing and Gaps - Balanced Margins */
+    --zoombar-gap: 30px;
+    --map-pad-top: 40px;    
+    --map-pad-bottom: 80px; 
+    --fit-margin: 30; 
 
-    /* General gaps */
+    --gap-between-groups: 50px;
     --gap-x:36px;
     --gap-x-d01:100px;
     --gap-rootcat:22px;
@@ -32,33 +32,33 @@
     --gap-item:6px;
     --chip-h:48px;
 
-    /* Font Stack with Kav16 */
+    /* Theme */
     --font: 'Kav16', 'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     --bg:#ffffff; --ink:#0f172a;
     --edge:#C5CBD8; --toggle:#fe0100;
     --shadow:0 8px 22px rgba(0,0,0,.10);
     --r:9999px;
 
-    /* Animation & fitting */
+    /* Animations */
     --anim-dur:.60s;
     --anim-ease:ease-in-out;
-    --fit-margin:32;
   }
 
   *{box-sizing:border-box}
   html, body, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
-  html,body{height:auto;min-height:100%; overflow-x:hidden}
-  body{margin:0;background:var(--bg);color:var(--ink);}
-  .wrap{padding:12px; width:100%; margin:0 auto; overflow:visible}
+  html,body{height:100%; overflow:hidden}
+  body{margin:0;background:var(--bg);color:var(--ink); display: flex; flex-direction: column;}
+  .wrap{padding:0; width:100%; flex: 1; display: flex; flex-direction: column; overflow: hidden;}
 
   /* Toolbar */
   .zoombar{
-    position:sticky; top:8px; inset-inline:0;
+    position:relative; top:8px; 
     display:flex; justify-content:center; align-items:center; gap:6px; z-index:10;
     background:rgba(255,255,255,.9); backdrop-filter:saturate(180%) blur(10px);
     padding:10px 12px; margin:0 auto var(--zoombar-gap);
     width:max-content; border-radius:14px;
-    border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
+    border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10);
+    flex-shrink: 0;
   }
   .zoombar button{
     border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer;
@@ -73,15 +73,15 @@
   #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
   #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
 
-  /* Stage + panning */
-  .viewport{position:relative; width:100%; overflow:hidden; touch-action:none; cursor:grab; scrollbar-gutter:stable both-edges; direction:ltr;}
+  /* Stage and Viewport */
+  .viewport{position:relative; width:100%; flex: 1; overflow:auto; touch-action:none; cursor:grab; scrollbar-gutter:stable both-edges; direction:ltr;}
   .viewport.panning{ cursor:grabbing; }
-  .scroller{ position:relative; padding: var(--map-pad-top) 0 var(--map-pad-bottom); }
-  .stage{ position:absolute; inset-inline-start:0; top:0; transform-origin: top left; min-height:380px; min-width:0; opacity:0 }
+  .scroller{ position:relative; min-width: 100%; min-height: 100%; }
+  .stage{ position:absolute; inset-inline-start:0; top:0; transform-origin: 0 0; min-height:10px; min-width:10px; opacity:0 }
   .chips{ position:absolute; inset:0; z-index:1 }
   svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
 
-  /* Nodes */
+  /* Nodes/Chips */
   .chip{
     position:absolute; display:flex; align-items:center;
     height:var(--chip-h); padding:0 16px; border-radius:var(--r);
@@ -99,11 +99,10 @@
 
   .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
 
-  /* Fade transitions */
+  /* Fade animations */
   .fade-exit{ opacity:1 }
   .fade-exit.fade-active{ opacity:0; transition: opacity var(--anim-dur) var(--anim-ease) }
 
-  /* Mobile/Tablet adjustment for labels that are too long */
   @media (max-width: 600px) {
     .chip { white-space: normal; height: auto; min-height: var(--chip-h); padding: 8px 16px; width: 220px; }
   }
@@ -130,7 +129,6 @@
   </div>
 </div>
 
-<!-- === DATA: Living Legacy Module Content === -->
 <script id="mindmap-data" type="application/json">
 {
   "dir": "ltr",
@@ -141,71 +139,71 @@
       {
         "label": "Lesson #01 – The Thought of Rabbi Sacks: Between Public Memory and Inspiration",
         "children": [
-          { "label": "The student will examine the ways in which Rabbi Sacks’s legacy continues to shape contemporary philosophical, ethical, and educational discourse." },
-          { "label": "The student will analyze the dialogue between public memory and the principles of inspiration and renewal." },
-          { "label": "The student will assess Rabbi Sacks’s contribution to shaping a Jewish moral identity within the global public sphere." },
-          { "label": "The student will examine how his educational ideas are expressed in institutions such as the Sacks Morasha School." },
-          { "label": "The student will relate the meaning of ‘religion as a moral–social force’ within Rabbi Sacks’s thought." }
+          { "label": "Examine the ways in which Rabbi Sacks’s legacy continues to shape contemporary discourse." },
+          { "label": "Analyze the dialogue between public memory and the principles of inspiration." },
+          { "label": "Assess Rabbi Sacks’s contribution to shaping Jewish moral identity globally." },
+          { "label": "Examine educational ideas in institutions such as the Sacks Morasha School." },
+          { "label": "Relate the meaning of ‘religion as a moral–social force’ within his thought." }
         ]
       },
       {
-        "label": "Lesson #02 – Prof. Adam Ferziger: How Did Rabbi Sacks Become a Cultural Phenomenon in Israel?",
+        "label": "Lesson #02 – Adam Ferziger: A Cultural Phenomenon in Israel",
         "children": [
-          { "label": "The student will examine the process in which Rabbi Sacks’s thought has been absorbed into Israeli discourse." },
-          { "label": "The student will analyze the cultural impact of translating his writings for a secular–academic audience." },
-          { "label": "The student will explore how Rabbi Sacks created a bridge between modern Orthodoxy and universal moral discourse." },
-          { "label": "The student will identify him as a model of the contemporary public intellectual." },
-          { "label": "The student will discuss Rabbi Sacks’s contribution to shaping a modern Jewish moral identity." }
+          { "label": "Examine the process in which Rabbi Sacks’s thought has been absorbed into Israeli discourse." },
+          { "label": "Analyze the cultural impact of translating his writings for a secular–academic audience." },
+          { "label": "Explore the bridge between modern Orthodoxy and universal moral discourse." },
+          { "label": "Identify him as a model of the contemporary public intellectual." },
+          { "label": "Discuss his contribution to shaping a modern Jewish moral identity." }
         ]
       },
       {
-        "label": "Lesson #03 – Rabbi Daniel Epstein: From Quotes on the Wall to the Bookshelf",
+        "label": "Lesson #03 – Daniel Epstein: From Quotes to the Bookshelf",
         "children": [
-          { "label": "The student will examine how Rabbi Sacks’s thought has evolved from an intellectual legacy into a living communal legacy." },
-          { "label": "The student will analyze the influence of his ethical language on community and educational institutions." },
-          { "label": "The student will explain how his interpretive approach encourages participatory communal discourse." },
-          { "label": "The student will identify the shift from charismatic leadership to a collective moral legacy." },
-          { "label": "The student will discuss the process through which an idea becomes a public and communal ethos." }
+          { "label": "Examine how his thought has evolved into a living communal legacy." },
+          { "label": "Analyze the influence of his ethical language on community and institutions." },
+          { "label": "Explain how his interpretive approach encourages participatory communal discourse." },
+          { "label": "Identify the shift from charismatic leadership to a collective moral legacy." },
+          { "label": "Discuss the process through which an idea becomes a public ethos." }
         ]
       },
       {
-        "label": "Lesson #04 – Dr. Chaim Neria: The Archive as a Foundation for Understanding the Legacy",
+        "label": "Lesson #04 – Chaim Neria: The Archive as Foundation",
         "children": [
-          { "label": "The student will examine the archive as a source for understanding the development of Rabbi Sacks’s thought." },
-          { "label": "The student will analyze how manuscripts, sermons, and drafts reveal his process of thinking and writing." },
-          { "label": "The student will relate the importance of documentary preservation to understanding a ‘living intellectual legacy.’" },
-          { "label": "The student will identify the relationship between text, memory, and community in his thought." },
-          { "label": "The student will discuss the role of cultural memory in shaping a renewed moral identity." }
+          { "label": "Examine the archive as a source for understanding the development of his thought." },
+          { "label": "Analyze how manuscripts and drafts reveal his process of thinking and writing." },
+          { "label": "Relate the importance of documentary preservation to a ‘living intellectual legacy.’" },
+          { "label": "Identify the relationship between text, memory, and community in his thought." },
+          { "label": "Discuss the role of cultural memory in shaping renewed moral identity." }
         ]
       },
       {
-        "label": "Lesson #05 – Joanna Benarroch: Challenges of Modernity, Public Responsibility, and Identity",
+        "label": "Lesson #05 – Joanna Benarroch: Challenges of Modernity",
         "children": [
-          { "label": "The student will analyze Rabbi Sacks’s concept of public responsibility in relation to the challenges of modernity." },
-          { "label": "The student will examine how he offers a model for moral living in a global - religious world." },
-          { "label": "The student will connect the concept of a ‘community of responsibility’ to an educational and social context." },
-          { "label": "The student will identify the role of education in transmitting values across generations." },
-          { "label": "The student will discuss the tension between universal openness and preserving Jewish distinctiveness." }
+          { "label": "Analyze his concept of public responsibility in relation to modernity." },
+          { "label": "Examine how he offers a model for moral living in a global-religious world." },
+          { "label": "Connect the concept of a ‘community of responsibility’ to educational contexts." },
+          { "label": "Identify the role of education in transmitting values across generations." },
+          { "label": "Discuss the tension between universal openness and preserving distinctiveness." }
         ]
       },
       {
-        "label": "Lesson #06 - Joanne Greenaway: Educational Legacy for Renewed Jewish Leadership",
+        "label": "Lesson #06 – Joanne Greenaway: Educational Legacy",
         "children": [
-          { "label": "The student will examine the role of education as a central driving force in Rabbi Sacks’s legacy." },
-          { "label": "The student will analyze his influence on shaping moral - educational leadership in the UK and globally." },
-          { "label": "The student will connect the principle of ‘leadership that creates leaders’ to an educational - communal model." },
-          { "label": "The student will identify how educational institutions implement his vision in the 21st century." },
-          { "label": "The student will discuss the concept of ‘education as a moral mission’ in Rabbi Sacks’s legacy." }
+          { "label": "Examine the role of education as a central driving force in his legacy." },
+          { "label": "Analyze his influence on shaping moral-educational leadership globally." },
+          { "label": "Connect the principle of ‘leadership that creates leaders’ to communal models." },
+          { "label": "Identify how educational institutions implement his vision today." },
+          { "label": "Discuss the concept of ‘education as a moral mission’ in his legacy." }
         ]
       },
       {
-        "label": "Lesson #07 – “Radical Then, Radical Now”",
+        "label": "Lesson #07 – Radical Then, Radical Now",
         "children": [
-          { "label": "The student will analyze the concept of radicalism in Rabbi Sacks’s thought as a deep moral stance." },
-          { "label": "The student will explore how Rabbi Sacks challenges the spirit of the age while remaining faithful to tradition." },
-          { "label": "The student will examine the idea of ‘faith as moral courage’ in a contemporary context." },
-          { "label": "The student will identify the tension between moral conservatism and ethical renewal." },
-          { "label": "The student will discuss Rabbi Sacks’s call for social–moral action in an age of change." }
+          { "label": "Analyze the concept of radicalism in his thought as a deep moral stance." },
+          { "label": "Explore how he challenges the spirit of the age while remaining faithful." },
+          { "label": "Examine the idea of ‘faith as moral courage’ in a contemporary context." },
+          { "label": "Identify the tension between moral conservatism and ethical renewal." },
+          { "label": "Discuss the call for social–moral action in an age of change." }
         ]
       }
     ]
@@ -217,10 +215,8 @@
 (function(){
   let data;
   try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
-  catch(e){ data = {"dir":"ltr","flow":"ltr","root":{"label":"Data error","children":[]}}; }
+  catch(e){ data = {"dir":"ltr","flow":"ltr","root":{"label":"Data Error","children":[]}}; }
 
-  const DIR  = (data.dir||'ltr'); document.documentElement.setAttribute('dir', DIR);
-  const FLOW = (data.flow||'ltr');
   const viewport  = document.getElementById('viewport');
   const scroller  = document.getElementById('scroller');
   const stage      = document.getElementById('app');
@@ -229,32 +225,25 @@
 
   let mode='fitW', userScale=1, lockedFit=1, zoomFrozen=false, didInitialFitAll=false;
 
-  if(FLOW==='ltr'){
-    stage.style.transformOrigin='top left'; stage.style.left='0';
-  } else {
-    stage.style.transformOrigin='top right'; stage.style.right='0';
-  }
-  stage.style.top='0'; stage.style.position='absolute';
-
   const CSS = getComputedStyle(document.documentElement);
   const CHIP_H    = parseFloat(CSS.getPropertyValue('--chip-h'))    || 48;
   const GAP_X     = parseFloat(CSS.getPropertyValue('--gap-x'))     || 36;
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
-  const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
   const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
-  const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
-  const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
   const GAP_GROUPS = parseFloat(CSS.getPropertyValue('--gap-between-groups')) || 45;
-  const PAD_TOP    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 35;
-  const PAD_BOTTOM = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 60;
+  
+  const FIT_MARGIN = parseFloat(CSS.getPropertyValue('--fit-margin')) || 30;
+  const MAP_PAD_TOP = parseFloat(CSS.getPropertyValue('--map-pad-top')) || 40;
+  const MAP_PAD_BOTTOM = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 80;
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
   function build(raw, depth=0, parent=null, idx=0){
     const node = {
       label: raw.label, depth, parent, idx,
-      collapsed: (typeof raw.collapsed==='boolean') ? raw.collapsed : (depth!==0),
+      // Lessons (depth 1+) are collapsed by default in the initial state
+      collapsed: (depth !== 0),
       x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2),
       _subH:0, children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null)
     };
@@ -281,19 +270,28 @@
   }
   (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
 
-  function measure(node){
+  function measureNode(node){
+    // Node must be temporarily layout-able to get accurate offsetWidth
+    const oldDisplay = node.el.style.display;
+    node.el.style.display = 'flex';
+    node.el.style.visibility = 'hidden';
+    node.el.style.position = 'absolute';
     node.el.style.left = '-10000px';
-    node.width = Math.max(0, node.el.offsetWidth);
+    
+    node.width = Math.max(10, node.el.offsetWidth);
     node.height = Math.max(CHIP_H, node.el.offsetHeight);
-    node.children.forEach(measure);
+    
+    node.el.style.display = oldDisplay;
+    node.el.style.visibility = '';
+    node.children.forEach(measureNode);
   }
   
   function gapForDepth(depth){
-    if(depth>=4) return GAP_D4;
-    if(depth===3) return GAP_D3;
+    if(depth>=4) return 18;
+    if(depth===3) return 18;
     if(depth===2) return GAP_CAT;
     if(depth===1) return GAP_ROOTCAT;
-    return GAP_CAT;
+    return 20;
   }
   
   function subHeight(node){
@@ -327,105 +325,107 @@
   function computeBounds(nodes){
     let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
     nodes.forEach(n=>{
-      const left = (FLOW==='rtl' ? (n.x - n.width) : n.x);
-      const right = (FLOW==='rtl' ? n.x : n.x + n.width);
-      minX = Math.min(minX, left); maxX = Math.max(maxX, right);
-      minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2);
+      minX = Math.min(minX, n.x); 
+      maxX = Math.max(maxX, n.x + n.width);
+      minY = Math.min(minY, n.y - n.height/2); 
+      maxY = Math.max(maxY, n.y + n.height/2);
     });
-    return { w:(maxX-minX), h:(maxY-minY), minX };
+    return { w:(maxX-minX), h:(maxY-minY), minX, minY, maxX, maxY };
   }
 
-  let lastW=0, lastH=0, offsetX=0, stageW=0;
+  let lastW=0, lastH=0, offsetX=0, offsetY=0;
 
   function layout(){
-    measure(root);
+    measureNode(root);
     subHeight(root); position(root,0,0);
-    let nodesTmp=[]; collectVisible(root, nodesTmp);
+    
+    const visibleNodes = [];
+    collectVisible(root, visibleNodes);
 
+    // Dynamic depth anchors
     const depthMaxW = new Map();
-    nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140));});
+    visibleNodes.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width));});
 
     DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
     let acc=0;
-    const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
+    const maxDepthVis = visibleNodes.reduce((m,n)=>Math.max(m,n.depth),0);
     for(let d=1; d<=maxDepthVis+1; d++){
       acc += (depthMaxW.get(d-1)||140) + (d===1 ? GAP_X_D01 : GAP_X);
-      DEPTH_ANCHORS.set(d, (FLOW==='rtl' ? -acc : acc));
+      DEPTH_ANCHORS.set(d, acc);
     }
 
     subHeight(root); position(root, 0, 0);
     const nodes=[]; collectVisible(root, nodes);
-    const { w, h, minX } = computeBounds(nodes);
+    const bounds = computeBounds(nodes);
 
-    const vpW = viewport.getBoundingClientRect().width;
-    const vpH = viewport.clientHeight || window.innerHeight;
-    const FIT_MARGIN = parseFloat(CSS.getPropertyValue('--fit-margin')) || 24;
-    const innerW = Math.max(1, vpW - FIT_MARGIN);
-    const innerH = Math.max(1, vpH - PAD_TOP - PAD_BOTTOM);
+    const vpW = viewport.clientWidth;
+    const vpH = viewport.clientHeight;
 
-    const fitW = innerW / Math.max(1, w);
-    const fitH = innerH / Math.max(1, h);
-    const baseFit = Math.min(fitW, fitH);
-    const compactCap = (nodes.reduce((m,n)=> Math.max(m, n.depth), 0) <= 1) ? 0.75 : 0.95;
+    const innerW = Math.max(1, vpW - FIT_MARGIN * 2);
+    const innerH = Math.max(1, vpH - (MAP_PAD_TOP + MAP_PAD_BOTTOM));
 
-    if (!didInitialFitAll){ lockedFit = Math.max(0.2, Math.min(baseFit, compactCap)); didInitialFitAll = true; }
-    else { lockedFit = Math.max(0.2, Math.min(fitW, compactCap)); }
+    const fitW_scale = innerW / Math.max(1, bounds.w);
+    const fitH_scale = innerH / Math.max(1, bounds.h);
+    const baseFit = Math.min(fitW_scale, fitH_scale);
 
-    if (!zoomFrozen){ userScale = lockedFit; mode='free'; zoomFrozen = true; }
+    lockedFit = baseFit;
 
-    if(mode==='fitW'){
-      offsetX = -minX + (24/lockedFit); stageW = w + 48/lockedFit;
-    } else {
-      const sNow = Math.max(userScale, 0.0001);
-      const desiredPad = Math.max(60, Math.floor((viewport.clientWidth/sNow - w)/2) + 40);
-      offsetX = -minX + desiredPad; stageW = w + desiredPad*2;
+    if (!zoomFrozen){ 
+        userScale = lockedFit; 
+        mode = 'fitW';
+        zoomFrozen = true; 
     }
 
-    lastW = stageW; lastH = h;
-    stage.style.width = Math.ceil(stageW) + 'px';
-    stage.style.height = Math.ceil(h) + 'px';
+    const sNow = (mode==='fitW') ? lockedFit : userScale;
 
-    // Hide all chips first, then show only visible ones to avoid residuals
+    // Centering and Margin Calculation
+    offsetX = -bounds.minX + Math.max(FIT_MARGIN, (vpW / sNow - bounds.w) / 2);
+    offsetY = -bounds.minY + Math.max(MAP_PAD_TOP, (vpH / sNow - bounds.h) / 2);
+    
+    // Total stage dimensions
+    const stageW = bounds.maxX + offsetX + FIT_MARGIN;
+    const stageH = bounds.maxY + offsetY + MAP_PAD_BOTTOM;
+
+    stage.style.width = Math.ceil(stageW) + 'px';
+    stage.style.height = Math.ceil(stageH) + 'px';
+
     (function hideAll(n){ if(n.el) n.el.style.display='none'; n.children.forEach(hideAll); })(root);
 
     nodes.forEach(n=>{
       n.el.style.display = 'flex';
-      const top = n.y - n.height/2;
+      const top = (n.y - n.height/2) + offsetY;
       const xUnits = offsetX + n.x;
-      n.el.style.left  = ((FLOW==='rtl') ? (xUnits - n.width) : xUnits) + 'px';
+      n.el.style.left  = xUnits + 'px';
       n.el.style.top   = top + 'px';
       if(n.children.length) n.el.setAttribute('aria-expanded', String(!n.collapsed));
-      // Cleanup animation classes
       n.el.classList.remove('fade-exit', 'fade-active');
     });
 
     edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
-      let p1x, p2x;
-      if(FLOW==='ltr'){
-        p1x = (offsetX + n.x + n.width) - 6; p2x = (offsetX + ch.x) + 6;
-      } else {
-        p1x = (offsetX + n.x - n.width) + 6; p2x = (offsetX + ch.x) - 6;
-      }
-      const dx=Math.abs(p2x-p1x)*.45,
-            c1x=(FLOW==='rtl'? p1x-dx: p1x+dx),
-            c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
+      const y1 = n.y + offsetY;
+      const y2 = ch.y + offsetY;
+      const p1x = (offsetX + n.x + n.width) - 6; 
+      const p2x = (offsetX + ch.x) + 6;
+      const dx = Math.abs(p2x-p1x) * 0.45;
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
       path.setAttribute('class','edge');
-      path.setAttribute('d', `M ${p1x} ${n.y} C ${c1x} ${n.y}, ${c2x} ${ch.y}, ${p2x} ${ch.y}`);
+      path.setAttribute('d', `M ${p1x} ${y1} C ${p1x+dx} ${y1}, ${p2x-dx} ${y2}, ${p2x} ${y2}`);
       edgeLayer.appendChild(path);
       draw(ch);
     }); })(root);
 
+    lastW = stageW; lastH = stageH;
     applyZoom(); stage.style.opacity='1';
   }
 
   function handleToggle(n){
     if(!n.children.length) return;
+    if(mode === 'fitW') { userScale = lockedFit; mode = 'free'; }
+
     if(n.collapsed){ n.collapsed=false; layout(); }
     else {
       const dur = parseFloat(CSS.getPropertyValue('--anim-dur'))*1000;
-      // Start fade animation from children only (fixes the 'parent disappearing' bug)
       n.children.forEach(function collect(node){
         if(!node || node.collapsed) return;
         if(node.el) {
@@ -445,17 +445,14 @@
     const s = (mode==='fitW') ? lockedFit : userScale;
     stage.style.transform = `scale(${s})`;
     document.getElementById('zoomPct').textContent = Math.round(s*100) + "%";
-    if (mode === 'fitW') {
-      scroller.style.width = viewport.clientWidth + 'px'; scroller.style.height = viewport.clientHeight + 'px';
-      viewport.style.overflow = 'hidden';
-    } else {
-      scroller.style.width = Math.ceil(lastW * s) + 'px';
-      scroller.style.height = Math.ceil(lastH * s + PAD_TOP + PAD_BOTTOM) + 'px';
-      viewport.style.overflow = 'auto';
-    }
+    
+    const sw = Math.ceil(lastW * s);
+    const sh = Math.ceil(lastH * s);
+    
+    scroller.style.width = Math.max(viewport.clientWidth, sw) + 'px';
+    scroller.style.height = Math.max(viewport.clientHeight, sh) + 'px';
   }
 
-  /* Pan Logic */
   let isDown=false, isPanning=false, panStartX=0, panStartY=0, startL=0, startT=0, activeId=null;
   viewport.addEventListener('pointerdown', e=>{
     if(mode==='fitW') return;
@@ -477,24 +474,16 @@
   bind('zoomIn', ()=>{ mode='free'; userScale=Math.min(userScale+0.15, 3); applyZoom(); });
   bind('zoomOut',()=>{ mode='free'; userScale=Math.max(userScale-0.15, 0.2); applyZoom(); });
   bind('zoomPct',()=>{ mode='free'; userScale=1; applyZoom(); });
-  bind('fitW',   ()=>{ zoomFrozen=false; mode='fitW'; layout(); });
-  bind('expandAll', ()=>{ (function op(n){ n.collapsed=false; n.children.forEach(op); })(root); layout(); });
-  bind('collapseAll',()=>{ (function cl(n){ if(n!==root) n.collapsed=true; n.children.forEach(cl); })(root); mode='free'; layout(); });
+  bind('fitW',   ()=>{ mode='fitW'; layout(); });
+  bind('expandAll', ()=>{ mode='free'; (function op(n){ n.collapsed=false; n.children.forEach(op); })(root); layout(); });
+  bind('collapseAll',()=>{ mode='free'; (function cl(n){ if(n!==root) n.collapsed=true; n.children.forEach(cl); })(root); mode='free'; layout(); });
 
-  function size(){
-    const avail = window.innerHeight - viewport.getBoundingClientRect().top - 16;
-    viewport.style.height = Math.max(400, Math.floor(avail)) + 'px';
-    layout();
-  }
-
-  // Reload layout when custom font is ready for accurate measurements
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(()=>{ layout(); });
-    document.fonts.addEventListener?.('loadingdone', ()=> { layout(); });
   }
 
-  window.onresize = size;
-  window.onload = size;
+  window.onresize = layout;
+  window.onload = layout;
 })();
 </script>
 </body>
