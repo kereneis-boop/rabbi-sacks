@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Synthesis and Final Project – Mind-Map</title>
+<title>סיכום מסע – Mind-Map (RTL)</title>
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
   /* Define the custom font from edX Assets */
@@ -16,7 +16,6 @@
   }
 
   :root{
-    /* Adjustable spacing */
     --zoombar-gap: 40px;
     --map-pad-top: 35px;
     --map-pad-bottom: 60px;
@@ -32,14 +31,14 @@
     --gap-item:6px;
     --chip-h:48px;
 
-    /* Styling */
+    /* Look & feel */
     --font: 'Kav16', 'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     --bg:#ffffff; --ink:#0f172a;
     --edge:#C5CBD8; --toggle:#fe0100;
     --shadow:0 8px 22px rgba(0,0,0,.10);
     --r:9999px;
 
-    /* Animation */
+    /* Animation & fitting */
     --anim-dur:.60s;
     --anim-ease:ease-in-out;
     --fit-margin:32;
@@ -73,11 +72,11 @@
   #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
   #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
 
-  /* Stage */
-  .viewport{position:relative; width:100%; overflow:hidden; touch-action:none; cursor:grab; scrollbar-gutter:stable both-edges; direction:ltr;}
+  /* Viewport */
+  .viewport{position:relative; width:100%; overflow:hidden; touch-action:none; cursor:grab; scrollbar-gutter:stable both-edges; direction:rtl;}
   .viewport.panning{ cursor:grabbing; }
   .scroller{ position:relative; padding: var(--map-pad-top) 0 var(--map-pad-bottom); }
-  .stage{ position:absolute; inset-inline-start:0; top:0; transform-origin: top left; min-height:380px; min-width:0; opacity:0 }
+  .stage{ position:absolute; inset-inline-end:0; top:0; transform-origin: top right; min-height:380px; min-width:0; opacity:0 }
   .chips{ position:absolute; inset:0; z-index:1 }
   svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
 
@@ -86,11 +85,11 @@
     position:absolute; display:flex; align-items:center;
     height:var(--chip-h); padding:0 16px; border-radius:var(--r);
     line-height:1.2; white-space:nowrap; box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.6);
-    direction:ltr; text-align:left; font-weight:700; gap:14px;
+    direction:rtl; text-align:right; font-weight:700; gap:14px;
     background: var(--chip-bg, #ffffff); color:#0f172a; cursor:pointer;
   }
   .chip[data-kind="root"]{font-weight:800; font-size:1.1rem}
-  .label{pointer-events:none; direction:ltr; text-align:left}
+  .label{pointer-events:none; direction:rtl; text-align:right}
   .chip .toggle{margin-inline-start:auto}
   .toggle{position:relative; width:28px; height:28px; border:0; border-radius:50%; background:var(--toggle); cursor:pointer; flex-shrink:0;}
   .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition:opacity var(--anim-dur) var(--anim-ease)}
@@ -111,13 +110,13 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="zoombar" aria-label="Zoom controls">
-    <button id="fitW" title="Fit to view">↔︎ Fit</button>
-    <button id="zoomOut" title="Zoom out">−</button>
+  <div class="zoombar" aria-label="פקדי זום">
+    <button id="fitW" title="התאם למסך">↔︎ התאמה</button>
+    <button id="zoomOut" title="זום החוצה">−</button>
     <button id="zoomPct" class="pct" title="100%">100%</button>
-    <button id="zoomIn" title="Zoom in">+</button>
-    <button id="expandAll" title="Expand all">Expand all</button>
-    <button id="collapseAll" title="Collapse all">Collapse all</button>
+    <button id="zoomIn" title="זום פנימה">+</button>
+    <button id="expandAll" title="פתח הכל">פתח הכל</button>
+    <button id="collapseAll" title="סגור הכל">סגור הכל</button>
   </div>
 
   <div id="viewport" class="viewport">
@@ -130,228 +129,234 @@
   </div>
 </div>
 
-<!-- === DATA: Synthesis and Final Project Content === -->
+<!-- === DATA: Hebrew Journey Summary === -->
 <script id="mindmap-data" type="application/json">
 {
-  "dir": "ltr",
-  "flow": "ltr",
+  "dir": "rtl",
+  "flow": "rtl",
   "root": {
-    "label": "Synthesis and Final Project",
+    "label": "סיכום מסע",
     "children": [
       {
-        "label": "Module 1 – Biography",
+        "label": "מודולה 1 – ביוגרפיה",
         "children": [
           {
-            "label": "Biographical Foundations in the Thought of Rabbi Sacks",
+            "label": "יסודות ביוגרפיים בהגות הרב זקס",
             "children": [
-              { "label": "Rabbi Sacks’s life story as a foundation for understanding his spiritual and intellectual world." }
+              { "label": "סיפור חייו של הרב זקס כבסיס להבנת עולמו הרוחני והאינטלקטואלי." }
             ]
           },
           {
-            "label": "Gila Sacks - A Personal Perspective on the Development of Rabbi Sacks as a Philosopher and Jewish Thinker",
+            "label": "גילה זקס – מבט אישי על התפתחות הרב זקס כפילוסוף והוגה יהודי",
             "children": [
-              { "label": "The shaping of Rabbi Sacks’s moral world through personal and family testimony." }
+              { "label": "עיצוב עולמו הערכי של הרב זקס דרך עדות אישית ומשפחתית." }
             ]
           },
           {
-            "label": "Rabbi Dayan Binstock - From the Local Sermon to a Legacy of Thought",
+            "label": "הרב דיין בינשטוק – מן הדרשה המקומית אל המורשת ההגותית",
             "children": [
-              { "label": "The transition from local rabbinic authority to a spiritual leader with a global vision." }
+              { "label": "מעבר מסמכות רבנית מקומית למנהיג רוחני בעל חזון עולמי." }
             ]
           }
         ]
       },
       {
-        "label": "Module 2 – Philosophical Foundations in Jewish Thought",
+        "label": "מודולה 2 – יסודות פילוסופיים בהגות היהודית",
         "children": [
           {
-            "label": "Philosophical Foundations in Jewish Thought",
+            "label": "יסודות פילוסופיים בהגות היהודית",
             "children": [
-              { "label": "The philosophical foundations of Jewish thought as a bridge between faith and reason." }
+              { "label": "תשתית פילוסופית של ההגות היהודית כגשר בין אמונה לתבונה." }
             ]
           },
           {
-            "label": "Prof. Hanoch Ben-Pazi - Philosophical Dialogues: Exploring Responsibility and Jewish Thought",
+            "label": "פרופ׳ חנוך בן־פזי – דיאלוגים פילוסופיים: חקר האחריות והמחשבה היהודית",
             "children": [
-              { "label": "The concept of responsibility as a key to understanding ethics in the thought of Rabbi Sacks." }
+              { "label": "מושג האחריות כמפתח להבנת האתיקה בהגות הרב זקס." }
             ]
           },
           {
-            "label": "From Universal Rationalism to Social Covenant: Rabbi Sacks’s Critique of the Enlightenment",
+            "label": "מרציונליזם אוניברסלי לברית חברתית: ביקורת הנאורות עפ״י הרב זקס",
             "children": [
-              { "label": "The critique of the Enlightenment and the concept of covenant as an innovative moral foundation." }
+              { "label": "ביקורת הנאורות ומושג הברית כיסוד מוסרי חדשני." }
             ]
           },
           {
-            "label": "Rabbi Dr. Raphael Zarum - Exploring Jewish Thought and Influence",
+            "label": "הרב ד״ר רפאל זארום – חקר המחשבה וההשפעה היהודית",
             "children": [
-              { "label": "The relationship between rationalism and mysticism as a basis for creative moral thinking." }
+              { "label": "מה בין רציונליזם למיסטיקה כיסוד לחשיבה מוסרית יצירתית?" }
             ]
           },
           {
-            "label": "Tradition in a Non-Traditional Age – Rabbi Sacks: Without Fear",
+            "label": "מסורת בעידן לא מסורתי – הרב זקס: ללא מורא",
             "children": [
-              { "label": "Rabbi Sacks’s conception of the future as both a challenge and a moral opportunity in a changing world." }
+              { "label": "תפיסת הרב זקס את העתיד כאתגר וכהזדמנות מוסרית בעולם משתנה." }
             ]
           }
         ]
       },
       {
-        "label": "Module 3 – The Interpretive Method",
+        "label": "מודולה 3 – המתודה הפרשנית",
         "children": [
           {
-            "label": "The Interpretive Method in the Thought of Rabbi Sacks",
+            "label": "המתודה הפרשנית בהגות הרב זקס",
             "children": [
-              { "label": "Interpretation as a moral and communal process bridging text and life." }
+              { "label": "הפרשנות כתהליך מוסרי וקהילתי המגשר בין טקסט לחיים." }
             ]
           },
           {
-            "label": "Rabbi Dr. Michael Harris - Between Rabbinics and Philosophy: Rabbi Sacks’s Journey",
+            "label": "הרב ד״ר מייקל האריס – בין רבנות לפילוסופיה: מסעו של הרב זקס",
             "children": [
-              { "label": "Rabbi Sacks as a figure who bridges tradition and contemporary philosophy." }
+              { "label": "דמותו של הרב זקס כמי שמחבר בין מסורת לפילוסופיה עכשווית." }
             ]
           },
           {
-            "label": "Prof. Hanoch Ben-Pazi – The Principle of Interpretation as a Moral Act in Rabbi Sacks’s Thought",
+            "label": "פרופ׳ חנוך בן־פזי – עיקרון הפרשנות כמעשה מוסרי בהגות הרב זקס",
             "children": [
-              { "label": "Interpretation as a moral act that brings the individual into encounter with the other." }
+              { "label": "פרשנות כפעולה מוסרית המפגישה את האדם עם הזולת." }
             ]
           },
           {
-            "label": "Interpreting Difficult Biblical Texts as a Moral and Theological Challenge",
+            "label": "פרשנות טקסטים קשים בתורה כאתגר מוסרי ותיאולוגי",
             "children": [
-              { "label": "How to engage with difficult texts as a moral call to the contemporary person." }
+              { "label": "כיצד להתמודד עם טקסטים קשים כקריאה מוסרית לאדם בן זמננו." }
             ]
           },
           {
-            "label": "Not in God’s Name",
+            "label": "לא בשם האל",
             "children": [
-              { "label": "Examining Rabbi Sacks’s call to renew religiosity through responsibility and compassion." }
+              { "label": "בחינת קריאתו של הרב זקס לחדש את הדתיות מתוך אחריות וחמלה." }
             ]
           }
         ]
       },
       {
-        "label": "Module 4 – From Text to Dialogue",
+        "label": "מודולה 4 – מטקסט לדיאלוג",
         "children": [
           {
-            "label": "Dialogue in a Diverse Society in a Multicultural Age",
+            "label": "דיאלוג בחברה מגוונת בעידן רב־תרבותי",
             "children": [
-              { "label": "The foundations of dialogical thought and the understanding of dialogue as a moral act." }
+              { "label": "יסודות ההגות הדיאלוגית והבנת הדיאלוג כמעשה מוסרי." }
             ]
           },
           {
-            "label": "Prof. Jonathan Rynhold – Covenant, Discourse, and State in the Thought of Rabbi Sacks",
+            "label": "פרופ׳ ג׳ונתן ריינהולד – ברית, שיח ומדינה בהגות הרב זקס",
             "children": [
-              { "label": "Dialogue as the basis for a politics of covenant and civic responsibility." }
+              { "label": "הדיאלוג כיסוד לפוליטיקה של ברית ואחריות אזרחית." }
             ]
           },
           {
-            "label": "The Philosophy of Dialogue: From Rosenzweig to Rabbi Sacks",
+            "label": "הפילוסופיה של הדיאלוג: בין רוזנצווייג לרב זקס",
             "children": [
-              { "label": "Deepening the understanding of dialogue as a model for moral and social existence in a pluralist world." }
+              { "label": "העמקה בהבנת הדיאלוג כמודל לקיום מוסרי וחברתי בעולם פלורליסטי." }
             ]
           },
           {
-            "label": "Tradition in a Non-Traditional Age",
+            "label": "מסורת בעידן לא מסורתי",
             "children": [
-              { "label": "How dialogue enables tradition to renew itself in the modern world." }
+              { "label": "כיצד הדיאלוג מאפשר למסורת להתחדש בעולם מודרני." }
             ]
           }
         ]
       },
       {
-        "label": "Module 5 – Modernity and Society",
+        "label": "מודולה 5 – מודרניות וחברה",
         "children": [
           {
-            "label": "Between Tradition and Modernity",
+            "label": "בין מסורת למודרנה",
             "children": [
-              { "label": "Balancing commitment to tradition with openness to modernity." }
+              { "label": "האיזון בין מחויבות למסורת לבין פתיחות למודרנה." }
             ]
           },
           {
-            "label": "In the Language of the Future",
+            "label": "בלשון עתיד",
             "children": [
-              { "label": "The concept of hope as a foundation for moral creativity and social vision." }
+              { "label": "תפיסת התקווה כיסוד ליצירה מוסרית וחזון חברתי." }
             ]
           },
           {
-            "label": "The Role of the Chief Rabbi – Jewish Leadership in a Multicultural Society",
+            "label": "תפקיד הרב הראשי – מנהיגות יהודית בחברה רב־תרבותית",
             "children": [
-              { "label": "An in-depth study of Rabbi Sacks' model of public leadership as a bridge between identities." }
+              { "label": "העמקה במודל המנהיגות הציבורית של הרב זקס כגשר בין זהויות." }
             ]
           },
           {
-            "label": "Rabbi Lord David Wolfson – Judaism, Influence, and Leadership in the British Arena",
+            "label": "הרב לורד דוד וולפסון – יהדות, השפעה ומנהיגות בזירה האנגלית",
             "children": [
-              { "label": "Rabbi Sacks as a moral leader in the British public arena." }
+              { "label": "דמותו של הרב זקס כמנהיג מוסרי בזירה הציבורית הבריטית." }
             ]
           },
           {
-            "label": "Dreams and Reality",
+            "label": "חלומות ומציאות",
             "children": [
-              { "label": "Rabbi Sacks’s vision of transforming a Jewish dream into a moral reality." }
+              { "label": "חזונו של הרב זקס להפוך חלום יהודי למציאות מוסרית." }
             ]
           },
           {
-            "label": "Science and Religion – Conflict or Complementarity?",
+            "label": "מדע ודת – ניגוד או השלמה?",
             "children": [
-              { "label": "The complementarity between science and religion as two dimensions of meaning." }
+              { "label": "ההשלמה בין המדע לדת כשני ממדים של משמעות." }
             ]
           },
           {
-            "label": "Prof. Aryeh Tzavan – Science, Faith, and Sustainability",
+            "label": "פרופ׳ אריה צבן – מה בין מדע, אמונה וקיימות",
             "children": [
-              { "label": "The dialogue between science, faith, and environmental responsibility." }
+              { "label": "הדיאלוג בין מדע, אמונה ואחריות סביבתית." }
             ]
           }
         ]
       },
       {
-        "label": "Module 6 – Living Legacy",
+        "label": "מודולה 6 – מורשת חיה",
         "children": [
           {
-            "label": "The Thought of Rabbi Sacks – Between Public Memory and Inspiration",
+            "label": "הגותו של הרב זקס – בין זיכרון ציבורי להשראה",
             "children": [
-              { "label": "How Rabbi Sacks’s thought continues to influence as part of public and educational memory." }
+              { "label": "כיצד הגותו של הרב זקס ממשיכה להשפיע כחלק מהזיכרון הציבורי והחינוכי." }
             ]
           },
           {
-            "label": "Prof. Adam Ferziger - How Did Rabbi Sacks Become a Cultural Phenomenon in Israel?",
+            "label": "פרופ׳ אדם פרזיגר – כיצד הפך הרב זקס לתופעה תרבותית בישראל?",
             "children": [
-              { "label": "The way Rabbi Sacks became a spiritual-cultural figure in the Israeli arena." }
+              { "label": "הדרך שבה הפך הרב זקס לדמות רוחנית־תרבותית במרחב הישראלי." }
             ]
           },
           {
-            "label": "Rabbi Daniel Epstein – From Quotes on the Wall to the Bookshelf",
+            "label": "הרב דניאל אפשטיין – מציטוטים על הקיר למדף הספרים",
             "children": [
-              { "label": "Rabbi Sacks’s transformation from a personal symbol into a living communal legacy." }
+              { "label": "הפיכתו של הרב זקס מסמל אישי למורשת קהילתית חיה." }
             ]
           },
           {
-            "label": "Dr. Chaim Neria – The Archive as a Basis for Understanding Rabbi Sacks’s Legacy",
+            "label": "ד״ר חיים נריה – הארכיון כבסיס להבנת מורשת הרב זקס",
             "children": [
-              { "label": "The role of the archive in understanding Rabbi Sacks’s creative process." }
+              { "label": "תפקיד הארכיון בהבנת תהליך היצירה של הרב זקס." }
             ]
           },
           {
-            "label": "Joanna Benarroch - Challenges of Modernity, Public Responsibility, and Jewish Identity",
+            "label": "ג׳ואנה בנהרוש – אתגרי המודרניות, האחריות הציבורית והזהות היהודית",
             "children": [
-              { "label": "The concept of public responsibility and Jewish identity in a changing reality." }
+              { "label": "תפיסת האחריות הציבורית והזהות היהודית במציאות משתנה." }
             ]
           },
           {
-            "label": "Joanne Greenaway – Educational Legacy for Renewed Jewish Leadership",
+            "label": "ג׳ואן גרינאוויי – מורשת חינוכית כיסוד למנהיגות יהודית מתחדשת",
             "children": [
-              { "label": "Rabbi Sacks’ educational vision as a driver of moral leadership." }
+              { "label": "חזונו החינוכי של הרב זקס כמנוע למנהיגות מוסרית." }
             ]
           },
           {
-            "label": "Radical Then, Radical Now",
+            "label": "רדיקלית אז, רדיקלית עכשיו",
             "children": [
-              { "label": "Rabbi Sacks’ call for bold and courageous moral action in our time." }
+              { "label": "הקריאה של הרב זקס לפעולה מוסרית נועזת ואמיצה בזמננו." }
             ]
           }
+        ]
+      },
+      {
+        "label": "סיכום ופרויקט גמר",
+        "children": [
+          { "label": "אינטגרציה של רעיונות הרב זקס ליצירת פרויקט מסכם אישי או קהילתי." }
         ]
       }
     ]
@@ -363,10 +368,10 @@
 (function(){
   let data;
   try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
-  catch(e){ data = {"dir":"ltr","flow":"ltr","root":{"label":"Data Error","children":[]}}; }
+  catch(e){ data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים","children":[]}}; }
 
-  const DIR  = (data.dir||'ltr'); document.documentElement.setAttribute('dir', DIR);
-  const FLOW = (data.flow||'ltr');
+  const DIR  = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
+  const FLOW = (data.flow||'rtl');
   const viewport  = document.getElementById('viewport');
   const scroller  = document.getElementById('scroller');
   const stage      = document.getElementById('app');
@@ -388,8 +393,8 @@
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
   const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
-  const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || 18;
-  const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || 18;
+  const GAP_D3 = 18;
+  const GAP_D4 = 18;
   const GAP_GROUPS = parseFloat(CSS.getPropertyValue('--gap-between-groups')) || 45;
   const PAD_TOP    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 35;
   const PAD_BOTTOM = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 60;
