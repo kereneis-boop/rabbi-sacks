@@ -6,6 +6,15 @@
 <title>Interpretive Method – Mind-Map (Module 1 – LTR)</title>
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  /* Define the custom font from edX Assets */
+  @font-face {
+    font-family: 'Kav16';
+    src: url('https://courses.edx.org/asset-v1:IsraelX+Rabi_BIU+1T2026+type@asset+block@Kav16-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap; /* Critical for mobile/app performance */
+  }
+
   :root{
     /* Adjustable spacing */
     --zoombar-gap: 60px;          /* gap between toolbar and map */
@@ -23,8 +32,9 @@
     --gap-item:6px;
     --chip-h:48px;
 
-    /* Look & feel */
-    --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    /* Updated Font Stack: Kav16 as primary */
+    --font: 'Kav16', 'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    
     --bg:#ffffff; --ink:#0f172a;
     --edge:#C5CBD8; --toggle:#fe0100;
     --shadow:0 8px 22px rgba(0,0,0,.10);
@@ -214,8 +224,8 @@
 
   /* CSS constants */
   const CSS = getComputedStyle(document.documentElement);
-  const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))   || 48;
-  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))    || 36;
+  const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))    || 48;
+  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))     || 36;
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
   const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
@@ -390,7 +400,7 @@
       if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
-    /* edges – FIXED for LTR: parent right → child left */
+    /* edges – Parent right → child left */
     edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       const PAD_PARENT=6, PAD_CHILD=6;
@@ -403,14 +413,14 @@
         const parentLeft  = offsetX + n.x;
         const parentRight = parentLeft + n.width;
         const childLeft   = offsetX + ch.x;
-        p1x = parentRight - PAD_PARENT;   // right side of parent
-        p2x = childLeft   + PAD_CHILD;    // left side of child
+        p1x = parentRight - PAD_PARENT; 
+        p2x = childLeft   + PAD_CHILD;  
       } else {
         const parentRight = offsetX + n.x;
         const parentLeft  = parentRight - n.width;
         const childRight  = offsetX + ch.x;
-        p1x = parentLeft  + PAD_PARENT;   // left side of parent (RTL)
-        p2x = childRight  - PAD_CHILD;    // right side of child (RTL)
+        p1x = parentLeft  + PAD_PARENT; 
+        p2x = childRight  - PAD_CHILD;  
       }
 
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
