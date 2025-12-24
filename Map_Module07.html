@@ -6,117 +6,127 @@
 <title>סיכום מסע – Mind-Map (RTL)</title>
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  /* Define the custom font from edX Assets */
-  @font-face {
-    font-family: 'Kav16';
-    src: url('https://courses.edx.org/asset-v1:IsraelX+Rabi_BIU+1T2026+type@asset+block@Kav16-Regular.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-  }
-
   :root{
-    --zoombar-gap: 40px;
+    --zoombar-gap: 60px;
     --map-pad-top: 35px;
-    --map-pad-bottom: 60px;
-    --gap-between-groups: 45px;
+    --map-pad-bottom: 35px;          /* רווח קבוע בין המפה לפס הגלילה */
+    --gap-between-groups: 40px;
+    --gap-between-mods-d2: var(--gap-between-groups);
 
-    /* General gaps */
-    --gap-x:36px;
-    --gap-x-d01:100px;
-    --gap-rootcat:22px;
-    --gap-cat:22px;
-    --gap-d3:18px;
-    --gap-d4:18px;
-    --gap-item:6px;
-    --chip-h:48px;
-
-    /* Look & feel */
-    --font: 'Kav16', 'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --font:'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     --bg:#ffffff; --ink:#0f172a;
-    --edge:#C5CBD8; --toggle:#fe0100;
-    --shadow:0 8px 22px rgba(0,0,0,.10);
-    --r:9999px;
 
-    /* Animation & fitting */
+    --chip-h:48px;
+    --gap-x:36px;
+    --gap-x-d01:100px;                /* רווח אופקי בין עומק 0 לעומק 1 */
+    --gap-y:40px;
+    --gap-rootcat:22px;               /* עומק 1 */
+    --gap-d3:22px;                    /* עומק 3 */
+    --gap-d4:22px;                    /* עומק 4 */
+    --gap-cat:22px;                   /* עומק 2 */
+    --gap-item:6px;                   /* עומק 3+ */
+
+    --r:9999px;
+    --shadow:0 8px 22px rgba(0,0,0,.10);
+    --edge:#C5CBD8;
+    --toggle:#fe0100;
+
     --anim-dur:.60s;
     --anim-ease:ease-in-out;
     --fit-margin:32;
   }
 
   *{box-sizing:border-box}
-  html, body, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
+  html, body, button, input, select, textarea, .chip, .zoombar, .zoombar button, .pct, .label { font-family: var(--font) !important; }
   html,body{height:auto;min-height:100%; overflow-x:hidden}
   body{margin:0;background:var(--bg);color:var(--ink);}
-  .wrap{padding:12px; width:100%; margin:0 auto; overflow:visible}
+  .wrap{padding:12px; width:100%; max-width:none; margin:0 auto; overflow:visible}
 
-  /* Toolbar */
+  /* זום־בר */
   .zoombar{
-    position:sticky; top:8px; inset-inline:0;
-    display:flex; justify-content:center; align-items:center; gap:6px; z-index:10;
-    background:rgba(255,255,255,.9); backdrop-filter:saturate(180%) blur(10px);
-    padding:10px 12px; margin:0 auto var(--zoombar-gap);
-    width:max-content; border-radius:14px;
+    position:sticky; top:8px; inset-inline:0; display:flex; justify-content:center; align-items:center; gap:6px; z-index:3;
+    background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(10px);
+    padding:10px 12px; margin:0 auto var(--zoombar-gap); width:max-content; border-radius:14px;
     border:1px solid rgba(15,23,42,.06); box-shadow:0 8px 24px rgba(0,0,0,.10)
   }
   .zoombar button{
     border:1px solid rgba(15,23,42,.08); border-radius:12px; height:36px; padding:0 12px; font-weight:800; cursor:pointer;
     background:linear-gradient(180deg,#ffffff,#f7f7f9); box-shadow:0 4px 12px rgba(0,0,0,.08);
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
-    touch-action:manipulation;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease
   }
   .zoombar button:hover{box-shadow:0 8px 18px rgba(0,0,0,.12)}
   .zoombar button:active{transform:translateY(1px)}
-  .zoombar .pct{min-width:68px; height:36px; display:inline-flex; align-items:center; justify-content:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08)}
+  .zoombar button:focus-visible{outline:3px solid rgba(59,130,246,.5); outline-offset:2px}
+  .zoombar .pct{min-width:72px; text-align:center; border-radius:9999px; background:#f3f4f6; border:1px solid rgba(15,23,42,.08); height:36px; display:inline-flex; align-items:center; justify-content:center}
   #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
   #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
+  @media (max-width:680px){.zoombar{width:calc(100% - 24px); justify-content:space-between}}
+  .zoombar .pct{min-width:68px; text-align:center}
 
-  /* Viewport */
-  .viewport{position:relative; width:100%; overflow:hidden; touch-action:none; cursor:grab; scrollbar-gutter:stable both-edges; direction:rtl;}
-  .viewport.panning{ cursor:grabbing; }
-  .scroller{ position:relative; padding: var(--map-pad-top) 0 var(--map-pad-bottom); }
-  .stage{ position:absolute; inset-inline-end:0; top:0; transform-origin: top right; min-height:380px; min-width:0; opacity:0 }
-  .chips{ position:absolute; inset:0; z-index:1 }
-  svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
+  /* במה */
+  .viewport{
+    position:relative; width:100%; height:auto; overflow:hidden;
+    touch-action:none; cursor:grab;
+    padding-bottom: var(--map-pad-bottom);  /* כרית קבועה מתחת למפה */
+    box-sizing: border-box;
+    scrollbar-gutter: stable both-edges;
+  }
 
-  /* Nodes */
+  /* מרכזים את המפה באמצעות Flex */
+  .scroller{
+    position:relative;
+    display:flex; justify-content:center; align-items:flex-start;
+    padding: var(--map-pad-top) 0 0;
+    min-width:100%;
+  }
+
+  .stage{
+    position:relative; min-height:380px; min-width:0;
+    transform-origin: top center;   /* זום סביב המרכז */
+    opacity:0
+  }
+  .chips{position:absolute; inset:0; z-index:1}
+  svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0}
+
+  /* Capsules */
   .chip{
     position:absolute; display:flex; align-items:center;
     height:var(--chip-h); padding:0 16px; border-radius:var(--r);
-    line-height:1.2; white-space:nowrap; box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.6);
-    direction:rtl; text-align:right; font-weight:700; gap:14px;
+    line-height:1; white-space:nowrap; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.6);
+    direction: rtl; text-align:right; font-weight:700; gap:14px;
     background: var(--chip-bg, #ffffff); color:#0f172a; cursor:pointer;
   }
-  .chip[data-kind="root"]{font-weight:800; font-size:1.1rem}
-  .label{pointer-events:none; direction:rtl; text-align:right}
+  .chip[data-kind="root"]{font-weight:800}
+  .label{pointer-events:none; direction: rtl; text-align: right}
   .chip .toggle{margin-inline-start:auto}
-  .toggle{position:relative; width:28px; height:28px; border:0; border-radius:50%; background:var(--toggle); cursor:pointer; flex-shrink:0;}
-  .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition:opacity var(--anim-dur) var(--anim-ease)}
+
+  .toggle{position:relative; width:28px;height:28px;border-radius:50%;flex:0 0 auto;background:var(--toggle); cursor:pointer; border:0}
+  .toggle .bar{position:absolute; left:50%; top:50%; width:14px; height:2px; background:#fff; border-radius:2px; transform:translate(-50%,-50%); transition: opacity var(--anim-dur) var(--anim-ease)}
   .toggle .bar.v{transform:translate(-50%,-50%) rotate(90deg)}
   .chip[aria-expanded="true"] .toggle .bar.v{opacity:0}
 
   .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
 
-  /* Fade transitions */
+  .fade-enter{ opacity:0.001 }
+  .fade-enter.fade-active{ opacity:1; transition: opacity var(--anim-dur) var(--anim-ease) }
   .fade-exit{ opacity:1 }
   .fade-exit.fade-active{ opacity:0; transition: opacity var(--anim-dur) var(--anim-ease) }
 
-  /* Mobile/Tablet adjustment */
-  @media (max-width: 600px) {
-    .chip { white-space: normal; height: auto; min-height: var(--chip-h); padding: 8px 16px; width: 220px; }
+  @media (prefers-reduced-motion: reduce){
+    .fade-enter.fade-active,.fade-exit.fade-active{transition:none}
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="zoombar" aria-label="פקדי זום">
-    <button id="fitW" title="התאם למסך">↔︎ התאמה</button>
-    <button id="zoomOut" title="זום החוצה">−</button>
+  <div class="zoombar" aria-label="Zoom controls">
+    <button id="fitW" title="התאם לרוחב">↔︎ התאמה</button>
+    <button id="zoomOut" title="Zoom out">−</button>
     <button id="zoomPct" class="pct" title="100%">100%</button>
-    <button id="zoomIn" title="זום פנימה">+</button>
-    <button id="expandAll" title="פתח הכל">פתח הכל</button>
-    <button id="collapseAll" title="סגור הכל">סגור הכל</button>
+    <button id="zoomIn" title="Zoom in">+</button>
+    <button id="expandAll" title="פתח הכל">פתח־הכל</button>
+    <button id="collapseAll" title="סגור הכל">סגור־הכל</button>
   </div>
 
   <div id="viewport" class="viewport">
@@ -129,7 +139,7 @@
   </div>
 </div>
 
-<!-- === DATA: Hebrew Journey Summary === -->
+<!-- === DATA === -->
 <script id="mindmap-data" type="application/json">
 {
   "dir": "rtl",
@@ -236,7 +246,7 @@
           {
             "label": "דיאלוג בחברה מגוונת בעידן רב־תרבותי",
             "children": [
-              { "label": "יסודות ההגות הדיאלוגית והבנת הדיאלוג כמעשה מוסרי." }
+              { "label": "יסודות ההגות הדיאלוגית והבין את הדיאלוג כמעשה מוסרי." }
             ]
           },
           {
@@ -352,12 +362,6 @@
             ]
           }
         ]
-      },
-      {
-        "label": "סיכום ופרויקט גמר",
-        "children": [
-          { "label": "אינטגרציה של רעיונות הרב זקס ליצירת פרויקט מסכם אישי או קהילתי." }
-        ]
       }
     ]
   }
@@ -368,45 +372,45 @@
 (function(){
   let data;
   try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
-  catch(e){ data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים","children":[]}}; }
+  catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"rtl","flow":"rtl","root":{"label":"שגיאת נתונים - נא לבדוק JSON","children":[]}}; }
 
-  const DIR  = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
+  const DIR = (data.dir||'rtl'); document.documentElement.setAttribute('dir', DIR);
   const FLOW = (data.flow||'rtl');
-  const viewport  = document.getElementById('viewport');
-  const scroller  = document.getElementById('scroller');
-  const stage      = document.getElementById('app');
+
+  const viewport = document.getElementById('viewport');
+  const stage = document.getElementById('app');
+  const scroller = document.getElementById('scroller');
   const chipLayer = document.getElementById('chips');
   const edgeLayer = document.getElementById('edges');
 
-  let mode='fitW', userScale=1, lockedFit=1, zoomFrozen=false, didInitialFitAll=false;
-
-  if(FLOW==='ltr'){
-    stage.style.transformOrigin='top left'; stage.style.left='0';
-  } else {
-    stage.style.transformOrigin='top right'; stage.style.right='0';
-  }
-  stage.style.top='0'; stage.style.position='absolute';
+  /* מצב פתיחה: התאמה לרוחב */
+  let mode = 'fitW', userScale = 1, lockedFit = 1, didInitialFitAll = false;
 
   const CSS = getComputedStyle(document.documentElement);
-  const CHIP_H    = parseFloat(CSS.getPropertyValue('--chip-h'))    || 48;
-  const GAP_X     = parseFloat(CSS.getPropertyValue('--gap-x'))     || 36;
+  const CHIP_H  = parseFloat(CSS.getPropertyValue('--chip-h'))    || 48;
+  const GAP_X   = parseFloat(CSS.getPropertyValue('--gap-x'))     || 36;
+  const GAP_Y   = parseFloat(CSS.getPropertyValue('--gap-y'))     || 40;
+  const GAP_BETWEEN_MODS_D2 = parseFloat(CSS.getPropertyValue('--gap-between-mods-d2')) || 20;
   const GAP_ROOTCAT = parseFloat(CSS.getPropertyValue('--gap-rootcat')) || 22;
   const GAP_CAT = parseFloat(CSS.getPropertyValue('--gap-cat'))  || 22;
+  const GAP_ITEM= parseFloat(CSS.getPropertyValue('--gap-item')) || 6;
   const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
-  const GAP_D3 = 18;
-  const GAP_D4 = 18;
-  const GAP_GROUPS = parseFloat(CSS.getPropertyValue('--gap-between-groups')) || 45;
-  const PAD_TOP    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 35;
-  const PAD_BOTTOM = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 60;
+  const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
+  const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
+
+  const MAP_PAD_TOP_PX    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 0;
+  const MAP_PAD_BOTTOM_PX = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 35;
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
-  function build(raw, depth=0, parent=null, idx=0){
+  function build(raw, depth=0, parent=null, idxInParent=0){
+    const defaultCollapsed = depth === 0 ? false : true;
     const node = {
-      label: raw.label, depth, parent, idx,
-      collapsed: (typeof raw.collapsed==='boolean') ? raw.collapsed : (depth!==0),
-      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2),
-      _subH:0, children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null)
+      label: raw.label, depth, parent,
+      collapsed: (typeof raw.collapsed==='boolean' ? raw.collapsed : defaultCollapsed),
+      x:0,y:0,width:0,height:CHIP_H, el:null, id: Math.random().toString(36).slice(2), _subH:0,
+      children: [], gapOverride: (typeof raw.gap==='number'? raw.gap : null),
+      idx: idxInParent
     };
     (raw.children||[]).forEach((ch,i)=> node.children.push(build(ch, depth+1, node, i)));
     return node;
@@ -415,77 +419,87 @@
 
   function ensureChip(node){
     if(node.el) return;
-    const el = document.createElement('div'); el.className='chip';
+    const el = document.createElement('div'); el.className = 'chip';
     el.dataset.kind = node.depth===0 ? 'root' : (node.children.length? 'cat':'leaf');
     const label = document.createElement('span'); label.className='label'; label.textContent=node.label; el.appendChild(label);
     if(node.children.length){
       const t = document.createElement('button');
-      t.className='toggle'; t.type='button'; t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
+      t.className = 'toggle'; t.setAttribute('aria-label','פתח/סגור'); t.type='button';
+      t.innerHTML = '<i class="bar h"></i><i class="bar v"></i>';
       el.appendChild(t);
       el.setAttribute('aria-expanded', String(!node.collapsed));
-      t.addEventListener('click', ev=>{ ev.stopPropagation(); handleToggle(node); });
-      el.addEventListener('click', ev=>{ if(ev.target.closest('.toggle')) return; handleToggle(node); });
+      t.addEventListener('click', ev => { ev.stopPropagation(); handleToggle(node); });
+      el.addEventListener('click', ev => { if (ev.target.closest('.toggle')) return; handleToggle(node); });
+      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
+      el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); handleToggle(node); } });
     }
-    el.style.setProperty('--chip-bg', DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4]);
+    const base = DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4];
+    el.style.setProperty('--chip-bg', base);
     chipLayer.appendChild(el); node.el=el;
   }
   (function collect(n){ ensureChip(n); n.children.forEach(collect); })(root);
 
   function measure(node){
     node.el.style.left = '-10000px';
-    node.width = Math.max(0, node.el.offsetWidth);
-    node.height = Math.max(CHIP_H, node.el.offsetHeight);
+    node.el.style.top = '-10000px';
+    const natural = Math.max(0, node.el.offsetWidth);
+    node.naturalWidth = natural;
+    node.width = natural;
     node.children.forEach(measure);
   }
-  
+
   function gapForDepth(depth){
     if(depth>=4) return GAP_D4;
     if(depth===3) return GAP_D3;
     if(depth===2) return GAP_CAT;
     if(depth===1) return GAP_ROOTCAT;
-    return 20;
+    return GAP_Y;
   }
-  
+
   function subHeight(node){
     if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
     let total = 0;
     node.children.forEach((c,i)=>{
-      subHeight(c); total += c._subH;
-      if(i>0) total += (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth);
-      if(node.depth===0 && i<node.children.length-1) total += GAP_GROUPS;
+      subHeight(c);
+      total += c._subH;
+      if(i>0){ total += (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth); }
+      if(node.depth===0 && i<node.children.length-1){ total += GAP_BETWEEN_MODS_D2; }
     });
     node._subH = Math.max(node.height, total); return node._subH;
   }
 
   let DEPTH_ANCHORS = new Map();
   function xForDepth(depth){ return DEPTH_ANCHORS.get(depth) || 0; }
-  
+
   function position(node, depth, top){
-    node.x = xForDepth(depth); node.y = top + node._subH/2;
+    node.x = xForDepth(depth);
+    node.y = top + node._subH/2;
     if(!(node.collapsed) && node.children.length){
       let cursor = top;
-      node.children.forEach((c,i)=>{
+      node.children.forEach((c,idx)=>{
         position(c, depth+1, cursor);
         cursor += c._subH + gapForDepth(c.depth);
-        if(node.depth===0 && i<node.children.length-1) cursor += GAP_GROUPS;
+        if(node.depth===0 && idx < node.children.length-1){ cursor += GAP_BETWEEN_MODS_D2; }
       });
     }
   }
-  
+
   function collectVisible(n, arr){ arr.push(n); if(!n.collapsed) n.children.forEach(ch=>collectVisible(ch, arr)); }
-  
   function computeBounds(nodes){
     let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
     nodes.forEach(n=>{
-      const left = (FLOW==='rtl' ? (n.x - n.width) : n.x);
+      const left  = (FLOW==='rtl' ? n.x - n.width : n.x);
       const right = (FLOW==='rtl' ? n.x : n.x + n.width);
-      minX = Math.min(minX, left); maxX = Math.max(maxX, right);
-      minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2);
+      minX = Math.min(minX, left);
+      maxX = Math.max(maxX, right);
+      minY = Math.min(minY, n.y - n.height/2);
+      maxY = Math.max(maxY, n.y + n.height/2);
     });
     return { w:(maxX-minX), h:(maxY-minY), minX };
   }
 
-  let lastW=0, lastH=0, offsetX=0, stageW=0;
+  let lastW = 0, lastH = 0, offsetX = 0, stageW = 0;
+  let lastContentW = 0;  /* לשימור מרכז בצמצום/הגדלה */
 
   function layout(){
     measure(root);
@@ -496,10 +510,10 @@
     nodesTmp.forEach(n=>{ depthMaxW.set(n.depth, Math.max(depthMaxW.get(n.depth)||0, n.width||140));});
 
     DEPTH_ANCHORS = new Map(); DEPTH_ANCHORS.set(0, 0);
-    let acc=0;
-    const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
+    let acc=0; const maxDepthVis = nodesTmp.reduce((m,n)=>Math.max(m,n.depth),0);
     for(let d=1; d<=maxDepthVis+1; d++){
-      acc += (depthMaxW.get(d-1)||140) + (d===1 ? GAP_X_D01 : GAP_X);
+      const addGap = (d===1 ? GAP_X_D01 : GAP_X);
+      acc += (depthMaxW.get(d-1)||140) + addGap;
       DEPTH_ANCHORS.set(d, (FLOW==='rtl' ? -acc : acc));
     }
 
@@ -508,137 +522,158 @@
     const { w, h, minX } = computeBounds(nodes);
 
     const vpW = viewport.getBoundingClientRect().width;
-    const vpH = viewport.clientHeight || window.innerHeight;
-    const FIT_MARGIN = parseFloat(CSS.getPropertyValue('--fit-margin')) || 24;
-    const innerW = Math.max(1, vpW - FIT_MARGIN);
-    const innerH = Math.max(1, vpH - PAD_TOP - PAD_BOTTOM);
+    const FIT_MARGIN = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit-margin')) || 24;
 
-    const fitW = innerW / Math.max(1, w);
-    const fitH = innerH / Math.max(1, h);
-    const baseFit = Math.min(fitW, fitH);
-    const compactCap = 0.95;
-
-    if (!didInitialFitAll){ lockedFit = Math.max(0.2, Math.min(baseFit, compactCap)); didInitialFitAll = true; }
-    else { lockedFit = Math.max(0.2, Math.min(fitW, compactCap)); }
-
-    if (!zoomFrozen){ userScale = lockedFit; mode='free'; zoomFrozen = true; }
+    /* התאמה לרוחב בלבד */
+    const fitW = Math.min(1.0, (vpW - FIT_MARGIN) / Math.max(1, w));
+    if (!didInitialFitAll){ lockedFit = Math.max(0.2, fitW); didInitialFitAll = true; }
+    else { lockedFit = Math.max(0.2, fitW); }
 
     if(mode==='fitW'){
-      offsetX = -minX + (24/lockedFit); stageW = w + 48/lockedFit;
+      const PAD = Math.max(16, 24/lockedFit);             /* פדינג סימטרי */
+      offsetX = -minX + PAD;
+      stageW  = w + PAD*2;
     } else {
       const sNow = Math.max(userScale, 0.0001);
-      const desiredPad = Math.max(60, Math.floor((viewport.clientWidth/sNow - w)/2) + 40);
-      offsetX = -minX + desiredPad; stageW = w + desiredPad*2;
+      const desiredPad = Math.max(40, (viewport.clientWidth/sNow - w)/2); /* סימטרי, ללא הטיה */
+      offsetX = -minX + desiredPad;
+      stageW  = w + desiredPad*2;
     }
 
-    lastW = stageW; lastH = h;
-    stage.style.width = Math.ceil(stageW) + 'px';
+    stage.style.width  = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
-
-    (function hideAll(n){ if(n.el) n.el.style.display='none'; n.children.forEach(hideAll); })(root);
+    lastW = stageW; lastH = h;
 
     nodes.forEach(n=>{
-      n.el.style.display = 'flex';
       const top = n.y - n.height/2;
-      const xUnits = offsetX + n.x;
-      n.el.style.left  = ((FLOW==='rtl') ? (xUnits - n.width) : xUnits) + 'px';
+      const rightUnits = offsetX + n.x;
+      const leftUnits  = (FLOW==='rtl') ? (rightUnits - n.width) : rightUnits;
+      n.el.style.left  = leftUnits  + 'px';
       n.el.style.top   = top + 'px';
-      if(n.children.length) n.el.setAttribute('aria-expanded', String(!n.collapsed));
-      n.el.classList.remove('fade-exit', 'fade-active');
+      if(n.children.length){ n.el.setAttribute('aria-expanded', String(!n.collapsed)); }
     });
 
     edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
-      let p1x, p2x;
-      if(FLOW==='ltr'){
-        p1x = (offsetX + n.x + n.width) - 6; p2x = (offsetX + ch.x) + 6;
-      } else {
-        p1x = (offsetX + n.x - n.width) + 6; p2x = (offsetX + ch.x) - 6;
-      }
-      const dx=Math.abs(p2x-p1x)*.45,
-            c1x=(FLOW==='rtl'? p1x-dx: p1x+dx),
-            c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
+      const PAD_PARENT=6, PAD_CHILD=0;
+      const parentRight = offsetX + n.x;
+      const childRight  = offsetX + ch.x;
+      const parentLeft  = parentRight - n.width;
+      const p1x = (FLOW==='rtl') ? (parentLeft + PAD_PARENT) : (parentRight - PAD_PARENT);
+      const p2x = (FLOW==='rtl') ? (childRight - PAD_CHILD)  : (childRight + ch.width + PAD_CHILD);
+      const p1y = n.y, p2y = ch.y;
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const dx=Math.abs(p2x-p1x)*.45, c1x=(FLOW==='rtl'? p1x-dx: p1x+dx), c2x=(FLOW==='rtl'? p2x+dx: p2x-dx);
       path.setAttribute('class','edge');
-      path.setAttribute('d', `M ${p1x} ${n.y} C ${c1x} ${n.y}, ${c2x} ${ch.y}, ${p2x} ${ch.y}`);
+      path.setAttribute('d', `M ${p1x} ${p1y} C ${c1x} ${p1y}, ${c2x} ${p2y}, ${p2x} ${p2y}`);
       edgeLayer.appendChild(path);
       draw(ch);
     }); })(root);
 
-    applyZoom(); stage.style.opacity='1';
+    applyZoom();
+    stage.style.opacity='1';
   }
 
+  function collapseDeep(n){ n.collapsed = true; n.children.forEach(c=>collapseDeep(c)); }
+  function animateClose(node, done){
+    const list=[]; function collectDesc(n){ if(!n || n.collapsed) return; list.push(n); n.children.forEach(collectDesc); }
+    node.children.forEach(collectDesc);
+    const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-dur'))*1000+20;
+    list.forEach(n=>{
+      if(n.el){ n.el.classList.add('fade-exit'); requestAnimationFrame(()=> n.el.classList.add('fade-active')); setTimeout(()=> n.el.classList.remove('fade-exit','fade-active'), dur); }
+    });
+    setTimeout(done, dur);
+  }
   function handleToggle(n){
     if(!n.children.length) return;
-    if(n.collapsed){ n.collapsed=false; layout(); }
-    else {
-      const dur = parseFloat(CSS.getPropertyValue('--anim-dur'))*1000;
-      n.children.forEach(function collect(node){
-        if(!node || node.collapsed) return;
-        if(node.el) {
-          node.el.classList.add('fade-exit');
-          requestAnimationFrame(()=> node.el.classList.add('fade-active'));
-        }
-        node.children.forEach(collect);
-      });
-      setTimeout(()=> {
-        (function close(node){ node.collapsed=true; node.children.forEach(close); })(n);
-        layout();
-      }, dur);
-    }
+    if(n.collapsed){ n.collapsed=false; if(n.el) n.el.setAttribute('aria-expanded','true'); layout(); }
+    else { if(n.el) n.el.setAttribute('aria-expanded','false'); animateClose(n, ()=>{ collapseDeep(n); layout(); }); }
   }
 
   function applyZoom(){
+    /* יחס מרכז אופקי לפני שינוי */
+    const oldW = lastContentW || scroller.offsetWidth || 1;
+    const oldCenterRatio = (viewport.scrollLeft + viewport.clientWidth/2) / oldW;
+
     const s = (mode==='fitW') ? lockedFit : userScale;
     stage.style.transform = `scale(${s})`;
-    document.getElementById('zoomPct').textContent = Math.round(s*100) + "%";
-    if (mode === 'fitW') {
-      scroller.style.width = viewport.clientWidth + 'px'; scroller.style.height = viewport.clientHeight + 'px';
-      viewport.style.overflow = 'hidden';
-    } else {
-      scroller.style.width = Math.ceil(lastW * s) + 'px';
-      scroller.style.height = Math.ceil(lastH * s + PAD_TOP + PAD_BOTTOM) + 'px';
-      viewport.style.overflow = 'auto';
+    const pct = document.getElementById('zoomPct'); if(pct) pct.textContent = Math.round(s*100)+"%";
+
+    /* רוחב/גובה "אפקטיביים" לאחר סקייל – כדי לייצר גלילה מדויקת */
+    const scaledW = Math.ceil(stageW * s);
+    const scaledH = Math.ceil(lastH * s) + MAP_PAD_TOP_PX;
+
+    scroller.style.width  = Math.max(viewport.clientWidth, scaledW) + 'px';
+    scroller.style.height = scaledH + 'px';
+
+    const tol = 2;
+    let needX = (scaledW - viewport.clientWidth) > tol && (mode!=='fitW');
+    let needY = (scaledH - (viewport.clientHeight - MAP_PAD_BOTTOM_PX)) > tol;
+
+    if(mode==='fitW'){ needX = false; }
+
+    viewport.style.overflowX = needX ? 'auto' : 'hidden';
+    viewport.style.overflowY = needY ? 'auto' : 'hidden';
+
+    /* שמירת המרכז בין שינויי זום (לא לקפוץ ימין/שמאל) */
+    const newW = Math.max(viewport.clientWidth, scaledW);
+    const newCenterLeft = Math.max(0, Math.round(newW * oldCenterRatio - viewport.clientWidth/2));
+    viewport.scrollLeft = (mode==='fitW') ? 0 : newCenterLeft;
+
+    lastContentW = newW;
+    viewport.style.cursor = (needX || needY) ? 'grab' : 'auto';
+  }
+
+  /* Pan */
+  let isPanning = false, dragStarted = false, panStartX = 0, panStartY = 0, startSL = 0, startST = 0, activePointerId = null;
+  function onPointerDown(e){
+    if(e.button !== 0) return;
+    isPanning = true; dragStarted = false; activePointerId = e.pointerId;
+    panStartX = e.clientX; panStartY = e.clientY;
+    startSL = viewport.scrollLeft; startST = viewport.scrollTop;
+  }
+  function onPointerMove(e){
+    if(!isPanning || e.pointerId !== activePointerId) return;
+    const dx = e.clientX - panStartX, dy = e.clientY - panStartY;
+    if(!dragStarted){
+      if(Math.abs(dx) + Math.abs(dy) > 3){
+        dragStarted = true;
+        try{ viewport.setPointerCapture(activePointerId); }catch(_){}
+        viewport.style.cursor = 'grabbing';
+      } else return;
     }
+    viewport.scrollLeft = startSL - dx;
+    viewport.scrollTop  = startST - dy;
   }
-
-  let isDown=false, isPanning=false, panStartX=0, panStartY=0, startL=0, startT=0, activeId=null;
-  viewport.addEventListener('pointerdown', e=>{
-    if(mode==='fitW') return;
-    isDown=true; activeId=e.pointerId; panStartX=e.clientX; panStartY=e.clientY;
-    startL=viewport.scrollLeft; startT=viewport.scrollTop;
-  });
-  window.addEventListener('pointermove', e=>{
-    if(!isDown || e.pointerId!==activeId) return;
-    const dx=e.clientX-panStartX, dy=e.clientY-panStartY;
-    if(!isPanning && Math.hypot(dx,dy)>5){ isPanning=true; viewport.classList.add('panning'); viewport.setPointerCapture(activeId); }
-    if(isPanning){ viewport.scrollLeft=startL-dx; viewport.scrollTop=startT-dy; }
-  });
-  window.addEventListener('pointerup', e=>{
-    if(e.pointerId!==activeId) return;
-    isDown=false; isPanning=false; viewport.classList.remove('panning');
-  });
-
-  function bind(id, fn){ document.getElementById(id).onclick=fn; }
-  bind('zoomIn', ()=>{ mode='free'; userScale=Math.min(userScale+0.15, 3); applyZoom(); });
-  bind('zoomOut',()=>{ mode='free'; userScale=Math.max(userScale-0.15, 0.2); applyZoom(); });
-  bind('zoomPct',()=>{ mode='free'; userScale=1; applyZoom(); });
-  bind('fitW',   ()=>{ zoomFrozen=false; mode='fitW'; layout(); });
-  bind('expandAll', ()=>{ (function op(n){ n.collapsed=false; n.children.forEach(op); })(root); layout(); });
-  bind('collapseAll',()=>{ (function cl(n){ if(n!==root) n.collapsed=true; n.children.forEach(cl); })(root); mode='free'; layout(); });
-
-  function size(){
-    const avail = window.innerHeight - viewport.getBoundingClientRect().top - 16;
-    viewport.style.height = Math.max(400, Math.floor(avail)) + 'px';
-    layout();
+  function onPointerUp(e){
+    if(e.pointerId !== activePointerId) return;
+    if(dragStarted){ try{ viewport.releasePointerCapture(activePointerId); }catch(_){ } e.preventDefault(); }
+    isPanning = false; dragStarted = false; activePointerId = null;
+    viewport.style.cursor = (viewport.style.overflowX==='auto' || viewport.style.overflowY==='auto') ? 'grab' : 'auto';
   }
+  viewport.addEventListener('pointerdown', onPointerDown);
+  viewport.addEventListener('pointermove', onPointerMove);
+  viewport.addEventListener('pointerup', onPointerUp);
+  viewport.addEventListener('pointercancel', onPointerUp);
+  viewport.addEventListener('pointerleave', onPointerUp);
 
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(()=>{ layout(); });
+  document.getElementById('zoomIn').addEventListener('click', ()=>{ mode='free'; userScale = Math.min((userScale||lockedFit) + 0.10, 3); applyZoom(); });
+  document.getElementById('zoomOut').addEventListener('click', ()=>{ mode='free'; userScale = Math.max((userScale||lockedFit) - 0.10, 0.2); applyZoom(); });
+  document.getElementById('zoomPct').addEventListener('click', ()=>{ mode='free'; userScale=1; applyZoom(); });
+  document.getElementById('fitW').addEventListener('click', ()=>{ mode='fitW'; layout(); });
+
+  document.getElementById('expandAll').addEventListener('click', ()=>{ (function open(n){ n.collapsed=false; n.children.forEach(open); })(root); layout(); });
+  document.getElementById('collapseAll').addEventListener('click', ()=>{ (function close(n){ if(n!==root) n.collapsed=true; n.children.forEach(close); })(root); layout(); });
+
+  function sizeViewport(){
+    const rect = viewport.getBoundingClientRect();
+    const avail = window.innerHeight - rect.top - 16;
+    viewport.style.height = Math.max(320, Math.floor(avail)) + 'px';
   }
+  sizeViewport();
+  layout();
 
-  window.onresize = size;
-  window.onload = size;
+  window.addEventListener('resize', ()=>{ sizeViewport(); layout(); });
 })();
 </script>
 </body>
