@@ -12,35 +12,27 @@
     src: url('https://courses.edx.org/asset-v1:IsraelX+Rabi_BIU+1T2026+type@asset+block@Kav16-Regular.woff') format('woff');
     font-weight: normal;
     font-style: normal;
-    font-display: swap; /* Critical for mobile/app performance */
+    font-display: swap;
   }
 
   :root{
-    /* Adjustable spacing */
-    --zoombar-gap: 40px;          /* gap between toolbar and map */
-    --map-pad-top: 35px;          /* top padding of map area (used in fit calc) */
-    --map-pad-bottom: 60px;       /* bottom padding of map area (used in fit calc) */
-    --gap-between-groups: 45px;   /* extra gap between lessons (children of root) */
-
-    /* General gaps */
+    --zoombar-gap: 40px;
+    --map-pad-top: 35px;
+    --map-pad-bottom: 60px;
+    --gap-between-groups: 45px;
     --gap-x:36px;
-    --gap-x-d01:100px;            /* horizontal gap between depth 0 and depth 1 */
+    --gap-x-d01:100px;
     --gap-rootcat:22px;
     --gap-cat:22px;
     --gap-d3:18px;
     --gap-d4:18px;
     --gap-item:6px;
     --chip-h:48px;
-
-    /* Updated Font Stack: Kav16 as primary */
     --font: 'Kav16', 'Alef', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-    
     --bg:#ffffff; --ink:#0f172a;
     --edge:#C5CBD8; --toggle:#fe0100;
     --shadow:0 8px 22px rgba(0,0,0,.10);
     --r:9999px;
-
-    /* Animation & fitting */
     --anim-dur:.60s;
     --anim-ease:ease-in-out;
     --fit-margin:32;
@@ -52,7 +44,6 @@
   body{margin:0;background:var(--bg);color:var(--ink);}
   .wrap{padding:12px; width:100%; margin:0 auto; overflow:visible}
 
-  /* Toolbar */
   .zoombar{
     position:sticky; top:8px; inset-inline:0;
     display:flex; justify-content:center; align-items:center; gap:6px; z-index:10;
@@ -74,7 +65,6 @@
   #zoomIn,#zoomOut{width:36px; padding:0; border-radius:9999px}
   #fitW{background:linear-gradient(180deg,#fafafa,#eeeeff);}
 
-  /* Stage + panning */
   .viewport{position:relative; width:100%; overflow:hidden; touch-action:none; cursor:grab; scrollbar-gutter:stable both-edges; direction:ltr;}
   .viewport.panning{ cursor:grabbing; }
   .scroller{ position:relative; padding: var(--map-pad-top) 0 var(--map-pad-bottom); }
@@ -82,7 +72,6 @@
   .chips{ position:absolute; inset:0; z-index:1 }
   svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; z-index:0 }
 
-  /* Nodes */
   .chip{
     position:absolute; display:flex; align-items:center;
     height:var(--chip-h); padding:0 16px; border-radius:var(--r);
@@ -100,13 +89,9 @@
 
   .edge{fill:none; stroke:var(--edge); stroke-width:2; stroke-linecap:round}
 
-  /* Fade transitions */
-  .fade-enter{ opacity:0.001 }
-  .fade-enter.fade-active{ opacity:1; transition: opacity var(--anim-dur) var(--anim-ease) }
   .fade-exit{ opacity:1 }
   .fade-exit.fade-active{ opacity:0; transition: opacity var(--anim-dur) var(--anim-ease) }
 
-  /* Mobile/Tablet adjustment for labels that are too long */
   @media (max-width: 600px) {
     .chip { white-space: normal; height: auto; min-height: var(--chip-h); padding: 8px 16px; width: 220px; }
   }
@@ -133,7 +118,6 @@
   </div>
 </div>
 
-<!-- === DATA: Science, Modernity, and Leadership Module === -->
 <script id="mindmap-data" type="application/json">
 {
   "dir": "ltr",
@@ -216,14 +200,12 @@
 
 <script>
 (function(){
-  /* ----- Parse & setup ----- */
   let data;
   try{ data = JSON.parse(document.getElementById('mindmap-data').textContent); }
-  catch(e){ console.error('Mindmap JSON parse error:', e); data = {"dir":"ltr","flow":"ltr","root":{"label":"Data error","children":[]}}; }
+  catch(e){ data = {"dir":"ltr","flow":"ltr","root":{"label":"Data error","children":[]}}; }
 
   const DIR  = (data.dir||'ltr'); document.documentElement.setAttribute('dir', DIR);
   const FLOW = (data.flow||'ltr');
-
   const viewport  = document.getElementById('viewport');
   const scroller  = document.getElementById('scroller');
   const stage      = document.getElementById('app');
@@ -233,11 +215,9 @@
   let mode='fitW', userScale=1, lockedFit=1, zoomFrozen=false, didInitialFitAll=false;
 
   if(FLOW==='ltr'){
-    stage.style.transformOrigin='top left';
-    stage.style.left='0';
+    stage.style.transformOrigin='top left'; stage.style.left='0';
   } else {
-    stage.style.transformOrigin='top right';
-    stage.style.right='0';
+    stage.style.transformOrigin='top right'; stage.style.right='0';
   }
   stage.style.top='0'; stage.style.position='absolute';
 
@@ -250,9 +230,9 @@
   const GAP_X_D01 = parseFloat(CSS.getPropertyValue('--gap-x-d01')) || GAP_X;
   const GAP_D3 = parseFloat(CSS.getPropertyValue('--gap-d3')) || GAP_ITEM;
   const GAP_D4 = parseFloat(CSS.getPropertyValue('--gap-d4')) || GAP_ITEM;
-  const GAP_GROUPS = parseFloat(CSS.getPropertyValue('--gap-between-groups')) || 0;
-  const PAD_TOP    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 0;
-  const PAD_BOTTOM = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 0;
+  const GAP_GROUPS = parseFloat(CSS.getPropertyValue('--gap-between-groups')) || 45;
+  const PAD_TOP    = parseFloat(CSS.getPropertyValue('--map-pad-top'))    || 35;
+  const PAD_BOTTOM = parseFloat(CSS.getPropertyValue('--map-pad-bottom')) || 60;
 
   const DEPTH_COLORS = {0:'#F8E8FF', 1:'#EBDCF8', 2:'#D4D2E6', 3:'#D7F6E4', 4:'#50E38A'};
 
@@ -280,7 +260,6 @@
       el.setAttribute('aria-expanded', String(!node.collapsed));
       t.addEventListener('click', ev=>{ ev.stopPropagation(); handleToggle(node); });
       el.addEventListener('click', ev=>{ if(ev.target.closest('.toggle')) return; handleToggle(node); });
-      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
     }
     el.style.setProperty('--chip-bg', DEPTH_COLORS[Math.min(node.depth,4)] || DEPTH_COLORS[4]);
     chipLayer.appendChild(el); node.el=el;
@@ -306,8 +285,7 @@
     if(node.collapsed || node.children.length===0){ node._subH = node.height; return node._subH; }
     let total = 0;
     node.children.forEach((c,i)=>{
-      subHeight(c);
-      total += c._subH;
+      subHeight(c); total += c._subH;
       if(i>0) total += (node.gapOverride != null) ? node.gapOverride : gapForDepth(c.depth);
       if(node.depth===0 && i<node.children.length-1) total += GAP_GROUPS;
     });
@@ -318,8 +296,7 @@
   function xForDepth(depth){ return DEPTH_ANCHORS.get(depth) || 0; }
   
   function position(node, depth, top){
-    node.x = xForDepth(depth);
-    node.y = top + node._subH/2;
+    node.x = xForDepth(depth); node.y = top + node._subH/2;
     if(!(node.collapsed) && node.children.length){
       let cursor = top;
       node.children.forEach((c,i)=>{
@@ -335,7 +312,7 @@
   function computeBounds(nodes){
     let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
     nodes.forEach(n=>{
-      const left  = (FLOW==='rtl' ? (n.x - n.width) : n.x);
+      const left = (FLOW==='rtl' ? (n.x - n.width) : n.x);
       const right = (FLOW==='rtl' ? n.x : n.x + n.width);
       minX = Math.min(minX, left); maxX = Math.max(maxX, right);
       minY = Math.min(minY, n.y - n.height/2); maxY = Math.max(maxY, n.y + n.height/2);
@@ -382,36 +359,38 @@
     if (!zoomFrozen){ userScale = lockedFit; mode='free'; zoomFrozen = true; }
 
     if(mode==='fitW'){
-      offsetX = -minX + (24/lockedFit);
-      stageW  = w + 48/lockedFit;
+      offsetX = -minX + (24/lockedFit); stageW = w + 48/lockedFit;
     } else {
       const sNow = Math.max(userScale, 0.0001);
       const desiredPad = Math.max(60, Math.floor((viewport.clientWidth/sNow - w)/2) + 40);
-      offsetX = -minX + desiredPad;
-      stageW  = w + desiredPad*2;
+      offsetX = -minX + desiredPad; stageW = w + desiredPad*2;
     }
 
     lastW = stageW; lastH = h;
-    stage.style.width  = Math.ceil(stageW) + 'px';
+    stage.style.width = Math.ceil(stageW) + 'px';
     stage.style.height = Math.ceil(h) + 'px';
 
+    // Critical Fix: Explicitly hide all chips first
+    (function hideAll(n){ if(n.el) n.el.style.display='none'; n.children.forEach(hideAll); })(root);
+
     nodes.forEach(n=>{
+      n.el.style.display = 'flex'; // Show only visible chips
       const top = n.y - n.height/2;
       const xUnits = offsetX + n.x;
       n.el.style.left  = ((FLOW==='rtl') ? (xUnits - n.width) : xUnits) + 'px';
       n.el.style.top   = top + 'px';
       if(n.children.length) n.el.setAttribute('aria-expanded', String(!n.collapsed));
+      // Cleanup animation classes
+      n.el.classList.remove('fade-exit', 'fade-active');
     });
 
     edgeLayer.textContent='';
     (function draw(n){ if(n.collapsed) return; n.children.forEach(ch=>{
       let p1x, p2x;
       if(FLOW==='ltr'){
-        p1x = (offsetX + n.x + n.width) - 6;
-        p2x = (offsetX + ch.x) + 6;
+        p1x = (offsetX + n.x + n.width) - 6; p2x = (offsetX + ch.x) + 6;
       } else {
-        p1x = (offsetX + n.x - n.width) + 6;
-        p2x = (offsetX + ch.x) - 6;
+        p1x = (offsetX + n.x - n.width) + 6; p2x = (offsetX + ch.x) - 6;
       }
       const dx=Math.abs(p2x-p1x)*.45,
             c1x=(FLOW==='rtl'? p1x-dx: p1x+dx),
@@ -423,8 +402,7 @@
       draw(ch);
     }); })(root);
 
-    applyZoom();
-    stage.style.opacity='1';
+    applyZoom(); stage.style.opacity='1';
   }
 
   function handleToggle(n){
@@ -432,14 +410,15 @@
     if(n.collapsed){ n.collapsed=false; layout(); }
     else {
       const dur = parseFloat(CSS.getPropertyValue('--anim-dur'))*1000;
-      (function collect(node){
+      // Fix: Start animation from children, not the parent itself
+      n.children.forEach(function collect(node){
         if(!node || node.collapsed) return;
         if(node.el) {
           node.el.classList.add('fade-exit');
           requestAnimationFrame(()=> node.el.classList.add('fade-active'));
         }
         node.children.forEach(collect);
-      })(n);
+      });
       setTimeout(()=> {
         (function close(node){ node.collapsed=true; node.children.forEach(close); })(n);
         layout();
@@ -451,19 +430,16 @@
     const s = (mode==='fitW') ? lockedFit : userScale;
     stage.style.transform = `scale(${s})`;
     document.getElementById('zoomPct').textContent = Math.round(s*100) + "%";
-
     if (mode === 'fitW') {
-      scroller.style.width  = viewport.clientWidth + 'px';
-      scroller.style.height = viewport.clientHeight + 'px';
+      scroller.style.width = viewport.clientWidth + 'px'; scroller.style.height = viewport.clientHeight + 'px';
       viewport.style.overflow = 'hidden';
     } else {
-      scroller.style.width  = Math.ceil(lastW * s) + 'px';
+      scroller.style.width = Math.ceil(lastW * s) + 'px';
       scroller.style.height = Math.ceil(lastH * s + PAD_TOP + PAD_BOTTOM) + 'px';
       viewport.style.overflow = 'auto';
     }
   }
 
-  /* Pan Logic */
   let isDown=false, isPanning=false, panStartX=0, panStartY=0, startL=0, startT=0, activeId=null;
   viewport.addEventListener('pointerdown', e=>{
     if(mode==='fitW') return;
@@ -495,12 +471,10 @@
     layout();
   }
   
-  // Re-layout when font is ready to ensure chip sizes are accurate
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(()=>{ layout(); });
     document.fonts.addEventListener?.('loadingdone', ()=> { layout(); });
   }
-
   window.onresize = size;
   window.onload = size;
 })();
