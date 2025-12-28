@@ -11,11 +11,19 @@
             font-family: 'Assistant', sans-serif;
             background-color: #f8fafc;
         }
-        .card-hover:hover {
-            transform: translateY(-2px);
+        .card-hover {
             transition: all 0.2s ease;
         }
-        /* Custom scrollbar for mobile */
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        /* התאמה לאפליקציית קמפוס ומובייל */
+        @media (max-width: 640px) {
+            .category-section {
+                margin-bottom: 2rem;
+            }
+        }
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -27,16 +35,16 @@
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
         <!-- Header -->
         <header class="mb-10 text-center">
             <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-2">ארכיון משאבי למידה - הרב זקס</h1>
-            <p class="text-slate-600">ריכוז כלל הקישורים האינטראקטיביים עבור קמפוס IL</p>
+            <p class="text-slate-600">ריכוז כלל המפות והסיכומים האינטראקטיביים עבור קמפוס IL</p>
         </header>
 
         <!-- Search Bar -->
-        <div class="mb-8 relative">
-            <input type="text" id="searchInput" placeholder="חיפוש קובץ או מודול..." 
+        <div class="mb-8 relative max-w-2xl mx-auto">
+            <input type="text" id="searchInput" placeholder="חיפוש לפי שם מודול או שפה..." 
                    class="w-full p-4 pr-12 rounded-xl border border-slate-200 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
             <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
                 <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -46,25 +54,25 @@
         <!-- Sections Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            <!-- Section: Modules Summaries -->
-            <section class="category-section" data-title="מודולים">
+            <!-- Section: English Maps -->
+            <section class="category-section" data-title="אנגלית">
                 <h2 class="flex items-center text-xl font-bold text-blue-800 mb-4 border-b-2 border-blue-100 pb-2">
-                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                    סיכומי מודולים (LTR)
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
+                    מפות חשיבה באנגלית (Maps)
                 </h2>
-                <div class="space-y-3" id="moduleList">
-                    <!-- Links will be injected here -->
+                <div class="space-y-3" id="englishList">
+                    <!-- English content -->
                 </div>
             </section>
 
-            <!-- Section: Mind Maps -->
-            <section class="category-section" data-title="מפות">
+            <!-- Section: Hebrew Mind Maps -->
+            <section class="category-section" data-title="עברית">
                 <h2 class="flex items-center text-xl font-bold text-emerald-800 mb-4 border-b-2 border-emerald-100 pb-2">
                     <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
-                    מפות חשיבה (Maps)
+                    מפות חשיבה בעברית (Maps)
                 </h2>
-                <div class="space-y-3" id="mapList">
-                    <!-- Links will be injected here -->
+                <div class="space-y-3" id="hebrewList">
+                    <!-- Hebrew content -->
                 </div>
             </section>
 
@@ -74,8 +82,8 @@
                     <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01"></path></svg>
                     מונחי מפתח (Terms)
                 </h2>
-                <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2" id="termList">
-                    <!-- Links will be injected here -->
+                <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2" id="termList">
+                    <!-- Terms content -->
                 </div>
             </section>
 
@@ -86,7 +94,8 @@
         const baseUrl = "https://kereneis-boop.github.io/rabbi-sacks/";
         
         const files = [
-            "Map-LTR.html", "Map_Module01.html", "Map_Module02.html", "Map_Module03.html", 
+            "map.html", "Map-LTR.html", 
+            "Map_Module01.html", "Map_Module02.html", "Map_Module03.html", 
             "Map_Module04.html", "Map_Module05.html", "Map_Module06.html", "Map_Module07.html",
             "Module01LTR.html", "Module02LTR.html", "Module03LTR.html", "Module04LTR.html", 
             "Module05LTR.html", "Module06LTR.html", "Module07LTR.html",
@@ -103,35 +112,62 @@
             a.target = "_blank";
             a.className = "flex items-center p-3 bg-white rounded-lg shadow-sm border border-slate-100 card-hover hover:border-blue-300 group transition-all";
             
-            // Clean display name
-            let displayName = fileName.replace(".html", "").replace(/_/g, " ").replace("LTR", " (סיכום)");
-            if(displayName.startsWith("Terms")) displayName = displayName.replace("Terms", "מונחים");
-            if(displayName.startsWith("Map")) displayName = displayName.replace("Map", "מפה");
+            let displayName = fileName.replace(".html", "").replace(/_/g, " ");
+            let isMain = false;
+
+            // לוגיקה לזיהוי ושיום מפות סיכום וראשיות
+            if (fileName === "map.html") {
+                displayName = "📌 מפת סיכום קורס (ראשית - עברית)";
+                isMain = true;
+            } else if (fileName === "Map-LTR.html") {
+                displayName = "📌 Course Summary Map (Main - English)";
+                isMain = true;
+            } else if (fileName === "Map_Module07.html") {
+                displayName = "מפת סיכום קורס (מודול 07)";
+                isMain = true;
+            } else if (fileName === "Module07LTR.html") {
+                displayName = "מפת סיכום קורס (מודול 07) (english)";
+                isMain = true;
+            } else if (fileName.includes("Terms")) {
+                displayName = displayName.replace("Terms", "מונחי מודול");
+            } else if (fileName.includes("Map")) {
+                displayName = displayName.replace("Map Module", "מפת חשיבה - מודול ");
+            } else if (fileName.includes("Module") && fileName.includes("LTR")) {
+                displayName = displayName.replace("Module", "מפת חשיבה - מודול ").replace("LTR", " (english)");
+            }
+
+            if(isMain) a.classList.add("border-blue-200", "bg-blue-50/30");
 
             a.innerHTML = `
-                <span class="flex-grow font-medium text-slate-700 group-hover:text-blue-600">${displayName}</span>
+                <span class="flex-grow font-medium ${isMain ? 'text-blue-900' : 'text-slate-700'} group-hover:text-blue-600">${displayName}</span>
                 <svg class="w-4 h-4 text-slate-300 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
             `;
             return a;
         }
 
         function init() {
-            const moduleList = document.getElementById('moduleList');
-            const mapList = document.getElementById('mapList');
+            const englishList = document.getElementById('englishList');
+            const hebrewList = document.getElementById('hebrewList');
             const termList = document.getElementById('termList');
 
-            files.forEach(file => {
+            const sortedFiles = [...files].sort((a, b) => {
+                if (a === "map.html" || a === "Map-LTR.html") return -1;
+                if (b === "map.html" || b === "Map-LTR.html") return 1;
+                return a.localeCompare(b);
+            });
+
+            sortedFiles.forEach(file => {
                 const el = createLinkElement(file);
-                if (file.startsWith('Module')) {
-                    moduleList.appendChild(el);
-                } else if (file.startsWith('Map')) {
-                    mapList.appendChild(el);
+                
+                if (file === "Map-LTR.html" || (file.includes('Module') && file.includes('LTR'))) {
+                    englishList.appendChild(el);
+                } else if (file === "map.html" || file.startsWith('Map')) {
+                    hebrewList.appendChild(el);
                 } else if (file.startsWith('Terms')) {
                     termList.appendChild(el);
                 }
             });
 
-            // Search functionality
             document.getElementById('searchInput').addEventListener('input', (e) => {
                 const term = e.target.value.toLowerCase();
                 document.querySelectorAll('.card-hover').forEach(card => {
@@ -139,17 +175,10 @@
                     card.style.display = text.includes(term) ? 'flex' : 'none';
                 });
                 
-                // Hide empty sections
                 document.querySelectorAll('.category-section').forEach(section => {
-                    const visibleCards = section.querySelectorAll('.card-hover[style="display: flex;"]').length;
-                    const allCards = section.querySelectorAll('.card-hover').length;
-                    const hiddenCards = section.querySelectorAll('.card-hover[style="display: none;"]').length;
-                    
-                    if (hiddenCards === allCards) {
-                        section.style.display = 'none';
-                    } else {
-                        section.style.display = 'block';
-                    }
+                    const visibleCards = Array.from(section.querySelectorAll('.card-hover'))
+                                            .filter(c => c.style.display !== 'none').length;
+                    section.style.display = visibleCards === 0 ? 'none' : 'block';
                 });
             });
         }
